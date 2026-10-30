@@ -2343,12 +2343,15 @@
     let limited = false; // today's questions are used up
     let shown = [];      // the example questions on screen right now
 
-    function openAsk() {
+    // note = false: the chat ("Ask me"). note = true: straight to "Leave me a note".
+    // Always set the mode, so the panel never stays stuck in the last one.
+    function openAsk(note = false) {
       card.classList.remove("open");
       radio.classList.remove("open");
       ask.classList.add("open");
       octoButton.setAttribute("aria-expanded", "true");
-      if (!mobile) askInput.focus(); // on phones, don't push the keyboard up right away
+      noteMode(note);
+      if (!note && !mobile) askInput.focus(); // on phones, don't push the keyboard up right away
     }
 
     function closeAsk() {
@@ -2523,10 +2526,7 @@
     const noteQuick = document.getElementById("note-quick");
     noteQuick.innerHTML = noteOpen.querySelector("svg").outerHTML;
     noteQuick.append(T.noteLink);
-    noteQuick.addEventListener("click", () => {
-      openAsk();
-      noteMode(true);
-    });
+    noteQuick.addEventListener("click", () => openAsk(true));
     document.getElementById("note-back").textContent = T.noteBack;
     document.getElementById("note-again").textContent = T.noteAgain;
     document.getElementById("note-privacy").textContent = T.notePrivacy;
