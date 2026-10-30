@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Security: the page may only talk to these places. If bad code ever got in, it couldn't send data anywhere else. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://ws.audioscrobbler.com https://api.chess.com https://opening-api.maxey00.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://ws.audioscrobbler.com https://api.chess.com https://opening-api.maxey00.workers.dev https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Opening</title>
   <meta name="description" content="Every planet is something I learned. A small solar system on my way to AI engineering: Java, Python, MCP, RAG, evals, plus chess, the Sixers and what I'm listening to.">
   <meta name="theme-color" content="#06060f">
@@ -2638,5 +2638,7 @@
       });
     }
   </script>
+  <!-- Visitor counter (Cloudflare Web Analytics): only numbers like page views and countries, no cookies, no one is tracked -->
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "d55061a5b8f4402cae580761d8ac6eac"}'></script>
 </body>
 </html>
