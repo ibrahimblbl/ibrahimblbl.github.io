@@ -747,6 +747,81 @@
 
     .ask-note { margin: 0; font-size: 11px; line-height: 1.4; color: var(--muted); opacity: 0.7; }
 
+    /* ---------- Leave me a note ---------- */
+    .note-link {
+      align-self: flex-start;
+      padding: 0;
+      background: none;
+      border: 0;
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      text-decoration: underline dashed rgba(255, 255, 255, 0.3);
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+    .note-link:hover { color: #ff8fab; }
+
+    /* Note mode: the chat steps aside, the note form takes its place */
+    #ask-panel.note-mode #ask-log,
+    #ask-panel.note-mode #ask-chips,
+    #ask-panel.note-mode #ask-form,
+    #ask-panel.note-mode #ask-left,
+    #ask-panel.note-mode #note-open,
+    #ask-panel.note-mode > .ask-note { display: none; }
+
+    #note-form { display: flex; flex-direction: column; gap: 10px; transition: transform 0.35s ease-in, opacity 0.35s ease-in; }
+    #note-form[hidden], #note-done[hidden] { display: none; }
+    #note-done { display: flex; flex-direction: column; gap: 10px; }
+    /* Folding into a paper plane: the form squeezes down to a point */
+    #note-form.fold { transform: perspective(500px) rotateX(70deg) scale(0.15); opacity: 0; }
+
+    #note-name, #note-msg {
+      padding: 9px 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+    }
+    #note-msg { resize: none; line-height: 1.5; }
+    #note-name:focus, #note-msg:focus { outline: none; border-color: #ff8fab; }
+
+    .note-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    #note-err { font-size: 12px; color: #ffb3c6; }
+    #note-send {
+      padding: 8px 18px;
+      background: #ff8fab;
+      color: #1a1030;
+      border: none;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #note-send:disabled { opacity: 0.4; cursor: default; }
+
+    /* The trap field for spam bots: people never see it */
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+    /* The paper plane and its ink trail fly above everything */
+    #plane { position: fixed; left: 0; top: 0; z-index: 5; width: 34px; height: 34px; pointer-events: none; will-change: transform; }
+    .ink-dot {
+      position: fixed;
+      z-index: 4;
+      width: 7px;
+      height: 7px;
+      margin: -3.5px 0 0 -3.5px;
+      border-radius: 50%;
+      background: #a66ae0;
+      box-shadow: 0 0 8px rgba(166, 106, 224, 0.8);
+      pointer-events: none;
+      animation: ink-fade 0.9s ease-out forwards;
+    }
+    @keyframes ink-fade { to { opacity: 0; transform: scale(0.2) translateY(6px); } }
+
     @media (max-width: 600px) {
       #terminal { font-size: 13px; }
     }
@@ -845,6 +920,23 @@
         <button id="ask-send" type="submit" aria-label="Send" data-tr-label="Gönder"></button>
       </form>
       <p id="ask-left" hidden></p>
+      <button type="button" id="note-open" class="note-link"></button>
+      <!-- "Leave me a note": a private note that only I read (goes to my Worker, never to Gemini) -->
+      <form id="note-form" hidden>
+        <button type="button" id="note-back" class="note-link"></button>
+        <input id="note-name" maxlength="40" autocomplete="off">
+        <textarea id="note-msg" maxlength="500" rows="4"></textarea>
+        <input id="note-hp" class="hp" name="hp_x7" tabindex="-1" autocomplete="new-password" aria-hidden="true">
+        <div class="note-row">
+          <span id="note-err" aria-live="polite"></span>
+          <button id="note-send" type="submit"></button>
+        </div>
+        <p class="ask-note" id="note-privacy"></p>
+      </form>
+      <div id="note-done" hidden>
+        <p class="msg bot" id="note-done-text" aria-live="polite"></p>
+        <button type="button" id="note-again" class="note-link"></button>
+      </div>
       <p class="ask-note" data-tr="Sorular Google Gemini ile işleniyor ve Google bunları ürünlerini geliştirmek için kullanabilir. Cevaplanamayan sorular isimsiz kaydediliyor. Lütfen kişisel bilgi yazma.">Questions are processed by Google Gemini and may be used by Google to improve its products. Unanswered ones are saved anonymously. Please don't enter personal info.</p>
     </section>
     <button id="octo-button" aria-expanded="false" aria-controls="ask-panel">
@@ -994,6 +1086,12 @@
       cantReach: "Şu an cevap veremiyorum, biraz sonra tekrar dene.", wrong: "Bir şeyler ters gitti.",
       tomorrow: "Bugünlük bu kadar. Örnek sorulara yine basabilirsin.",
       left: (n) => `Bugün ${n} soru hakkın kaldı`,
+      noteLink: "Bana not bırak", noteBack: "Geri", noteName: "Adın (istersen)",
+      notePh: "Ne istersen yaz. Bunu sadece ben okurum.", noteSend: "Gönder",
+      notePrivacy: "Notlar doğrudan bana gelir. Gemini'ye gitmez, kimseye gösterilmez.",
+      noteSent: "Notun bana ulaştı. Bunu benden başka kimse görmeyecek.", noteAgain: "Sorulara dön",
+      noteLimit: "Bugünlük bir not yeter, teşekkürler!", noteFull: "Bugün çok not geldi, yarın tekrar dene.",
+      noteFail: "Ulaşmadı, tekrar dene.",
     } : {
       lines: [
         "❯ waking up the universe ........... ok",
@@ -1020,6 +1118,12 @@
       cantReach: "Can't reach the answer engine right now.", wrong: "Something went wrong.",
       tomorrow: "Back tomorrow. The examples still work.",
       left: (n) => (n === 1 ? "1 question left today" : `${n} questions left today`),
+      noteLink: "Leave me a note", noteBack: "Back", noteName: "Your name (optional)",
+      notePh: "Say anything. Only I will read it.", noteSend: "Send",
+      notePrivacy: "Notes go straight to me. Not to Gemini, not public.",
+      noteSent: "Got it. This note is just for me, no one else will see it.", noteAgain: "Back to questions",
+      noteLimit: "One note a day is enough, thanks!", noteFull: "Lots of notes today. Try again tomorrow.",
+      noteFail: "Didn't reach. Try again.",
     };
 
     // Texts written in the HTML carry their Turkish in data-tr (and data-tr-placeholder / data-tr-label)
@@ -1628,6 +1732,16 @@
         ctx.strokeStyle = rgba(station.color, (1 - phase) * 0.5);
         ctx.beginPath();
         ctx.arc(x, y, r * (1 + phase * 3), 0, TAU);
+        ctx.stroke();
+      }
+
+      // A note just arrived: one pink ring flies out, "broadcast to just one person"
+      const ping = (performance.now() - (station.pingAt || -1e9)) / 1400;
+      if (ping < 1) {
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = rgba("#ff8fab", 1 - ping);
+        ctx.beginPath();
+        ctx.arc(x, y, r * (1.2 + ping * 6), 0, TAU);
         ctx.stroke();
       }
 
@@ -2343,6 +2457,117 @@
       }
       setBusy(false);
     });
+
+    // ---------- Leave me a note (a private note: only I read it, in my inbox) ----------
+    const askPanel = document.getElementById("ask-panel");
+    const noteForm = document.getElementById("note-form");
+    const noteDone = document.getElementById("note-done");
+    const noteName = document.getElementById("note-name");
+    const noteMsg = document.getElementById("note-msg");
+    const noteSend = document.getElementById("note-send");
+    const noteErr = document.getElementById("note-err");
+    document.getElementById("note-open").textContent = T.noteLink;
+    document.getElementById("note-back").textContent = T.noteBack;
+    document.getElementById("note-again").textContent = T.noteAgain;
+    document.getElementById("note-privacy").textContent = T.notePrivacy;
+    document.getElementById("note-done-text").textContent = T.noteSent;
+    noteName.placeholder = T.noteName;
+    noteMsg.placeholder = T.notePh;
+    noteSend.textContent = T.noteSend;
+
+    function noteMode(on) {
+      askPanel.classList.toggle("note-mode", on);
+      noteForm.hidden = !on;
+      noteForm.classList.remove("fold");
+      noteDone.hidden = true;
+      noteErr.textContent = "";
+      if (on && !mobile) noteMsg.focus();
+    }
+    document.getElementById("note-open").addEventListener("click", () => noteMode(true));
+    document.getElementById("note-back").addEventListener("click", () => noteMode(false));
+    document.getElementById("note-again").addEventListener("click", () => noteMode(false));
+
+    noteForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = noteMsg.value.trim();
+      if (!msg || noteSend.disabled) return;
+      noteSend.disabled = true;
+      noteErr.textContent = "";
+      // Send right away; the folding and the flight happen while it travels
+      const sending = fetch(API + "/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: noteName.value, msg, hp: document.getElementById("note-hp").value }),
+      }).then((res) => res.json().then((data) => ({ ok: res.ok, ...data }))).catch(() => ({ ok: false }));
+
+      noteForm.classList.add("fold");
+      const [result] = await Promise.all([sending, wait(350)]);
+      noteSend.disabled = false;
+      if (!result.ok) {
+        noteForm.classList.remove("fold");
+        noteErr.textContent = result.error === "limit" ? T.noteLimit : result.error === "full" ? T.noteFull : T.noteFail;
+        return;
+      }
+      noteMsg.value = "";
+      await flyPlane();
+      noteForm.hidden = true;
+      noteDone.hidden = false;
+    });
+
+    // The octopus throws a paper plane; it flies to the Radio satellite, leaving an ink trail
+    function flyPlane() {
+      return new Promise((done) => {
+        if (reduceMotion) return done();
+        const o = octo.getBoundingClientRect();
+        const from = { x: o.left + o.width * 0.6, y: o.top + o.height * 0.35 };
+        let to = screenPos(station, planets.length);
+        if (to.y < 0 || to.y > window.innerHeight) to = { x: from.x + 160, y: -60 }; // phone: Radio is off screen, fly up and away
+        const ctrl = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - 160 }; // a curve that rises first
+        const plane = document.createElement("div");
+        plane.id = "plane";
+        plane.innerHTML = '<svg viewBox="0 0 34 34" width="34" height="34"><path d="M2 17 L32 4 L22 30 L16 20 Z" fill="#f4f1ff"/><path d="M16 20 L32 4 L12 22 Z" fill="#c9b8f5"/><path d="M16 20 L18 27 L22 30 Z" fill="#9f86e0"/></svg>';
+        document.body.append(plane);
+        octo.classList.add("thinking"); // a puff of ink as it throws
+        const start = performance.now();
+        const DURATION = 1300;
+        let lastDot = 0;
+        const at = (t) => ({ // a point on the curve, t from 0 to 1
+          x: (1 - t) * (1 - t) * from.x + 2 * (1 - t) * t * ctrl.x + t * t * to.x,
+          y: (1 - t) * (1 - t) * from.y + 2 * (1 - t) * t * ctrl.y + t * t * to.y,
+        });
+        function step(now) {
+          const lin = Math.min(1, (now - start) / DURATION);
+          const t = lin < 0.5 ? 2 * lin * lin : 1 - Math.pow(-2 * lin + 2, 2) / 2; // slow, fast, slow
+          const p = at(t);
+          const ahead = at(Math.min(1, t + 0.02));
+          const angle = Math.atan2(ahead.y - p.y, ahead.x - p.x) + 0.4; // nose points where it's going
+          plane.style.transform = `translate(${p.x - 17}px, ${p.y - 17}px) rotate(${angle}rad) scale(${1 - t * 0.45})`;
+          if (now - lastDot > 28) { // drop a little ink behind
+            lastDot = now;
+            const dot = document.createElement("div");
+            dot.className = "ink-dot";
+            dot.style.left = p.x + "px";
+            dot.style.top = p.y + "px";
+            document.body.append(dot);
+            setTimeout(() => dot.remove(), 950);
+          }
+          if (lin < 1) return requestAnimationFrame(step);
+          land();
+        }
+        let landed = false;
+        function land() {
+          if (landed) return;
+          landed = true;
+          plane.remove();
+          octo.classList.remove("thinking");
+          station.pingAt = performance.now(); // the satellite catches it
+          setTimeout(done, 300);
+        }
+        // If the tab is hidden, animation frames pause: land anyway, so the "sent" message always shows
+        setTimeout(land, DURATION + 500);
+        requestAnimationFrame(step);
+      });
+    }
 
     // Phones: when the keyboard opens, lift the octopus and the panel above it
     if (window.visualViewport) {
