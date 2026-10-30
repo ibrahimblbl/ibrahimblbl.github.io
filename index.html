@@ -762,6 +762,27 @@
     }
     .note-link:hover { color: #ff8fab; }
 
+    /* The way in: a clear pink button with a small paper plane */
+    #note-open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 14px;
+      background: rgba(255, 143, 171, 0.1);
+      color: #ffc2d3;
+      border: 1px solid rgba(255, 143, 171, 0.45);
+      border-radius: 999px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    #note-open svg { width: 18px; height: 18px; flex: none; transition: transform 0.3s ease; }
+    #note-open:hover { background: rgba(255, 143, 171, 0.18); box-shadow: 0 0 20px rgba(255, 143, 171, 0.25); }
+    #note-open:hover svg { transform: translate(3px, -3px) rotate(-8deg); } /* the plane lifts off a little */
+
     /* Note mode: the chat steps aside, the note form takes its place */
     #ask-panel.note-mode #ask-log,
     #ask-panel.note-mode #ask-chips,
@@ -920,7 +941,7 @@
         <button id="ask-send" type="submit" aria-label="Send" data-tr-label="Gönder"></button>
       </form>
       <p id="ask-left" hidden></p>
-      <button type="button" id="note-open" class="note-link"></button>
+      <button type="button" id="note-open"></button>
       <!-- "Leave me a note": a private note that only I read (goes to my Worker, never to Gemini) -->
       <form id="note-form" hidden>
         <button type="button" id="note-back" class="note-link"></button>
@@ -2466,7 +2487,10 @@
     const noteMsg = document.getElementById("note-msg");
     const noteSend = document.getElementById("note-send");
     const noteErr = document.getElementById("note-err");
-    document.getElementById("note-open").textContent = T.noteLink;
+    // A small paper plane (the same one that flies later) + the words
+    const noteOpen = document.getElementById("note-open");
+    noteOpen.innerHTML = '<svg viewBox="0 0 34 34" aria-hidden="true"><path d="M2 17 L32 4 L22 30 L16 20 Z" fill="#ffd6e2"/><path d="M16 20 L32 4 L12 22 Z" fill="#ff8fab"/><path d="M16 20 L18 27 L22 30 Z" fill="#d9668a"/></svg>';
+    noteOpen.append(T.noteLink);
     document.getElementById("note-back").textContent = T.noteBack;
     document.getElementById("note-again").textContent = T.noteAgain;
     document.getElementById("note-privacy").textContent = T.notePrivacy;
