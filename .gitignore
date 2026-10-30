@@ -1,0 +1,8 @@
+# This repo is public, but this folder also has private notes and backups.
+# So: ignore EVERYTHING, then let in only the files the site needs.
+# A new file stays private until it is added to this list on purpose.
+*
+!.gitignore
+!index.html
+!og.jpg
+!README.md
