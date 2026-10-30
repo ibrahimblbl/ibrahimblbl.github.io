@@ -521,7 +521,7 @@
       color: var(--text);
       border: none;
       font: inherit;
-      font-size: 20px; /* 40% bigger than before: these two buttons matter */
+      font-size: 15px; /* a bit bigger than the rest: these two buttons matter */
       font-weight: 600;
       cursor: pointer;
     }
@@ -529,8 +529,8 @@
     .ask-label {
       display: flex;
       align-items: center;
-      gap: 11px;
-      padding: 10px 20px;
+      gap: 8px;
+      padding: 8px 15px;
       background: rgba(20, 18, 38, 0.6);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 999px;
@@ -545,11 +545,11 @@
     #note-quick {
       position: absolute;
       left: 116px;              /* next to the octopus, lined up with "Ask me" */
-      top: calc(50% + 30px);
+      top: calc(50% + 24px);
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 20px;
+      gap: 8px;
+      padding: 8px 15px;
       white-space: nowrap;
       background: rgba(60, 22, 48, 0.6);
       color: #ffd6e2;
@@ -557,18 +557,18 @@
       border-radius: 999px;
       backdrop-filter: blur(12px);
       font: inherit;
-      font-size: 20px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.2s ease, box-shadow 0.2s ease;
     }
-    #note-quick svg { width: 24px; height: 24px; flex: none; transition: transform 0.3s ease; }
+    #note-quick svg { width: 18px; height: 18px; flex: none; transition: transform 0.3s ease; }
     #note-quick:hover { background: rgba(90, 30, 66, 0.7); box-shadow: 0 0 30px rgba(255, 143, 171, 0.3); }
     #note-quick:hover svg { transform: translate(3px, -3px) rotate(-8deg); }
 
     .live-dot {
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: #ff8fab;
       box-shadow: 0 0 8px #ff8fab;
@@ -910,8 +910,8 @@
       /* Ask me: octopus stays bottom left, the panel becomes a sheet from the bottom */
       #ask { left: 10px; bottom: calc(var(--kb, 0px) + 10px); } /* rides up on the keyboard too */
       .octo { width: 84px; height: 92px; }
-      #octo-button { font-size: 17px; }
-      #note-quick { left: 90px; top: calc(50% + 26px); font-size: 17px; padding: 8px 16px; }
+      #octo-button { font-size: 13px; }
+      #note-quick { left: 90px; top: calc(50% + 20px); font-size: 13px; padding: 6px 12px; }
       #ask-panel {
         position: fixed;
         left: 8px;
