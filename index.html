@@ -218,6 +218,9 @@
       bottom: 32px;
       z-index: 1;
       width: min(460px, calc(100% - 32px));
+      max-height: calc(100vh - 64px);
+      max-height: calc(100dvh - 64px); /* long cards (76 on a phone) scroll instead of running off the top */
+      overflow-y: auto;
       box-sizing: border-box;
       padding: 22px 26px;
       background: rgba(20, 18, 38, 0.7);
@@ -247,7 +250,7 @@
     }
 
     #card p { margin: 0; color: var(--text); }
-    #card p:empty { display: none; } /* Chess Log and 76 have no "In short" / "For me" lines */
+    #card p:empty { display: none; } /* Chess Log has no "In short" / "For me" lines */
     /* "In short": an everyday comparison, in the planet's color */
     #card #card-short { margin-bottom: 10px; font-size: 15px; color: var(--accent); }
     /* "For me": my own one line, quieter */
@@ -337,6 +340,15 @@
     .wl.l { background: rgba(248, 113, 113, 0.15); color: #f87171; }
 
     .maxey { margin: 14px 0 0; }
+    /* The next game: easy to miss when it was small, so it gets its own box */
+    .next-game {
+      margin: 14px 0 0;
+      padding: 10px 14px;
+      border-left: 3px solid var(--accent);
+      border-radius: 10px;
+      background: rgba(29, 127, 214, 0.14);
+      font-size: 15px;
+    }
     .maxey strong { color: #ffffff; }
 
     /* ---------- Radio panel (slides in from the right) ---------- */
@@ -1175,7 +1187,7 @@
       scoreboard: "checking the scoreboard…", scoreDown: "Couldn't reach the scoreboard.", thisSeason: "this season",
       maxeyLine: (m) => `Maxey vs ${esc(m.opp)}: <strong>${esc(m.pts)} PTS</strong> · ${esc(m.reb)} REB · ${esc(m.ast)} AST`,
       seasonLine: (m) => `Season: ${esc(m.pts)} PPG · ${esc(m.reb)} RPG · ${esc(m.ast)} APG`,
-      win: "W", loss: "L", next: "Next: ",
+      win: "W", loss: "L", next: "Next game: ",
       more: "More questions", less: "Show less", sources: "Sources:",
       cantReach: "Can't reach the answer engine right now.", wrong: "Something went wrong.",
       tomorrow: "Back tomorrow. The examples still work.",
@@ -1387,8 +1399,12 @@
       // My team. ball = basketball seams, starRing = the 13 stars from the Sixers logo
       { name: "76", title: "Philadelphia 76ers", x: 0.45, y: 0.17, size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
         ball: true, seam: "#ED174C", starRing: true,
-        about: "My team this season. My favorite player: Tyrese Maxey.",
-        tr: { about: "Bu sezon tuttuğum takım. En sevdiğim oyuncu: Tyrese Maxey." } },
+        short: "Named after 1776: the US Declaration of Independence was signed in Philadelphia. The 13 stars in the logo are the 13 original colonies.",
+        about: "One of the oldest teams in the NBA: it started in 1946 as the Syracuse Nationals and moved to Philadelphia in 1963. It has won 3 NBA championships (1955, 1967, 1983), and legends like Wilt Chamberlain, Julius Erving and Allen Iverson wore its jersey.",
+        mine: "I pick a team to follow every season, and this season it's Philadelphia. My favorite player is Tyrese Maxey: very fast, with a great handle and great threes.",
+        tr: { short: "Adını 1776'dan alıyor: ABD'nin Bağımsızlık Bildirgesi Philadelphia'da imzalandı. Logodaki 13 yıldız da o günkü 13 koloniyi temsil ediyor.",
+              about: "NBA'in en eski takımlarından biri: 1946'da Syracuse Nationals adıyla kuruldu, 1963'te Philadelphia'ya taşındı. 3 kez NBA şampiyonu oldu (1955, 1967, 1983); Wilt Chamberlain, Julius Erving ve Allen Iverson gibi efsaneler bu formayı giydi.",
+              mine: "Her sezon takip edeceğim bir takım seçiyorum, bu sezon Philadelphia. En sevdiğim oyuncu Tyrese Maxey: çok hızlı, top sürmesi ve üçlükleri harika." } },
       // split = the planet cuts itself into 4 pieces now and then (that's what chunking is)
       { name: "Chunking", x: 0.73, y: 0.62, size: 30, color: "#2dd4bf", dark: "#134e4a", spin: 0.0004,
         bands: 4, split: true,
@@ -2404,7 +2420,7 @@
                 <span class="muted">${esc(where(g))}</span>
               </li>`).join("")}
           </ul>
-          ${next ? `<p class="muted small">${T.next}${esc(where(next))} · ${when(next.date)}</p>` : ""}`;
+          ${next ? `<p class="next-game">${T.next}<strong>${esc(where(next))}</strong> · ${when(next.date)}</p>` : ""}`;
       } catch {
         box.innerHTML = `<p class="muted small">${T.scoreDown}</p>`;
       }
@@ -2445,7 +2461,7 @@
       {"q":"What is an embedding?","sources":["RAG"],"answer":"An embedding turns a piece of text into a list of numbers that represents its meaning; the model behind this site uses 1024 numbers for every text. You can think of it as a map: a place on Earth needs 2 numbers, latitude and longitude, and here a sentence gets 1024, so it has a position on a map of meaning. Texts that mean similar things land close together even when they use different words, so \"they became champions\" and \"they won the title\" end up near each other. That is exactly what my first keyword search could not see. This Ask me box uses embeddings to find the part of my posts closest in meaning to your question.","tr":{"q":"Embedding nedir?","answer":"Embedding, bir metni anlamını temsil eden bir sayı listesine çevirmek demek; bu sitedeki model her metin için 1024 sayı kullanıyor. Bir harita gibi düşünebilirsin: Dünya'daki bir yeri 2 sayı belirler, enlem ve boylam. Burada ise her cümle 1024 sayı alıyor ve böylece bir \"anlam haritasında\" yeri oluyor. Aynı şeyi anlatan metinler farklı kelimeler kullansa bile birbirine yakın düşüyor: \"şampiyon oldular\" ile \"kupayı kazandılar\" yan yana geliyor. İlk anahtar kelime aramamın göremediği şey tam olarak buydu. Bu Ask me kutusu da sorunun anlamına en yakın bölümü embedding ile buluyor."}},
       {"q":"How does Ask me work?","sources":["RAG"],"answer":"Ask me is a small RAG system, which means it finds the right part of my writing first and only then writes an answer. Every section of my posts was turned into a list of 1024 numbers, called an embedding, where texts with similar meaning get similar numbers. When you ask something, your question is turned into numbers the same way and compared with every section. If nothing is close enough, you get \"I haven't written about that yet.\" instead of a made-up answer. Otherwise a language model writes a short answer using only the closest sections, and the planets they came from light up.","tr":{"q":"Ask me nasıl çalışıyor?","answer":"Ask me küçük bir RAG sistemi; yani önce yazılarımda doğru yeri buluyor, cevabı ancak ondan sonra yazıyor. Yazılarımın her bölümü, embedding denen 1024 sayılık bir listeye çevrildi; anlamı benzeyen metinlerin sayıları da benziyor. Bir soru sorduğunda sorun da aynı şekilde sayılara çevriliyor ve her bölümle karşılaştırılıyor. Yeterince yakın bir bölüm yoksa uydurma bir cevap yerine \"Bunun hakkında henüz yazmadım.\" diyor. Varsa bir dil modeli sadece en yakın bölümleri kullanarak kısa bir cevap yazıyor ve o bölümlerin geldiği gezegenler parlıyor."}},
       {"q":"What did your chunking experiment show?","sources":["Chunking"],"answer":"Chunking means splitting long texts into small pieces before searching, so each piece gets its own embedding. To see if it really matters, I built my octopus's memory two ways from the same posts: every post as one big chunk (9 chunks), and every section as its own chunk (77 chunks). Then I gave both the same 40-question test. The big chunks got 36 right, the small ones 38. With big chunks, small details got lost inside long posts, and the language model would have to read about 10 times more text for every answer.","tr":{"q":"Chunking deneyinde ne buldun?","answer":"Chunking, uzun metinleri aramadan önce küçük parçalara bölmek; böylece her parça kendi embedding'ini alıyor. Bunun gerçekten fark yaratıp yaratmadığını görmek için ahtapotun hafızasını aynı yazılardan iki şekilde kurdum: her yazı tek büyük parça (9 parça) ve her bölüm ayrı bir parça (77 parça). Sonra ikisine de aynı 40 soruluk sınavı yaptım. Büyük parçalar 36, küçük parçalar 38 soruyu doğru bildi. Büyük parçalarda küçük detaylar uzun yazının içinde kayboldu; üstelik dil modeli her cevap için yaklaşık 10 kat fazla metin okumak zorunda kalacaktı."}},
-      {"q":"Who reads the note I leave?","sources":[],"answer":"Leave me a note is a private message box: whatever you write there goes only to me. Notes never show up on the site, and no other visitor can read them. Writing your name is optional, so you can stay anonymous, and your IP address isn't saved. Notes are kept for 90 days, and you can leave one note a day. To write one, press the pink button with the paper plane.","tr":{"q":"Bıraktığım notu kim okuyor?","answer":"Bana not bırak, gizli bir mesaj kutusu: oraya ne yazarsan sadece bana geliyor. Notlar sitede hiçbir yerde görünmüyor, başka ziyaretçiler de okuyamıyor. İsim yazmak zorunlu değil, istersen anonim kalabilirsin; IP adresin de kaydedilmiyor. Notlar 90 gün saklanıyor ve günde bir not bırakabilirsin. Yazmak için kâğıt uçaklı pembe düğmeye basman yeterli."}},
+      {"q":"Who reads the note I leave?","sources":[],"answer":"Leave me a note is a private message box: whatever you write there goes only to me. Notes never show up on the site, and no other visitor can read them. Writing your name is optional, so you can stay anonymous, and your IP address isn't saved. You can leave one note a day. To write one, press the pink button with the paper plane.","tr":{"q":"Bıraktığım notu kim okuyor?","answer":"Bana not bırak, gizli bir mesaj kutusu: oraya ne yazarsan sadece bana geliyor. Notlar sitede hiçbir yerde görünmüyor, başka ziyaretçiler de okuyamıyor. İsim yazmak zorunlu değil, istersen anonim kalabilirsin; IP adresin de kaydedilmiyor. Günde bir not bırakabilirsin. Yazmak için kâğıt uçaklı pembe düğmeye basman yeterli."}},
       {"q":"Why does the octopus wear a helmet?","sources":[],"answer":"The octopus is the mascot of Ask me: I wanted a talking character instead of a plain chat box. It floats in space, so from the start it needed a helmet. Its first helmet was a see-through glass bubble, like an astronaut's, but nobody could tell it was a helmet. So it got a red motorcycle helmet with a white racing stripe and its visor flipped up, and now everyone notices it. Safety first, even in space.","tr":{"q":"Ahtapot neden kask takıyor?","answer":"Ahtapot, Ask me'nin maskotu: düz bir sohbet kutusu yerine konuşan bir karakter olsun istedim. Uzayda süzüldüğü için en başından bir kaska ihtiyacı vardı. İlk kaskı astronotlarınki gibi şeffaf bir cam fanustu, ama kimse onun kask olduğunu anlamadı. Ben de ona beyaz yarış şeritli, siperliği yukarı kalkık kırmızı bir motorcu kaskı taktım; artık herkes fark ediyor. Uzayda bile önce güvenlik."}},
     ];
     // In Turkish, the Turkish question and answer take the place of the English ones
