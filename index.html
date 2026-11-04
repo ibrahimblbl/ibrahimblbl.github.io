@@ -1389,14 +1389,15 @@
         ball: true, seam: "#ED174C", starRing: true,
         about: "My team this season. My favorite player: Tyrese Maxey.",
         tr: { about: "Bu sezon tuttuğum takım. En sevdiğim oyuncu: Tyrese Maxey." } },
-      // future: true = not learned yet. Drawn as a faint outline until I learn it.
-      { name: "Chunking", x: 0.73, y: 0.62, size: 26, color: "#94a3b8", future: true,
-        short: "Like splitting a thick book into chapters: what you're looking for is easier to find in a small piece.",
-        about: "Splitting long texts into small pieces before searching. If a piece is too big, unrelated things get mixed in; too small, and the meaning gets lost. Finding the right size is the hard part.",
-        mine: "My next topic, it's on my plan.",
-        tr: { short: "Kalın bir kitabı bölümlere ayırmak gibi: aradığın şeyi küçük parçada daha kolay bulursun.",
-              about: "Uzun metinleri aramadan önce küçük parçalara bölmek. Parça çok büyük olursa içine alakasız şeyler karışıyor, çok küçük olursa anlam kayboluyor. Doğru boyu bulmak işin zor kısmı.",
-              mine: "Sıradaki konum, planımda var." } },
+      // split = the planet cuts itself into 4 pieces now and then (that's what chunking is)
+      { name: "Chunking", x: 0.73, y: 0.62, size: 30, color: "#2dd4bf", dark: "#134e4a", spin: 0.0004,
+        bands: 4, split: true,
+        short: "Like sorting a wardrobe into drawers: throw everything into one drawer and you can't find your socks. Put one sock in one drawer and its pair in another, and the pair is lost.",
+        about: "Splitting a long text into small pieces (chunks) before searching. Each piece is turned into numbers (an embedding) and stored; when a question comes in, the closest pieces are found and handed to the AI. Common ways: a fixed size (say, every 300 words), by heading or paragraph, or with pieces that overlap a little, so a sentence on the border between two pieces isn't cut in half.",
+        mine: "Kept as 9 big pieces, my posts got 36 of 40 questions right. Split by heading into 77 pieces, they got 38.",
+        tr: { short: "Dolabı çekmecelere ayırmak gibi: her şeyi tek çekmeceye atarsan çorabı bulamazsın. Çorabın bir tekini bir çekmeceye, öbür tekini başka çekmeceye koyarsan da çift kaybolur.",
+              about: "Uzun bir metni aramadan önce küçük parçalara (chunk) bölmek. Her parça ayrı ayrı sayılara (embedding) çevrilip saklanıyor. Soru gelince en yakın parçalar bulunup yapay zekâya veriliyor. Yaygın yöntemler şunlar: sabit boyda bölmek (ör. her 300 kelimede bir), başlığa ya da paragrafa göre bölmek, ya da parçaları birbirine biraz bindirerek bölmek (overlap). Bindirme, iki parçanın sınırına denk gelen cümlenin yarıda kalmasını önlüyor.",
+              mine: "Yazılarımı bölmeden 9 büyük parça yapınca ahtapot 40 sorudan 36'sını bildi. Başlıklara bölüp 77 parça yapınca 38'ini bildi." } },
     ];
 
     for (const p of planets) {
@@ -1719,6 +1720,34 @@
       ctx.stroke();
     }
 
+    // Chunking: the planet is cut into 4 pieces. Every 7 seconds the pieces drift apart
+    // for a moment and come back together; hovering opens them a little too.
+    function drawSplitBody(p, x, y, r) {
+      const t = time % 7000;
+      const ease = (v) => v * v * (3 - 2 * v); // smooth start and stop
+      let open = t < 5000 ? 0 : t < 5600 ? ease((t - 5000) / 600) : t < 6400 ? 1 : ease(1 - (t - 6400) / 600);
+      if (p === hovered) open = Math.max(open, 0.5);
+      const gap = r * 0.2 * open;
+      for (const sx of [-1, 1]) {
+        for (const sy of [-1, 1]) {
+          ctx.save();
+          ctx.translate(sx * gap, sy * gap);
+          ctx.beginPath();
+          ctx.rect(x, y, sx * r * 1.3, sy * r * 1.3); // one quarter of the planet
+          ctx.clip();
+          drawBody(p, x, y, r);
+          ctx.restore();
+        }
+      }
+      // The cut lines, visible while the pieces are together (they fade as the gap opens)
+      ctx.strokeStyle = `rgba(0, 0, 12, ${0.45 * (1 - open)})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x - r, y); ctx.lineTo(x + r, y);
+      ctx.moveTo(x, y - r); ctx.lineTo(x, y + r);
+      ctx.stroke();
+    }
+
     // A planet I haven't learned yet: dashed outline, slowly turning, almost see-through
     function drawFuturePlanet(p, x, y, r) {
       const isHovered = p === hovered;
@@ -1790,7 +1819,8 @@
       if (p.ring) drawRingHalf(p, x, y, r, true);
       if (p.starRing) drawStarRingHalf(x, y, r, true);
       if (moonBehind) drawMoon(p, x, y, r, moonAngle);
-      drawBody(p, x, y, r);
+      if (p.split) drawSplitBody(p, x, y, r);
+      else drawBody(p, x, y, r);
       if (p.ring) drawRingHalf(p, x, y, r, false);
       if (p.starRing) drawStarRingHalf(x, y, r, false);
       if (p.moon && !moonBehind) drawMoon(p, x, y, r, moonAngle);
@@ -2412,6 +2442,11 @@
       {"q":"Who is your favorite basketball player?","sources":["76"],"answer":"This season my favorite player is Tyrese Maxey of the Philadelphia 76ers, the team I follow this season. He's extremely fast, and his ball handling, crossovers, finishing at the rim and three-point shooting are all excellent. In general I love fast, quick players who score a lot, like Allen Iverson and Kyrie Irving. Kevin Durant and Luka Dončić are among my favorites too, and I also follow Alperen Şengün and the Houston Rockets because I enjoy his game.","tr":{"q":"En sevdiğin basketbolcu kim?","answer":"Bu sezon en sevdiğim oyuncu Tyrese Maxey; bu sezon tuttuğum Philadelphia 76ers'ta oynuyor. Çok hızlı; top sürüşü, crossover'ları, potaya girişleri ve üçlükleri harika. Genel olarak Allen Iverson ve Kyrie Irving gibi hızlı, çevik ve çok sayı atan oyuncuları seviyorum. Kevin Durant ve Luka Dončić de favorilerim; ayrıca oyununu sevdiğim için Alperen Şengün'ü ve Houston Rockets'ı da takip ediyorum."}},
       {"q":"What is an embedding?","sources":["RAG"],"answer":"An embedding turns a piece of text into a list of numbers that represents its meaning; the model behind this site uses 1024 numbers for every text. You can think of it as a map: a place on Earth needs 2 numbers, latitude and longitude, and here a sentence gets 1024, so it has a position on a map of meaning. Texts that mean similar things land close together even when they use different words, so \"they became champions\" and \"they won the title\" end up near each other. That is exactly what my first keyword search could not see. This Ask me box uses embeddings to find the part of my posts closest in meaning to your question.","tr":{"q":"Embedding nedir?","answer":"Embedding, bir metni anlamını temsil eden bir sayı listesine çevirmek demek; bu sitedeki model her metin için 1024 sayı kullanıyor. Bir harita gibi düşünebilirsin: Dünya'daki bir yeri 2 sayı belirler, enlem ve boylam. Burada ise her cümle 1024 sayı alıyor ve böylece bir \"anlam haritasında\" yeri oluyor. Aynı şeyi anlatan metinler farklı kelimeler kullansa bile birbirine yakın düşüyor: \"şampiyon oldular\" ile \"kupayı kazandılar\" yan yana geliyor. İlk anahtar kelime aramamın göremediği şey tam olarak buydu. Bu Ask me kutusu da sorunun anlamına en yakın bölümü embedding ile buluyor."}},
       {"q":"How does Ask me work?","sources":["RAG"],"answer":"Ask me is a small RAG system, which means it finds the right part of my writing first and only then writes an answer. Every section of my posts was turned into a list of 1024 numbers, called an embedding, where texts with similar meaning get similar numbers. When you ask something, your question is turned into numbers the same way and compared with every section. If nothing is close enough, you get \"I haven't written about that yet.\" instead of a made-up answer. Otherwise a language model writes a short answer using only the closest sections, and the planets they came from light up.","tr":{"q":"Ask me nasıl çalışıyor?","answer":"Ask me küçük bir RAG sistemi; yani önce yazılarımda doğru yeri buluyor, cevabı ancak ondan sonra yazıyor. Yazılarımın her bölümü, embedding denen 1024 sayılık bir listeye çevrildi; anlamı benzeyen metinlerin sayıları da benziyor. Bir soru sorduğunda sorun da aynı şekilde sayılara çevriliyor ve her bölümle karşılaştırılıyor. Yeterince yakın bir bölüm yoksa uydurma bir cevap yerine \"Bunun hakkında henüz yazmadım.\" diyor. Varsa bir dil modeli sadece en yakın bölümleri kullanarak kısa bir cevap yazıyor ve o bölümlerin geldiği gezegenler parlıyor."}},
+      {"q":"What is this site for?","sources":[],"answer":"Opening is my personal site, and every planet on it is something I learned on my way to AI engineering. I started it in October 2026 because I wanted one place to keep what I learn, and to build something of my own that doesn't exist anywhere else. Instead of a plain list, every topic is a planet you can click: Java, Python, MCP, JSON, RAG, Evals and Chunking, plus my hobbies, chess and the 76ers. The octopus in the corner is part of it too: you can ask it about anything I've written here. As I learn new things, new planets will show up.","tr":{"q":"Bu sitenin amacı ne?","answer":"Opening benim kişisel sitem; buradaki her gezegen, yapay zekâ mühendisliğine giden yolda öğrendiğim bir şeyi anlatıyor. Siteye Ekim 2026'da başladım, çünkü öğrendiklerimi tek bir yerde toplamak ve başka hiçbir yerde olmayan, bana ait bir şey yapmak istedim. Düz bir liste yerine her konu tıklayabileceğin bir gezegen: Java, Python, MCP, JSON, RAG, Evals ve Chunking, bir de hobilerim satranç ve 76ers. Köşedeki ahtapot da işin parçası: burada yazdığım her şeyi ona sorabilirsin. Yeni şeyler öğrendikçe yeni gezegenler de gelecek."}},
+      {"q":"How did you build this site, and what helped you?","sources":[],"answer":"I built this site together with Claude Code, Anthropic's AI coding assistant. I decided what I wanted, and we wrote the code step by step while it explained every part to me. The site is plain HTML, CSS and JavaScript in a single file, and the planets are drawn on a canvas. It's hosted for free on GitHub Pages, and a small Cloudflare Worker answers your questions here and fetches the 76ers scores, with Google's Gemini writing the answers. The whole site costs nothing to run: every service it uses is on a free tier.","tr":{"q":"Bu siteyi nasıl yaptın, nelerden yardım aldın?","answer":"Bu siteyi Anthropic'in yapay zekâ kodlama asistanı Claude Code ile birlikte yaptım. Ne istediğime ben karar verdim, kodu da adım adım birlikte yazdık; her parçayı bana tek tek açıkladı. Site tek bir dosyada sade HTML, CSS ve JavaScript'ten oluşuyor, gezegenler de canvas üzerine çiziliyor. GitHub Pages'te ücretsiz yayında; burada sorduğun soruları ve 76ers skorlarını küçük bir Cloudflare Worker hallediyor, cevapları da Google'ın Gemini modeli yazıyor. Sitenin hiçbir maliyeti yok: kullandığım her servis ücretsiz katmanda."}},
+      {"q":"What did your chunking experiment show?","sources":["Chunking"],"answer":"Chunking means splitting long texts into small pieces before searching, so each piece gets its own embedding. To see if it really matters, I built my octopus's memory two ways from the same posts: every post as one big chunk (9 chunks), and every section as its own chunk (77 chunks). Then I gave both the same 40-question test. The big chunks got 36 right, the small ones 38. With big chunks, small details got lost inside long posts, and the language model would have to read about 10 times more text for every answer.","tr":{"q":"Chunking deneyinde ne buldun?","answer":"Chunking, uzun metinleri aramadan önce küçük parçalara bölmek; böylece her parça kendi embedding'ini alıyor. Bunun gerçekten fark yaratıp yaratmadığını görmek için ahtapotun hafızasını aynı yazılardan iki şekilde kurdum: her yazı tek büyük parça (9 parça) ve her bölüm ayrı bir parça (77 parça). Sonra ikisine de aynı 40 soruluk sınavı yaptım. Büyük parçalar 36, küçük parçalar 38 soruyu doğru bildi. Büyük parçalarda küçük detaylar uzun yazının içinde kayboldu; üstelik dil modeli her cevap için yaklaşık 10 kat fazla metin okumak zorunda kalacaktı."}},
+      {"q":"Who reads the note I leave?","sources":[],"answer":"Leave me a note is a private message box: whatever you write there goes only to me. Notes never show up on the site, and no other visitor can read them. Writing your name is optional, so you can stay anonymous, and your IP address isn't saved. Notes are kept for 90 days, and you can leave one note a day. To write one, press the pink button with the paper plane.","tr":{"q":"Bıraktığım notu kim okuyor?","answer":"Bana not bırak, gizli bir mesaj kutusu: oraya ne yazarsan sadece bana geliyor. Notlar sitede hiçbir yerde görünmüyor, başka ziyaretçiler de okuyamıyor. İsim yazmak zorunlu değil, istersen anonim kalabilirsin; IP adresin de kaydedilmiyor. Notlar 90 gün saklanıyor ve günde bir not bırakabilirsin. Yazmak için kâğıt uçaklı pembe düğmeye basman yeterli."}},
+      {"q":"Why does the octopus wear a helmet?","sources":[],"answer":"The octopus is the mascot of Ask me: I wanted a talking character instead of a plain chat box. It floats in space, so from the start it needed a helmet. Its first helmet was a see-through glass bubble, like an astronaut's, but nobody could tell it was a helmet. So it got a red motorcycle helmet with a white racing stripe and its visor flipped up, and now everyone notices it. Safety first, even in space.","tr":{"q":"Ahtapot neden kask takıyor?","answer":"Ahtapot, Ask me'nin maskotu: düz bir sohbet kutusu yerine konuşan bir karakter olsun istedim. Uzayda süzüldüğü için en başından bir kaska ihtiyacı vardı. İlk kaskı astronotlarınki gibi şeffaf bir cam fanustu, ama kimse onun kask olduğunu anlamadı. Ben de ona beyaz yarış şeritli, siperliği yukarı kalkık kırmızı bir motorcu kaskı taktım; artık herkes fark ediyor. Uzayda bile önce güvenlik."}},
     ];
     // In Turkish, the Turkish question and answer take the place of the English ones
     if (TR) ASK_PRESETS.forEach((p) => Object.assign(p, p.tr));
