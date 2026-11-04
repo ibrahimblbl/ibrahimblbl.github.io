@@ -247,6 +247,12 @@
     }
 
     #card p { margin: 0; color: var(--text); }
+    #card p:empty { display: none; } /* Chess Log and 76 have no "In short" / "For me" lines */
+    /* "In short": an everyday comparison, in the planet's color */
+    #card #card-short { margin-bottom: 10px; font-size: 15px; color: var(--accent); }
+    /* "For me": my own one line, quieter */
+    #card #card-mine { margin-top: 10px; font-size: 14px; color: var(--muted); }
+    #card-short b, #card-mine b { font-weight: 600; }
 
     #close {
       position: absolute;
@@ -640,7 +646,9 @@
       left: 0;
       bottom: 136px;
       width: min(380px, calc(100vw - 48px));
-      max-height: min(660px, calc(100vh - 140px));
+      /* octopus 24px + panel 136px above it = 160px, plus 20px air at the top */
+      max-height: min(660px, calc(100vh - 180px));
+      max-height: min(660px, calc(100dvh - 180px)); /* dvh = real height as the address bar moves; old browsers skip this line */
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -1060,10 +1068,12 @@
     <button type="button" id="note-quick"></button>
   </div>
 
-  <div id="card">
+  <div id="card" role="dialog" aria-labelledby="card-title">
     <button id="close" aria-label="Close" data-tr-label="Kapat">×</button>
     <h2 id="card-title"></h2>
+    <p id="card-short"></p>
     <p id="card-text"></p>
+    <p id="card-mine"></p>
     <div id="card-extra"></div>
   </div>
 
@@ -1128,6 +1138,7 @@
       board: "tahtaya bakılıyor…", noRapid: "Henüz rapid oyun yok.", chessDown: "chess.com'a ulaşılamadı.",
       rapidOn: "chess.com'da rapid", best: "kişisel rekor", peak: "en yüksek",
       wdl: (w, d, l) => `${w} galibiyet · ${d} beraberlik · ${l} mağlubiyet`,
+      inShort: "Kısaca:", forMe: "Benim için:",
       scoreboard: "skor tabelasına bakılıyor…", scoreDown: "Skor tabelasına ulaşılamadı.", thisSeason: "bu sezon",
       maxeyLine: (m) => `Maxey, ${esc(m.opp)} maçında: <strong>${esc(m.pts)} sayı</strong> · ${esc(m.reb)} ribaund · ${esc(m.ast)} asist`,
       seasonLine: (m) => `Sezon ortalaması: ${esc(m.pts)} sayı · ${esc(m.reb)} ribaund · ${esc(m.ast)} asist`,
@@ -1160,6 +1171,7 @@
       board: "checking the board…", noRapid: "No rapid games yet.", chessDown: "Couldn't reach chess.com.",
       rapidOn: "rapid on", best: "personal best", peak: "peak",
       wdl: (w, d, l) => `${w} wins · ${d} draws · ${l} losses`,
+      inShort: "In short:", forMe: "For me:",
       scoreboard: "checking the scoreboard…", scoreDown: "Couldn't reach the scoreboard.", thisSeason: "this season",
       maxeyLine: (m) => `Maxey vs ${esc(m.opp)}: <strong>${esc(m.pts)} PTS</strong> · ${esc(m.reb)} REB · ${esc(m.ast)} AST`,
       seasonLine: (m) => `Season: ${esc(m.pts)} PPG · ${esc(m.reb)} RPG · ${esc(m.ast)} APG`,
@@ -1315,19 +1327,31 @@
       { name: "Python", x: 0.2, y: 0.3, size: 38, color: "#ffd166", dark: "#8a4b08", spin: 0.00035,
         bands: 6,
         spots: [{ lat: 0.3, lon: 0, size: 0.18, color: "#c2410c" }],
-        about: "The language I'm learning for AI, coming over from Java. Python is the most widely used language in AI today. The reason is simple: researchers can test ideas in just a few lines, and big libraries like TensorFlow and PyTorch came out in Python. The heavy math runs underneath in fast C code.",
-        tr: { about: "Yapay zekâ için öğrendiğim dil; Java'dan geldim. Bugün yapay zekâda en yaygın kullanılan dil Python. Sebebi basit: araştırmacılar fikirlerini birkaç satırla hızlıca deneyebiliyor, TensorFlow ve PyTorch gibi büyük kütüphaneler de Python'la çıktı. Ağır hesapları ise altta çalışan hızlı C kodu yapıyor." } },
+        short: "The plainest language in programming: the code reads almost like an English sentence.",
+        about: "Released in 1991, today it's the common language of AI. Big libraries like TensorFlow and PyTorch are used from Python, and researchers can test an idea in a few lines. The heavy math runs underneath in fast C code.",
+        mine: "The language I'm trying to learn for AI, after Java.",
+        tr: { short: "Programlamanın en sade dili: kodu neredeyse İngilizce bir cümle gibi okunuyor.",
+              about: "1991'de çıktı, bugün yapay zekânın ortak dili. TensorFlow ve PyTorch gibi büyük kütüphaneler Python'la kullanılıyor, araştırmacılar fikirlerini birkaç satırla deneyebiliyor. Ağır hesapları ise altta çalışan hızlı C kodu yapıyor.",
+              mine: "Java'dan sonra yapay zekâ için öğrenmeye çalıştığım dil." } },
       { name: "RAG", x: 0.56, y: 0.45, size: 56, color: "#c4a1ff", dark: "#2e1065", spin: 0.00025,
         bands: 5,
         ring: { tilt: -0.3, color: "#f0abfc", width: 1 },
         spots: [{ lat: -0.25, lon: 2, size: 0.16, color: "#f5d0fe" }],
-        about: "Retrieval-Augmented Generation: first find the right piece of my notes, then write the answer based on it. My big question was: if Claude already knows everything, why do we need RAG? Because it doesn't know what's mine, what's new, or what's written nowhere else.",
-        tr: { about: "Retrieval-Augmented Generation: önce notlarımdan doğru parçayı bulup sonra cevabı ona göre yazmak. Kafama takılan şuydu: Claude zaten her şeyi biliyorsa RAG'e ne gerek var? Çünkü bana ait olanı, yeni olanı ya da başka hiçbir yerde yazmayanı bilemez." } },
+        short: "Like an open-book exam: first find the right page, then write the answer from it.",
+        about: "Retrieval-Augmented Generation. Before answering, the AI finds and reads the related documents. That way it can answer with new or private information too, and it makes things up less. Most company support bots work like this.",
+        mine: "The octopus in the bottom left is a RAG too: it looks for your question in my posts first.",
+        tr: { short: "Açık kitap sınavı gibi: önce kitapta doğru sayfayı bulursun, sonra cevabı ona bakarak yazarsın.",
+              about: "Retrieval-Augmented Generation. Yapay zekâ cevap yazmadan önce ilgili belgeleri bulup okuyor. Böylece yeni ya da sana özel bilgilerle de cevap verebiliyor ve daha az uyduruyor. Şirketlerin destek botlarının çoğu böyle çalışıyor.",
+              mine: "Sol alttaki ahtapot da bir RAG: sorunu önce yazılarımda arıyor." } },
       { name: "Evals", x: 0.74, y: 0.22, size: 32, color: "#ffb3c6", dark: "#831843", spin: 0.0004,
         spots: [{ lat: 0.2, lon: 0.5, size: 0.22, color: "#9d174d" }, { lat: -0.4, lon: 2.5, size: 0.14, color: "#9d174d" }],
         moon: { dist: 2.1, size: 0.24, speed: 0.0008 },
-        about: "An exam for my search code: a fixed list of 8 questions where I already know which note holds each answer. I don't grade Claude's reply, I check if the right file was found. Same exam for keyword search first, then for RAG.",
-        tr: { about: "Arama kodum için bir sınav: her cevabın hangi notta olduğunu bildiğim, 8 soruluk sabit bir liste. Claude'un cevabına not vermiyorum, doğru dosyayı bulup bulmadığına bakıyorum. Bu sınava önce anahtar kelime araması girdi, sonra RAG." } },
+        short: "A report card for AI: test it with questions you already know the answers to, and count how many it gets right.",
+        about: "An AI can answer the same question a bit differently each time, so \"it feels like it works\" isn't enough. With a fixed list of questions you see in numbers whether a change made things better or worse.",
+        mine: "I put the octopus through a 40-question exam: it made the right call on 38.",
+        tr: { short: "Yapay zekânın karnesi: cevabını bildiğin sorularla sınav yapıp kaçını bildiğine bakıyorsun.",
+              about: "Yapay zekâ aynı soruya her seferinde biraz farklı cevap verebiliyor, bu yüzden \"bence iyi çalışıyor\" demek yetmiyor. Sabit bir soru listesiyle ölçünce, bir değişikliğin işi iyileştirip iyileştirmediğini sayıyla görüyorsun.",
+              mine: "Ahtapotu 40 soruyla sınava soktum, 38'inde doğru karar verdi." } },
       { name: "Chess Log", x: 0.84, y: 0.8, size: 30, color: "#fdba74", dark: "#7c2d12", spin: 0.00045,
         spots: [{ lat: -0.2, lon: 1, size: 0.15, color: "#7c2d12" }, { lat: 0.4, lon: 3.5, size: 0.12, color: "#7c2d12" }, { lat: 0, lon: 5, size: 0.1, color: "#7c2d12" }],
         moon: { dist: 1.9, size: 0.2, speed: -0.0011 },
@@ -1337,17 +1361,29 @@
         bands: 4,
         spots: [{ lat: -0.3, lon: 2, size: 0.2, color: "#fde68a" }],
         moon: { dist: 2, size: 0.22, speed: 0.0009 },
-        about: "My first programming language. It's where I learned what variables, loops and classes are, and I still come back to it when I have free time.",
-        tr: { about: "İlk programlama dilim. Değişken, döngü, sınıf ne demek, hepsini onunla öğrendim; boş zamanlarımda hâlâ ona dönüyorum." } },
+        short: "Like a strict teacher: it makes you spell everything out, but you pick up solid habits.",
+        about: "Released in 1995 and still one of the most used languages in the world. Bank systems, big company servers and many Android apps are written in Java. The first version of Minecraft was written in Java too.",
+        mine: "My first programming language. It's where I learned what variables, loops and classes are.",
+        tr: { short: "Sıkı bir öğretmen gibi: her şeyi baştan açıkça yazdırır, ama sağlam alışkanlıklar kazandırır.",
+              about: "1995'te çıktı ve hâlâ en çok kullanılan dillerden biri. Bankaların sistemleri, büyük şirketlerin sunucuları ve birçok Android uygulaması Java'yla yazılıyor. Minecraft'ın ilk sürümü de Java'yla yazıldı.",
+              mine: "İlk programlama dilim. Değişkeni, döngüyü, sınıfı onunla öğrendim." } },
       { name: "MCP", x: 0.35, y: 0.55, size: 32, color: "#bef264", dark: "#1a3d0a", spin: 0.00035,
         spots: [{ lat: 0.25, lon: 1, size: 0.2, color: "#365314" }, { lat: -0.35, lon: 4, size: 0.15, color: "#ecfccb" }],
         moon: { dist: 2, size: 0.2, speed: -0.0009 },
-        about: "Model Context Protocol: the standard way to plug tools into Claude. I wrote my own tool, notlarda_ara (\"search my notes\"), and connected it. Fun part: Claude decides by itself when to use a tool, and the tool's description changes that decision.",
-        tr: { about: "Model Context Protocol: Claude'a araç bağlamanın standart yolu. Kendi aracımı (notlarda_ara) yazıp bağladım. İşin eğlenceli yanı: aracı ne zaman kullanacağına Claude kendisi karar veriyor, aracın açıklaması da bu kararı değiştiriyor." } },
+        short: "Like a power socket for AI: one standard shape, and every tool plugs in the same way.",
+        about: "Model Context Protocol. Anthropic released it in 2024 as an open standard. It lets an AI connect to files, a calendar or a database without writing a separate connection for every tool.",
+        mine: "I wrote my own search tool and plugged it into Claude. Claude decides by itself when to use it.",
+        tr: { short: "Yapay zekâ için bir priz gibi: şekli standart, her araç aynı yoldan takılıyor.",
+              about: "Model Context Protocol. Anthropic 2024'te açık bir standart olarak yayınladı. Bir yapay zekânın dosyalara, takvime ya da bir veritabanına bağlanmasını sağlıyor, her araç için ayrı bağlantı yazmak gerekmiyor.",
+              mine: "Kendi arama aracımı yazıp Claude'a bağladım. Aracı ne zaman kullanacağına Claude kendisi karar veriyor." } },
       { name: "JSON", x: 0.22, y: 0.74, size: 26, color: "#60a5fa", dark: "#172554", spin: 0.0004,
         bands: 3,
-        about: "The shared way to write data as key-value pairs, so every language can read it. It looks almost exactly like a Python dictionary. (Yes, the internet calls it Jason.)",
-        tr: { about: "Veriyi anahtar-değer çiftleriyle yazmanın ortak dili; böylece her programlama dili okuyabiliyor. Bir Python sözlüğüne neredeyse tıpatıp benziyor. (Evet, internette herkes ona Jason diyor.)" } },
+        short: "Like a neat form that programs send each other: every piece of info has its name next to it.",
+        about: "The shared way to write data as name: value pairs, so every programming language can read it. The weather app on your phone usually gets its data from the server as JSON. The 76ers score on this site reaches you as JSON too.",
+        mine: "It looks almost exactly like a Python dictionary. (Yes, everyone on Instagram calls it Jason.)",
+        tr: { short: "Programların birbirine gönderdiği düzenli bir form gibi: her bilginin yanında adı yazıyor.",
+              about: "Verileri \"ad: değer\" çiftleriyle yazmanın ortak yolu, her programlama dili okuyabiliyor. Telefonundaki hava durumu uygulaması da bilgiyi sunucudan çoğu zaman JSON olarak alıyor. Bu sitedeki 76ers skoru da sana JSON olarak geliyor.",
+              mine: "Bir Python sözlüğüne neredeyse tıpatıp benziyor. (Evet, Instagram'da herkes ona Jason diyor.)" } },
       // My team. ball = basketball seams, starRing = the 13 stars from the Sixers logo
       { name: "76", title: "Philadelphia 76ers", x: 0.45, y: 0.17, size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
         ball: true, seam: "#ED174C", starRing: true,
@@ -1355,8 +1391,12 @@
         tr: { about: "Bu sezon tuttuğum takım. En sevdiğim oyuncu: Tyrese Maxey." } },
       // future: true = not learned yet. Drawn as a faint outline until I learn it.
       { name: "Chunking", x: 0.73, y: 0.62, size: 26, color: "#94a3b8", future: true,
-        about: "Coming soon. When I search my notes, a long paragraph comes back as one huge block. Splitting text into small pieces fixes that. It's on my plan for weeks 3–4.",
-        tr: { about: "Yakında. Notlarımda arama yapınca uzun bir paragraf tek parça, kocaman bir blok olarak geliyor. Metni küçük parçalara bölmek bunu çözüyor. Planımda 3-4. haftada var." } },
+        short: "Like splitting a thick book into chapters: what you're looking for is easier to find in a small piece.",
+        about: "Splitting long texts into small pieces before searching. If a piece is too big, unrelated things get mixed in; too small, and the meaning gets lost. Finding the right size is the hard part.",
+        mine: "My next topic, it's on my plan.",
+        tr: { short: "Kalın bir kitabı bölümlere ayırmak gibi: aradığın şeyi küçük parçada daha kolay bulursun.",
+              about: "Uzun metinleri aramadan önce küçük parçalara bölmek. Parça çok büyük olursa içine alakasız şeyler karışıyor, çok küçük olursa anlam kayboluyor. Doğru boyu bulmak işin zor kısmı.",
+              mine: "Sıradaki konum, planımda var." } },
     ];
 
     for (const p of planets) {
@@ -1868,7 +1908,27 @@
       ctx.globalAlpha = 1;
     }
 
+    // With reduced motion nothing moves, so we only redraw when something changes
+    // (mouse, scroll, click, a planet lighting up) instead of 60 times a second.
+    let dirty = true;
+    const requestDraw = () => { dirty = true; };
+    if (reduceMotion) {
+      for (const type of ["mousemove", "scroll", "click", "keydown", "focusin", "resize"]) {
+        window.addEventListener(type, requestDraw, { passive: true });
+      }
+      setInterval(requestDraw, 2000); // catches late news, like a song starting
+    }
+
     function draw(now) {
+      if (reduceMotion) {
+        const lit = planets.some((p) => (p.litUntil || 0) > now);
+        const ping = now - (station.pingAt || -1e9) < 1400;
+        if (!dirty && !lit && !ping) {
+          requestAnimationFrame(draw);
+          return;
+        }
+        dirty = lit || ping; // one more frame after they end clears the glow
+      }
       const t = reduceMotion ? Infinity : now - skyStart; // ms since the sky opened
       time = reduceMotion ? 0 : now;                      // drives spinning and drifting
 
@@ -2005,15 +2065,38 @@
       card.style.setProperty("--accent", p.color);
       document.getElementById("card-title").textContent = p.title || p.name;
       document.getElementById("card-text").textContent = p.about;
+      // A bold label + the text. textContent (not innerHTML) keeps the text as plain text.
+      const labeled = (id, label, text) => {
+        const el = document.getElementById(id);
+        el.textContent = "";
+        if (!text) return; // empty = hidden by CSS
+        const b = document.createElement("b");
+        b.textContent = label + " ";
+        el.append(b, text);
+      };
+      labeled("card-short", T.inShort, p.short);
+      labeled("card-mine", T.forMe, p.mine);
       document.getElementById("card-extra").innerHTML = "";
       if (p.name === "Chess Log") showChessStats();
       if (p.name === "76") showSixers();
+      // Keyboard and screen reader users land inside the card; we remember where they came from
+      if (!card.classList.contains("open")) cameFrom = document.activeElement;
       card.classList.add("open");
+      document.getElementById("close").focus({ preventScroll: true });
       document.getElementById("hint").classList.add("gone"); // they've got it
     }
 
-    function closeAll() {
+    // Close the card and give focus back to whatever opened it (e.g. the planet in the hidden list)
+    let cameFrom = null;
+    function closeCard() {
+      if (!card.classList.contains("open")) return;
       card.classList.remove("open");
+      if (cameFrom && cameFrom !== document.body) cameFrom.focus({ preventScroll: true });
+      cameFrom = null;
+    }
+
+    function closeAll() {
+      closeCard();
       radio.classList.remove("open");
       closeAsk();
     }
@@ -2048,14 +2131,12 @@
       li.append(button);
       if (p.about) {
         const text = document.createElement("p");
-        text.textContent = p.about;
+        text.textContent = [p.short, p.about, p.mine].filter(Boolean).join(" ");
         li.append(text);
       }
       planetList.append(li);
     }
-    document.getElementById("close").addEventListener("click", () => {
-      card.classList.remove("open");
-    });
+    document.getElementById("close").addEventListener("click", closeCard);
 
     // ---------- 3. Radio (Last.fm) ----------
 
@@ -2299,9 +2380,13 @@
       }
     }
 
-    // Check what I'm listening to now, and again every minute
+    // Check what I'm listening to now, and again every minute,
+    // but not while the tab is hidden (then once more when they come back)
     loadNowPlaying();
-    setInterval(loadNowPlaying, 60 * 1000);
+    setInterval(() => { if (!document.hidden) loadNowPlaying(); }, 60 * 1000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) loadNowPlaying();
+    });
 
     let skipIntro = false;
     try {
