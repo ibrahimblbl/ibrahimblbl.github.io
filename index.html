@@ -263,7 +263,20 @@
         transform: translate(30px, -50%) scale(0.97);
         transition: opacity 0.5s ease 0.15s, transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) 0.15s;
       }
-      #card.open { transform: translate(0, -50%) scale(1); }
+      #card.open { transform: translate(0, -50%) perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1); }
+      /* While the mouse moves over it, the card tilts toward it and a soft light follows */
+      #card.tilting { transition: opacity 0.5s ease, transform 0.18s ease-out; }
+      #card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+      }
+      #card.tilting::after { opacity: 1; }
     }
 
     #card h2 {
@@ -985,6 +998,9 @@
     html.sky3d #sky, html.sky3d #space { display: none; }
     #journey { position: relative; z-index: 1; pointer-events: none; user-select: none; -webkit-user-select: none; } /* dragging the sky must not select the big titles */
     #journey section { height: 100vh; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+    /* Each screen still fills the window, but the next one starts after 62% of it: about 6
+       wheel clicks from stop to stop instead of 9 (screens overlap; only the active one shows) */
+    #journey section:not(:last-child) { margin-bottom: -38vh; }
     /* Ways around the journey: dots on the right, "Back to start" bottom right, the logo */
     #stop-nav, #home-btn { display: none; }
     html.sky3d #stop-nav {
@@ -1038,6 +1054,55 @@
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
     #stop-nav button:hover::after, #stop-nav button:focus-visible::after { opacity: 1; transform: translate(0, -50%); }
+    /* The rail: a thin line through the dots that fills in the current planet's color */
+    #stop-nav .rail, #stop-nav .rail-fill {
+      position: absolute;
+      left: 50%;
+      top: 11px;
+      bottom: 11px;
+      width: 1px;
+      margin-left: -0.5px;
+      pointer-events: none;
+    }
+    #stop-nav .rail { background: rgba(255, 255, 255, 0.12); }
+    #stop-nav .rail-fill {
+      bottom: auto;
+      height: calc(100% - 22px);
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), var(--rail-c, #fff));
+      box-shadow: 0 0 8px var(--rail-c, #fff);
+      transform-origin: top;
+      transform: scaleY(var(--rail-k, 0));
+    }
+    /* The current stop or chapter always shows its name (quietly), not only on hover */
+    #stop-nav button.on.stop::after, #stop-nav button.on.chapter::after { opacity: 0.85; transform: translate(0, -50%); }
+    #stop-nav button.on.stop:hover::after, #stop-nav button.on.chapter:hover::after { opacity: 1; }
+    #stop-nav:hover button.on:not(:hover)::after { opacity: 0; }
+    /* Phones: a thin progress line along the top instead of dots */
+    #rail-bar { display: none; }
+    @media (max-width: 699px) {
+      html.sky3d #stop-nav { display: none; }
+      html.sky3d #rail-bar {
+        display: block;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        z-index: 3;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.08);
+        pointer-events: none;
+        transition: opacity 0.6s ease;
+      }
+      #rail-bar i {
+        position: absolute;
+        inset: 0;
+        background: var(--rail-c, #fff);
+        box-shadow: 0 0 8px var(--rail-c, #fff);
+        transform-origin: left;
+        transform: scaleX(var(--rail-k, 0));
+      }
+      html.prologue #rail-bar, html.flying #rail-bar { opacity: 0; }
+    }
     html.sky3d #home-btn {
       position: fixed;
       right: 24px;
@@ -1089,6 +1154,26 @@
     }
     .label3d.hot { color: var(--c); }
     .label3d small { display: block; margin-top: 3px; font-size: 12px; letter-spacing: 0; color: var(--muted); }
+    /* a short thread up to its planet */
+    .label3d::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -9px;
+      width: 1px;
+      height: 6px;
+      background: linear-gradient(to top, var(--c), transparent);
+      opacity: 0.7;
+    }
+    .label3d { transition: color 0.25s ease, filter 0.3s ease; }
+    @media (max-width: 699px) {
+      .label3d { font-size: 13px; }
+      .label3d small { display: none; }
+      html.panel-open #ask { opacity: 0; pointer-events: none; }
+    }
+    #ask { transition: opacity 0.4s ease; }
+    /* At the ending the big buttons say the same thing; the corner ones step aside */
+    html.at-outro #ask:not(.open) { opacity: 0; pointer-events: none; }
 
     /* First screen: just the sky, and a quiet hint to scroll */
     #journey .hero { align-items: flex-end; padding-bottom: 40px; }
@@ -1119,6 +1204,15 @@
 
     /* One stop: the planet floats above, its name big underneath */
     #journey .stop { align-items: flex-end; padding-bottom: 7vh; }
+    .stop-inner::before, .chapter-inner::before, .outro-inner::before {
+      content: "";
+      position: absolute;
+      inset: -14vh -18vw -10vh;
+      z-index: -2;
+      background: radial-gradient(ellipse 50% 50% at 50% 62%, rgba(3, 3, 12, 0.6) 0%, rgba(3, 3, 12, 0.32) 45%, rgba(3, 3, 12, 0) 75%);
+      pointer-events: none;
+    }
+    .stop-inner, .outro-inner { position: relative; }
     .stop-inner {
       --c: #ffffff;
       width: min(760px, calc(100% - 48px));
@@ -1152,10 +1246,10 @@
     .stop-mine {
       max-width: 560px;
       margin: 0 auto 20px;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.6;
-      color: var(--muted);
-      text-shadow: 0 2px 16px rgba(0, 0, 10, 0.9);
+      color: #c9c9de;
+      text-shadow: 0 2px 16px rgba(0, 0, 10, 0.95);
     }
     .stop-mine:empty, .stop-short:empty { display: none; }
     .stop-more {
@@ -1213,7 +1307,9 @@
       .stop h2 { font-size: clamp(42px, 14vw, 72px); }
       .stop-short { font-size: 15px; }
       .stop-mine { display: none; }
-      .stop-drag { display: none; }
+      .stop-drag { margin-top: 12px; }
+      /* sideways swipes turn the view, up and down scroll the page */
+      html.sky3d, html.sky3d body { touch-action: pan-y pinch-zoom; }
       html.sky3d #stop-nav { right: 6px; }
       #stop-nav button::after { display: none; }
       html.sky3d #home-btn { right: 12px; bottom: 16px; }
@@ -1241,13 +1337,17 @@
       bottom: 118px;
       margin: 0;
       font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 0.34em;
-      color: rgba(232, 232, 244, 0.55);
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      color: rgba(236, 236, 248, 0.8);
+      text-shadow: 0 0 14px rgba(0, 0, 10, 0.95);
       transform: translateX(-50%);
       white-space: nowrap;
     }
     #journey .hero { position: relative; }
+    /* Screens overlap (see the -38vh): the first screen's small text only shows on the first screen */
+    #journey .hero .hero-count, #journey .hero .cue { transition: opacity 0.5s ease; }
+    #journey .hero:not(.active) .hero-count, #journey .hero:not(.active) .cue { opacity: 0; }
 
     /* ---------- Chapter title screens ---------- */
     #journey .chapter { align-items: flex-end; justify-content: center; padding: 0 24px 8vh; }
@@ -1255,17 +1355,19 @@
     .ch-list { justify-content: center; }
     .ch-roman {
       position: absolute;
-      left: 50%;
-      bottom: 0.15em;
-      margin-left: -0.5em;
-      width: 1em;
+      left: 0;
+      right: 0;
+      bottom: 0.12em;
       text-align: center;
       font-size: clamp(160px, 24vw, 340px);
       font-weight: 700;
       line-height: 0.8;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.06em;
       color: transparent;
-      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.04) 55%, rgba(255, 255, 255, 0) 85%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      pointer-events: none;
       z-index: -1;
       opacity: 0;
       transform: translateY(40px);
@@ -1274,9 +1376,10 @@
     .ch-kicker {
       margin: 0 0 12px;
       font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      letter-spacing: 0.32em;
-      color: rgba(232, 232, 244, 0.65);
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      color: rgba(236, 236, 248, 0.82);
+      text-shadow: 0 0 14px rgba(0, 0, 10, 0.95);
     }
     .ch-title {
       margin: 0 0 22px;
@@ -1355,9 +1458,10 @@
     .stop-drag {
       margin: 16px 0 0;
       font-family: "JetBrains Mono", monospace;
-      font-size: 10px;
+      font-size: 11px;
       letter-spacing: 0.3em;
-      color: rgba(232, 232, 244, 0.42);
+      color: rgba(236, 236, 248, 0.68);
+      text-shadow: 0 0 12px rgba(0, 0, 10, 0.95);
     }
     .stop.active .stop-drag { transition-delay: 0.65s; }
     html.dragging, html.dragging * { cursor: grabbing !important; }
@@ -1412,6 +1516,135 @@
       .ch-roman { font-size: 46vw; }
       #journey .outro { padding-bottom: 150px; }
       .hero-count { bottom: 190px; }
+    }
+
+    /* ---------- Finishing touches (2026-11-06 night) ---------- */
+    /* Cinema bars during the opening shot */
+    .letterbox {
+      position: fixed;
+      left: 0;
+      right: 0;
+      z-index: 1;
+      height: 0;
+      background: #000000;
+      pointer-events: none;
+      transition: height 1.6s cubic-bezier(0.65, 0, 0.2, 1);
+    }
+    #lb-top { top: 0; }
+    #lb-bot { bottom: 0; }
+    html.prologue .letterbox, html.flying .letterbox { height: clamp(0px, calc((100vh - 100vw / 2.39) / 2), 13vh); }
+    @media (max-width: 699px) {
+      html.prologue .letterbox, html.flying .letterbox { height: 8vh; }
+    }
+    /* Lines of light from the octopus to an answer's planets */
+    #ask-beams { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+    #ask-beams line { stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 2 9; opacity: 0; filter: drop-shadow(0 0 4px currentColor); transition: opacity 0.3s ease; }
+
+    /* The first screen: the site's name, huge and faint, behind everything */
+    .hero-word {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 46%;
+      margin: 0;
+      text-align: center;
+      font-size: clamp(96px, 19vw, 330px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      color: transparent;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.11) 0%, rgba(200, 180, 255, 0.05) 50%, rgba(255, 255, 255, 0) 92%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      transform: translateY(calc(-50% - var(--k, 0) * 26vh));
+      opacity: calc(1 - var(--k, 0) * 1.8);
+      pointer-events: none;
+      white-space: nowrap;
+      transition: letter-spacing 3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    html.prologue .hero-word, html.flying .hero-word { letter-spacing: 0.25em; }
+    @media (max-width: 699px) { .hero-word { top: 30%; font-size: 21vw; } }
+
+    /* A stop's name: white at the top, melting into its planet's color */
+    .stop h2 { text-shadow: none; filter: drop-shadow(0 10px 36px rgba(0, 0, 10, 0.75)); }
+    .stop h2 .ch {
+      color: transparent;
+      background: linear-gradient(180deg, #ffffff 35%, color-mix(in srgb, var(--c) 75%, #ffffff) 105%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      padding-bottom: 0.06em; /* so letters like "y" and "g" keep their tails */
+    }
+    /* Under "03 / 10": a thin line that fills to how far along the journey this stop is */
+    .stop-num::after {
+      content: "";
+      display: block;
+      width: 84px;
+      height: 1px;
+      margin: 10px auto 0;
+      background: linear-gradient(90deg, var(--c), var(--c)) no-repeat left center / calc(var(--f, 0) * 100%) 100%, rgba(255, 255, 255, 0.16);
+      transition: background-size 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s;
+    }
+    .stop:not(.active) .stop-num::after { background-size: 0 100%, auto; }
+
+    /* One family of buttons: same glass, same height */
+    :root { --glass-bg: rgba(20, 18, 38, 0.6); --glass-border: rgba(255, 255, 255, 0.16); }
+    html.sky3d #home-btn, .stop-more, .cta button { min-height: 42px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
+    html.sky3d #home-btn { gap: 7px; padding: 0 18px; background: var(--glass-bg); border-color: var(--glass-border); }
+    html.sky3d #home-btn::before { content: "\2191"; }
+    .stop-more { padding: 0 22px; background: var(--glass-bg); }
+    .cta button { min-height: 48px; }
+    .cta button:not(.cta-note) { background: var(--glass-bg); border-color: var(--glass-border); }
+    .ask-label { background: var(--glass-bg); border-color: var(--glass-border); }
+
+    /* The card looks like the stop it belongs to */
+    #card h2 { font-size: 34px; line-height: 1; letter-spacing: -0.035em; margin: 2px 0 16px; }
+    #card-short b, #card-mine b {
+      display: block;
+      margin-bottom: 4px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.75;
+    }
+    #card[data-num]::before {
+      content: attr(data-num);
+      position: absolute;
+      top: 19px;
+      right: 52px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      opacity: 0.8;
+    }
+
+    /* The cursor ring inverts what's under it (until it's over a planet, then it takes its color) */
+    #cursor-ring:not(.on-planet) { mix-blend-mode: difference; }
+    #cursor-ring span { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0.16em; }
+
+    /* ---------- Stops on computers: an editorial frame, text on one side, the planet big on the other ---------- */
+    @media (min-width: 700px) {
+      #journey .stop.side-l, #journey .stop.side-r { align-items: center; padding: 0 8vw; }
+      #journey .stop.side-l { justify-content: flex-start; }
+      #journey .stop.side-r { justify-content: flex-end; padding-right: calc(8vw + 30px); }
+      .stop.side-l .stop-inner, .stop.side-r .stop-inner { width: min(540px, 40vw); }
+      .stop.side-l .stop-inner { text-align: left; }
+      .stop.side-r .stop-inner { text-align: right; }
+      .stop.side-l .stop-short, .stop.side-l .stop-mine, .stop.side-r .stop-short, .stop.side-r .stop-mine { margin-left: 0; margin-right: 0; }
+      .stop.side-l .stop-num::after { margin-left: 0; }
+      .stop.side-r .stop-num::after { margin-right: 0; }
+      /* The name is huge and may run past its column: long names slide behind the planet */
+      .stop.side-l h2, .stop.side-r h2 { font-size: clamp(64px, 10.5vw, 190px); white-space: nowrap; margin-bottom: 18px; }
+      /* The name's box is as wide as the name (the mask only works inside the box). On the right
+         side the column lines up to the right, so a long name grows to the left, toward the planet */
+      .stop.side-l .stop-inner, .stop.side-r .stop-inner { display: flex; flex-direction: column; }
+      .stop.side-l .stop-inner { align-items: flex-start; }
+      .stop.side-r .stop-inner { align-items: flex-end; }
+      .stop.side-l h2, .stop.side-r h2 { width: max-content; }
+      .stop.side-l .stop-inner::before { background: radial-gradient(ellipse 60% 55% at 35% 50%, rgba(3, 3, 12, 0.55) 0%, rgba(3, 3, 12, 0.25) 50%, rgba(3, 3, 12, 0) 78%); }
+      .stop.side-r .stop-inner::before { background: radial-gradient(ellipse 60% 55% at 65% 50%, rgba(3, 3, 12, 0.55) 0%, rgba(3, 3, 12, 0.25) 50%, rgba(3, 3, 12, 0) 78%); }
     }
   </style>
 </head>
@@ -2964,7 +3197,7 @@
         el.textContent = "";
         if (!text) return; // empty = hidden by CSS
         const b = document.createElement("b");
-        b.textContent = label + " ";
+        b.textContent = label.replace(/:\s*$/, "") + " ";
         el.append(b, text);
       };
       labeled("card-short", T.inShort, p.short);
@@ -3722,17 +3955,22 @@
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 0.82;
       const FOV = 40;
+      // If this device can't keep up (frames slower than ~42 fps), draw fewer pixels, then drop the glow
+      const quality = { prK: 1, step: 0, sum: 0, n: 0, prevRendered: false };
       const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 4000);
       const scene = new THREE.Scene();
       // samples: 4 = smooth edges on computers (phones skip it, it costs more there)
-      const target = new THREE.WebGLRenderTarget(1, 1, { type: floatOK ? THREE.HalfFloatType : THREE.UnsignedByteType, samples: phone() ? 0 : 4 });
+      const target = new THREE.WebGLRenderTarget(1, 1, { type: floatOK ? THREE.HalfFloatType : THREE.UnsignedByteType, samples: phone() ? 2 : 4 });
       const composer = new EffectComposer(renderer, target);
       composer.addPass(new RenderPass(scene, camera));
+      // Phones get a lighter recipe: no glow pass (it's several full-screen blurs) and so no
+      // need for its safety net either
+      const LITE = phone();
       // Safety net: if any pixel ends up as an invalid number (some GPUs make one in rare
       // spots), the glow pass would smear it over the whole screen and turn it black.
       // This checks every pixel's raw bits (a check the GPU's shortcuts can't skip) and
       // replaces bad ones with black.
-      composer.addPass(new ShaderPass({
+      if (!LITE) composer.addPass(new ShaderPass({
         uniforms: { tDiffuse: { value: null } },
         vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
         fragmentShader: /* glsl */ `
@@ -3746,8 +3984,76 @@
       }));
       // Bloom: very bright things (the beacon, the sun, Chunking's core) softly glow
       const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.42, 0.5, 0.92);
-      if (floatOK) composer.addPass(bloom);
+      if (floatOK && !LITE) composer.addPass(bloom);
       composer.addPass(new OutputPass());
+      // The "film" look, on the final picture: darker corners, a little moving grain, color
+      // fringes when the camera moves fast, a soft focus away from what we're looking at,
+      // and lens ghosts when looking toward the sun
+      const filmPass = new ShaderPass({
+        uniforms: {
+          tDiffuse: { value: null }, uTime: { value: 0 }, uCA: { value: 0 }, uFocus: { value: 0 },
+          uGrain: { value: phone() ? 0.022 : 0.03 }, uVig: { value: 0.42 }, uAspect: { value: 1 },
+          uRes: { value: new THREE.Vector2(1, 1) }, uFocusC: { value: new THREE.Vector2(0.5, 0.5) }, uFlare: { value: new V3() }, uFlash: { value: 0 },
+        },
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: /* glsl */ `
+          uniform sampler2D tDiffuse; uniform float uTime, uCA, uFocus, uGrain, uVig, uAspect, uFlash;
+          uniform vec2 uRes, uFocusC; uniform vec3 uFlare;
+          varying vec2 vUv;
+          float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+          void main() {
+            vec2 c = vUv - 0.5;
+            vec2 ca = c * vec2(uAspect, 1.0);
+            float r2 = dot(ca, ca);
+            vec3 col;
+            if (uCA > 0.0001) {
+              // Fast moves: red and blue split a hair apart toward the edges, like a real lens
+              vec2 off = c * uCA * (0.5 + 2.0 * r2);
+              col = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
+            } else {
+              col = texture2D(tDiffuse, vUv).rgb;
+            }
+            if (uFocus > 0.001) {
+              // Shallow focus: sharp around the planet we visit, softer further away
+              vec2 fd = (vUv - uFocusC) * vec2(uAspect, 1.0);
+              float b = uFocus * smoothstep(0.42, 1.1, length(fd));
+              if (b > 0.01) {
+                vec2 px = vec2(b * 5.0) / uRes;
+                vec3 acc = col;
+                acc += texture2D(tDiffuse, vUv + vec2( 1.0,  0.0) * px).rgb;
+                acc += texture2D(tDiffuse, vUv + vec2(-1.0,  0.0) * px).rgb;
+                acc += texture2D(tDiffuse, vUv + vec2( 0.5,  0.87) * px).rgb;
+                acc += texture2D(tDiffuse, vUv + vec2(-0.5,  0.87) * px).rgb;
+                acc += texture2D(tDiffuse, vUv + vec2( 0.5, -0.87) * px).rgb;
+                acc += texture2D(tDiffuse, vUv + vec2(-0.5, -0.87) * px).rgb;
+                col = mix(col, acc / 7.0, min(1.0, b * 1.4));
+              }
+            }
+            if (uFlare.z > 0.001) {
+              // Lens ghosts: faint colored discs on the line from the light through the middle
+              vec2 L = uFlare.xy - 0.5;
+              for (int i = 0; i < 4; i++) {
+                float k = i == 0 ? -0.35 : i == 1 ? -0.7 : i == 2 ? -1.15 : 0.45;
+                float sz = i == 0 ? 0.05 : i == 1 ? 0.11 : i == 2 ? 0.07 : 0.03;
+                vec3 tint = i == 0 ? vec3(1.0, 0.6, 0.35) : i == 1 ? vec3(0.45, 0.6, 1.0) : i == 2 ? vec3(0.8, 0.5, 1.0) : vec3(1.0, 0.85, 0.6);
+                float d = length((vUv - (0.5 + L * k)) * vec2(uAspect, 1.0));
+                float disc = smoothstep(sz, sz * 0.75, d) * (0.4 + 0.6 * smoothstep(sz * 0.5, sz, d));
+                col += tint * disc * uFlare.z * 0.12;
+              }
+              // and a thin horizontal streak through the light (a film-lens look)
+              vec2 dl = (vUv - uFlare.xy) * vec2(uAspect, 1.0);
+              col += vec3(0.55, 0.65, 1.0) * exp(-abs(dl.y) * 260.0) * exp(-abs(dl.x) * 2.2) * uFlare.z * 0.35;
+            }
+            // A chapter begins: a soft wash of light from the middle, like passing through a bright cloud
+            col += vec3(0.75, 0.8, 1.0) * uFlash * (1.0 - smoothstep(0.0, 0.75, length(ca)));
+            col *= 1.0 - uVig * smoothstep(0.25, 0.9, length(c) * 1.25);
+            float g = hash(vUv * uRes + fract(uTime * 7.13) * 917.0) - 0.5;
+            col += g * uGrain * (0.55 + 0.45 * (1.0 - dot(col, vec3(0.333))));
+            gl_FragColor = vec4(col, 1.0);
+          }`,
+      });
+      composer.addPass(filmPass);
+      const film = filmPass.uniforms;
 
       // One star lights everything, from the left, a bit above and in front
       const LIGHT = new V3(-0.85, 0.38, 0.55).normalize();
@@ -3839,6 +4145,15 @@
         uniform vec3 uLight, uAtmo, uSeam;
         uniform vec4 uSpot;                // a storm: direction + size (size 0 = none)
         uniform vec3 uSpotColor;
+        uniform vec4 uMoon;                // the moon's place (world) + radius, for its shadow (radius 0 = none)
+        uniform float uNight;              // 1 = small lights on the night side
+        uniform vec4 uPtr;                 // direction toward the mouse pointer + strength
+        uniform vec4 uCloud;               // the light as the cloud layer sees it + on/off (w)
+        uniform float uCloudRot, uCloudSeed;
+        uniform vec3 uRingN, uRingC;       // a ring's plane (its normal and center, world)
+        uniform vec2 uRingIO;              // the ring's inner and outer radius (0 = no ring)
+        uniform float uRadW;               // this planet's size in the world (for close-up detail)
+        float h1(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
         varying vec3 vObj;
         varying vec3 vWNormal;
         varying vec3 vWPos;
@@ -3853,7 +4168,7 @@
           if (uInside > 0.5 && !gl_FrontFacing) { gl_FragColor = vec4(uAtmo * 0.06, 1.0); return; }
           vec3 p = vObj;
           vec3 col;
-          float wet = 0.0, sheen = 0.0;
+          float wet = 0.0, sheen = 0.0, bolt = 0.0, landK = 0.0;
           if (uType == 0) {
             // Gas: bands along the latitude. Each latitude turns at its own speed (jet streams),
             // and turbulence pushes the bands around.
@@ -3864,13 +4179,23 @@
             float w = fbm(q * 1.4);
             float w2 = fbm(q * 3.2 + w * 2.5);
             // Belts are mostly straight; the swirls are strongest where two belts meet
-            float wide = 0.5 + 0.5 * sin(p.y * uBands * 3.1416);
+            // Bands of uneven width (real gas giants never have even stripes)
+            float lw = 1.1 * sin(p.y * uBands * 0.83 + uSeed) + 0.5 * sin(p.y * uBands * 1.9 + uSeed * 2.3);
+            float wide = 0.5 + 0.5 * sin(p.y * uBands * 3.1416 + lw);
             float edge = 1.0 - abs(wide * 2.0 - 1.0);
-            float y = p.y + (w2 - 0.5) * (0.025 + 0.07 * edge) + (w - 0.5) * 0.02;
-            wide = 0.5 + 0.5 * sin(y * uBands * 3.1416);
+            float y = p.y + (w2 - 0.5) * (0.03 + 0.1 * edge) + (w - 0.5) * 0.025;
+            wide = 0.5 + 0.5 * sin(y * uBands * 3.1416 + lw);
             float thin = 0.5 + 0.5 * sin(y * uBands * 9.0 + w2 * 1.5);
             float t = clamp(smoothstep(0.15, 0.85, wide) * 0.72 + thin * 0.2 + (fbm(q * 6.0) - 0.5) * 0.18 + 0.04, 0.0, 1.0);
+            t = mix(0.5, t, 0.8);                       // softer contrast between belts
             col = palette(t);
+            col = mix(vec3(dot(col, vec3(0.299, 0.587, 0.114))), col, 0.86); // a touch less candy
+            // Close up: thin filaments inside the bands (only drawn when the camera is near)
+            float nearG = smoothstep(uRadW * 9.0, uRadW * 2.5, length(cameraPosition - vWPos));
+            if (nearG > 0.01) {
+              float fil = vnoise(vec3(p.x * 4.0, y * uBands * 26.0, p.z * 4.0) + uSeed);
+              col *= 1.0 + (fil - 0.5) * 0.26 * nearG;
+            }
             if (uSpot.w > 0.0) {
               // A storm: a swirl that the bands flow around
               float d = distance(normalize(p), uSpot.xyz) + (w2 - 0.5) * 0.06;
@@ -3878,6 +4203,9 @@
               float ring = smoothstep(uSpot.w * 1.25, uSpot.w, d) * (1.0 - storm);
               col = mix(col, uSpotColor, storm * 0.9);
               col = mix(col, uC4, ring * 0.35);
+              // Lightning now and then inside the storm (seen on the night side)
+              float fl = max(0.0, sin(uTime * 1.7 + uSeed) * sin(uTime * 5.3 + uSeed * 2.0) * sin(uTime * 13.1));
+              bolt = smoothstep(uSpot.w * 1.1, uSpot.w * 0.2, d) * pow(fl, 10.0) * (0.6 + 0.4 * w2);
             }
             sheen = 0.05;
           } else if (uType == 1) {
@@ -3888,9 +4216,13 @@
             float land = smoothstep(0.44, 0.56, h);
             col = mix(mix(uC1, uC2, smoothstep(0.2, 0.44, h)), mix(uC3, uC4, smoothstep(0.58, 0.9, h)), land);
             col *= 0.82 + 0.36 * detail;
+            // Close up: small grains and pits in the ground
+            float nearR = smoothstep(uRadW * 9.0, uRadW * 2.5, length(cameraPosition - vWPos));
+            if (nearR > 0.01) col *= 1.0 + (vnoise(p * 46.0 + uSeed) - 0.5) * 0.3 * nearR;
             float cap = smoothstep(0.80, 0.9, abs(vObj.y) + (detail - 0.5) * 0.18);
             col = mix(col, vec3(0.85, 0.88, 0.95), cap * 0.75);
             wet = (1.0 - land) * (1.0 - cap);
+            landK = land * (1.0 - cap);
           } else {
             // Basketball: blue leather with tiny bumps, and red seams
             float pebble = fbm(p * 70.0);
@@ -3921,19 +4253,75 @@
           // Light
           vec3 V = normalize(cameraPosition - vWPos);
           float ndl = dot(N, uLight);
-          float day = smoothstep(-0.15, 1.0, ndl);
+          // The moon's shadow: does the line from here toward the light pass through the moon?
+          float shade = 1.0;
+          if (uMoon.w > 0.0) {
+            vec3 oc = uMoon.xyz - vWPos;
+            float tca = dot(oc, uLight);
+            float miss = sqrt(max(dot(oc, oc) - tca * tca, 0.0));
+            if (tca > 0.0) shade = 0.12 + 0.88 * smoothstep(uMoon.w * 0.6, uMoon.w * 1.25, miss);
+          }
+          // Clouds cast soft shadows on the ground, a little offset away from the light
+          if (uCloud.w > 0.5) {
+            float cr = uCloudRot, cc = cos(cr), cs = sin(cr);
+            vec3 cp = vec3(cc * vObj.x + cs * vObj.z, vObj.y, -cs * vObj.x + cc * vObj.z);
+            cp = normalize(cp + uCloud.xyz * 0.035);
+            vec3 q = cp * 3.0 + uCloudSeed + vec3(uTime * 0.006, 0.0, 0.0);
+            float cl = smoothstep(0.52, 0.74, fbm(q + fbm(q * 1.7) * 0.8));
+            shade *= 1.0 - 0.5 * cl;
+          }
+          // A ring between here and the light throws its banded shadow across the planet
+          if (uRingIO.y > 0.0) {
+            float dn = dot(uLight, uRingN);
+            if (abs(dn) > 0.001) {
+              float tr = dot(uRingC - vWPos, uRingN) / dn;
+              if (tr > 0.0) {
+                float rr = length(vWPos + uLight * tr - uRingC);
+                float t = (rr - uRingIO.x) / (uRingIO.y - uRingIO.x);
+                if (t > 0.0 && t < 1.0) {
+                  float band = 0.55 + 0.45 * sin(t * 70.0) * sin(t * 23.0 + 1.0);
+                  float lane = 0.35 + 0.65 * h1(floor(t * 46.0));
+                  float gap = smoothstep(0.58, 0.6, t) * smoothstep(0.66, 0.64, t);
+                  float a = band * lane * (1.0 - gap * 0.85) * smoothstep(0.0, 0.05, t) * smoothstep(1.0, 0.9, t);
+                  shade *= 1.0 - 0.7 * a * 0.85;
+                }
+              }
+            }
+          }
+          float day = smoothstep(-0.15, 1.0, ndl) * shade;
+          // Limb darkening: toward the edge we look through more air, so the surface gets darker
+          // and a haze of the planet's own air color takes over
+          float mu = max(dot(normalize(vWNormal), V), 0.0);
+          col *= uType == 0 ? 0.42 + 0.58 * pow(mu, 0.45) : 0.62 + 0.38 * pow(mu, 0.35);
           vec3 lit = col * (0.025 + 1.3 * day);
+          lit = mix(lit, uAtmo * (0.06 + 0.55 * day), (1.0 - mu) * (1.0 - mu) * (uType == 2 ? 0.1 : 0.42));
           // Warm light at the edge between day and night (like a sunset seen from space)
           float tx = (ndl - 0.04) * 7.0;
           float term = exp(-tx * tx);
           lit += col * vec3(1.0, 0.5, 0.3) * term * 0.22;
           // Shine: water on rocky planets, a soft sheen on the ball
           vec3 H = normalize(uLight + V);
-          float spec = pow(max(dot(N, H), 0.0), uType == 2 ? 22.0 : 70.0) * (wet * 0.55 + sheen) * step(0.0, ndl);
+          float spec = pow(max(dot(N, H), 0.0), uType == 2 ? 22.0 : 70.0) * (wet * 0.55 + sheen) * step(0.0, ndl) * shade;
           lit += vec3(1.0, 0.95, 0.88) * spec;
+          // A wider, softer glint of the sun on water
+          lit += vec3(1.0, 0.9, 0.75) * pow(max(dot(N, H), 0.0), 16.0) * wet * 0.1 * step(0.0, ndl) * shade;
           // Air at the edge of the ball, glowing on the lit side
           float fres = pow(1.0 - max(dot(normalize(vWNormal), V), 0.0), 3.0);
           lit += uAtmo * fres * smoothstep(-0.25, 0.6, ndl) * 0.9;
+          float night = 1.0 - smoothstep(-0.25, 0.05, ndl);
+          // Seen with the light behind it, the edge of the air glows warm (back-lit)
+          float back = pow(max(dot(-V, uLight), 0.0), 3.0);
+          lit += vec3(1.0, 0.62, 0.38) * fres * back * 0.7;
+          // Lightning in a gas storm, only visible where it's dark
+          lit += vec3(0.75, 0.8, 1.0) * bolt * night * 1.6;
+          // Tiny lights on the night side (MCP: the tools are awake all night)
+          if (uNight > 0.5) {
+            float cell = vnoise(vObj * 46.0 + uSeed);
+            float town = smoothstep(0.72, 0.86, cell) * (0.4 + 0.6 * vnoise(vObj * 7.0 + uSeed * 1.3)) * landK;
+            lit += vec3(1.0, 0.78, 0.45) * town * night * 0.9;
+          }
+          // The mouse pointer: a soft light on the side of the planet nearest to it
+          lit += uAtmo * pow(max(dot(N, uPtr.xyz), 0.0), 6.0) * (0.12 + fres * 1.4) * uPtr.w;
           // Ask me used this planet as a source: it lights up
           lit = lit * (1.0 + uGlow * 0.5) + uAtmo * uGlow * 0.18;
           gl_FragColor = vec4(lit, 1.0);
@@ -3956,9 +4344,10 @@
         varying vec3 vN; varying vec3 vWN; varying vec3 vPos;
         void main() {
           float facing = clamp(-dot(vN, normalize(-vPos)), 0.0, 1.0); // 0 at the outer edge, more toward the planet
-          float i = pow(facing / 0.42, 3.0);
-          float lit = smoothstep(-0.45, 0.55, dot(vWN, uLight));
-          float a = clamp(i, 0.0, 1.4) * (0.12 + 0.88 * lit) * uStrength;
+          // A thin bright shell that hugs the planet's edge (the planet's limb sits at about 0.47)
+          float i = pow(clamp(facing / 0.47, 0.0, 1.0), 5.0) * 1.25;
+          float lit = smoothstep(-0.3, 0.55, dot(vWN, uLight));
+          float a = i * (0.06 + 0.94 * lit) * uStrength;
           gl_FragColor = vec4(uColor * a, 1.0);
         }
       `;
@@ -4231,7 +4620,7 @@
       const SUN_POS = new V3(-430, -60, -2700);
       const horizonSun = { value: new V3() };
       const horizon = new THREE.Mesh(
-        new THREE.SphereGeometry(HORIZON_R, 160, 120),
+        new THREE.SphereGeometry(HORIZON_R, phone() ? 72 : 160, phone() ? 54 : 120),
         new THREE.ShaderMaterial({
           uniforms: { uSun: horizonSun, uTime: { value: 0 } },
           vertexShader: /* glsl */ `
@@ -4258,6 +4647,28 @@
               vec3 surf = mix(vec3(0.03, 0.035, 0.08), vec3(0.16, 0.13, 0.28), bands * 0.6 + w * 0.4);
               float day = smoothstep(-0.05, 0.6, ndl);
               vec3 col = surf * (0.015 + 1.2 * day);
+              float night = 1.0 - day;
+              float edge = 1.0 - max(dot(N, V), 0.0);
+              // The night side isn't empty: starlight picks out its cloud bands, just barely
+              vec3 nightBands = mix(vec3(0.004, 0.0045, 0.009), vec3(0.02, 0.017, 0.038), bands * 0.65 + w * 0.35);
+              col += nightBands * night * (0.4 + 0.6 * smoothstep(0.3, 0.95, edge));
+              // Its air still glows faintly all around the edge, blue-violet
+              col += vec3(0.22, 0.28, 0.75) * pow(edge, 5.0) * 0.22 * night;
+              // Northern lights: a wavy ring of green and magenta curtains around the pole,
+              // brightest near the edge where you look along the curtains
+              float lon = atan(vObj.z, vObj.x);
+              float lat = vObj.y + 0.025 * sin(lon * 5.0 + uTime * 0.12) + 0.012 * sin(lon * 13.0 - uTime * 0.2);
+              float oval = exp(-pow((lat - 0.84) / 0.018, 2.0));
+              float rays = 0.45 + 0.55 * vnoise(vec3(lon * 22.0, uTime * 0.25, 1.0));
+              float upper = exp(-pow((lat - 0.865) / 0.035, 2.0));
+              vec3 aurora = mix(vec3(0.15, 1.0, 0.55), vec3(0.85, 0.3, 1.0), smoothstep(0.84, 0.92, lat));
+              col += aurora * (oval * rays + upper * 0.25 * rays) * night * (0.1 + 1.6 * pow(edge, 3.0)) * 0.2;
+              // Lightning, here and there in the dark clouds
+              vec3 cell = floor(vObj * 70.0);
+              float slot = floor(uTime * 1.3);
+              float hit = step(0.9993, hash3(cell + slot * 1.73));
+              float spot = 1.0 - smoothstep(0.0, 0.5, length(fract(vObj * 70.0) - 0.5));
+              col += vec3(0.6, 0.65, 1.0) * hit * spot * night * 1.4;
               // The thin air at the edge lights up, most of all when you look toward the sun
               float rim = pow(1.0 - max(dot(N, V), 0.0), 5.0);
               float toward = pow(max(dot(-V, L), 0.0), 6.0);
@@ -4271,7 +4682,7 @@
       scene.add(horizon);
       // Its glowing air: a slightly bigger shell, brightest around the sun
       const horizonAir = new THREE.Mesh(
-        new THREE.SphereGeometry(HORIZON_R * 1.025, 160, 120),
+        new THREE.SphereGeometry(HORIZON_R * 1.025, phone() ? 72 : 160, phone() ? 54 : 120),
         new THREE.ShaderMaterial({
           side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
           uniforms: { uSun: horizonSun, uC: { value: HORIZON_C } },
@@ -4299,7 +4710,10 @@
         })
       );
       horizonAir.position.copy(HORIZON_C);
+      const horizonAirC = HORIZON_C.clone();
+      horizonAir.material.uniforms.uC.value = horizonAirC; // moves with it when it sets
       scene.add(horizonAir);
+      let horizonGone = -1;
       // The sun: a white-hot core and a wide warm glow; the glow pass makes it bloom
       const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(3.2, 2.8, 2.3), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
       sunCore.scale.setScalar(70);
@@ -4333,6 +4747,8 @@
         }
         rockGeo.computeVertexNormals();
       }
+      const rockClear = { value: 0 };
+      const rockBox = { value: new THREE.Vector4(-0.6, 0.6, -1.4, 0.1) }; // where the text is (screen -1..1)
       const rockMat = new THREE.MeshStandardMaterial({ color: 0x7a7068, roughness: 0.95, metalness: 0.05, flatShading: true });
       // Rocks close to the camera shrink to nothing, so a stop never ends up inside the belt
       rockMat.onBeforeCompile = (shader) => {
@@ -4340,8 +4756,18 @@
           "#include <begin_vertex>",
           `#include <begin_vertex>
           vec3 rockCenter = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-          transformed *= smoothstep(14.0, 34.0, distance(rockCenter, cameraPosition));`
+          transformed *= smoothstep(14.0, 34.0, distance(rockCenter, cameraPosition));
+          // At a stop or chapter screen, rocks in front of the text (lower middle) or the top bar step aside
+          vec4 rc = projectionMatrix * viewMatrix * vec4(rockCenter, 1.0);
+          vec2 sp = rc.xy / max(rc.w, 0.001);
+          float onText = smoothstep(uBox.x - 0.15, uBox.x, sp.x) * (1.0 - smoothstep(uBox.y, uBox.y + 0.15, sp.x))
+                       * smoothstep(uBox.z - 0.15, uBox.z, sp.y) * (1.0 - smoothstep(uBox.w, uBox.w + 0.15, sp.y));
+          float onTop = smoothstep(0.7, 0.85, sp.y);
+          transformed *= 1.0 - uClear * max(onText, onTop) * step(0.0, rc.w);`
         );
+        shader.uniforms.uClear = rockClear;
+        shader.uniforms.uBox = rockBox;
+        shader.vertexShader = "uniform float uClear;\nuniform vec4 uBox;\n" + shader.vertexShader;
       };
       const rocks = new THREE.InstancedMesh(rockGeo, rockMat, ROCKS);
       {
@@ -4359,9 +4785,63 @@
         }
       }
       const belt = new THREE.Group();
-      belt.add(rocks);
+      // The rocks read as dark specks on screen; the belt is a glittering ring of fine dust instead.
+      // (The rock code above stays for now, unused.)
+      const DUST = phone() ? 2600 : 6500;
+      const dustGeo = new THREE.BufferGeometry();
+      {
+        const pos = new Float32Array(DUST * 3), size = new Float32Array(DUST), phase = new Float32Array(DUST), color = new Float32Array(DUST * 3);
+        const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+        for (let i = 0; i < DUST; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const r = 1 + gauss() * 0.13;
+          pos.set([Math.cos(a) * 47 * r, gauss() * 1.4, Math.sin(a) * 30 * r], i * 3);
+          size[i] = 0.25 + Math.pow(Math.random(), 7) * 1.6;
+          phase[i] = Math.random() * 6.283;
+          const warm = Math.random();
+          color.set(warm < 0.6 ? [1, 0.86, 0.68] : warm < 0.85 ? [0.8, 0.86, 1] : [1, 0.72, 0.85], i * 3);
+        }
+        dustGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        dustGeo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
+        dustGeo.setAttribute("aPhase", new THREE.BufferAttribute(phase, 1));
+        dustGeo.setAttribute("aColor", new THREE.BufferAttribute(color, 3));
+      }
+      const dustMat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+        uniforms: { uTime: { value: 0 }, uPR: { value: 1 }, uFade: { value: 0 }, uLight: { value: LIGHT } },
+        vertexShader: /* glsl */ `
+          attribute float aSize; attribute float aPhase; attribute vec3 aColor;
+          uniform float uTime, uPR; uniform vec3 uLight;
+          varying vec3 vColor; varying float vA;
+          void main() {
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vec4 mv = viewMatrix * wp;
+            gl_Position = projectionMatrix * mv;
+            float s = aSize * uPR * (260.0 / -mv.z);
+            gl_PointSize = max(1.0, s);
+            // Dust shines most when you look toward the light through it (like a sunbeam)
+            vec3 toCam = normalize(cameraPosition - wp.xyz);
+            float fwd = pow(max(dot(-toCam, uLight), 0.0), 3.0);
+            float tw = 0.7 + 0.3 * sin(uTime * (0.6 + fract(aPhase) * 2.0) + aPhase);
+            vA = min(1.0, s) * smoothstep(4.0, 20.0, -mv.z) * tw * (0.45 + 1.2 * fwd);
+            vColor = aColor;
+          }`,
+        fragmentShader: /* glsl */ `
+          uniform float uFade;
+          varying vec3 vColor; varying float vA;
+          void main() {
+            float d = length(gl_PointCoord - 0.5);
+            gl_FragColor = vec4(vColor * exp(-d * d * 18.0) * vA * 0.5 * uFade, 1.0);
+          }`,
+      });
+      const dust = new THREE.Points(dustGeo, dustMat);
+      dust.frustumCulled = false;
+      const beltSpin = new THREE.Group();
+      beltSpin.add(dust);
+      belt.add(beltSpin);
       belt.rotation.x = 0.32;
       belt.rotation.z = -0.06;
+      if (window.innerWidth < 700 && window.innerHeight / window.innerWidth > 1.2) belt.rotation.set(0, 0.55, Math.PI / 2); // tall phone: around the upright system
       scene.add(belt);
 
       // ---------- A comet that crosses the background now and then ----------
@@ -4434,7 +4914,7 @@
       // rest show the sky behind it, bent into rings. The disk's far side appears above and
       // below the hole because its light is bent over the top and under the bottom.
       const BH_POS = new V3(205, 92, -560), BH_RS = 9;     // where, and the size of the "point of no return"
-      const BH_STEPS = phone() ? 45 : 110;
+      const BH_STEPS = phone() ? 30 : 110;
       const bhNormal = new V3(0.08, 1, 0.34).normalize();     // the disk is seen almost edge-on, a little from above
       const bhX = new V3(1, 0, 0).sub(bhNormal.clone().multiplyScalar(bhNormal.x)).normalize();
       const bhZ = new V3().crossVectors(bhX, bhNormal);
@@ -4445,11 +4925,11 @@
           uniforms: {
             uEnv: { value: cubeRT.texture }, uEnvI: { value: 0 }, uBH: { value: BH_POS }, uRs: { value: BH_RS },
             uBasis: { value: new THREE.Matrix3().set(bhX.x, bhNormal.x, bhZ.x, bhX.y, bhNormal.y, bhZ.y, bhX.z, bhNormal.z, bhZ.z) },
-            uTime: { value: 0 },
+            uTime: { value: 0 }, uDim: { value: 1 },
           },
           vertexShader: `varying vec3 vWPos; void main() { vec4 wp = modelMatrix * vec4(position, 1.0); vWPos = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }`,
           fragmentShader: /* glsl */ `
-            uniform samplerCube uEnv; uniform float uEnvI, uRs, uTime;
+            uniform samplerCube uEnv; uniform float uEnvI, uRs, uTime, uDim;
             uniform vec3 uBH; uniform mat3 uBasis;
             varying vec3 vWPos;
             ${NOISE}
@@ -4516,14 +4996,14 @@
               col = clamp(col, 0.0, 30.0);
               // Melt the square into the sky around it
               float a = 1.0 - smoothstep(R0 * 0.55, R0, impact);
-              gl_FragColor = vec4(col, a);
+              gl_FragColor = vec4(col, a * uDim);
             }
           `,
         })
       );
       blackHole.position.copy(BH_POS);
       blackHole.scale.setScalar(BH_RS * 15.5);
-      blackHole.frustumCulled = false;
+      blackHole.frustumCulled = true; // off screen = not drawn at all (it's the most expensive thing)
       scene.add(blackHole);
 
       // ---------- A pulsar: a spinning dead star sweeping two beams like a lighthouse ----------
@@ -4569,7 +5049,7 @@
       }));
       const cloudColors = [0x7c4dff, 0x00b3c7, 0xff4f8b, 0x5b6cff, 0x2dd4bf, 0xc084fc];
       const nebulaClouds = [];
-      for (let i = 0; i < (phone() ? 10 : 18); i++) {
+      for (let i = 0; i < (phone() ? 5 : 18); i++) {
         const u = Math.random() * 1.4 - 0.7, a = Math.random() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
         const r = 260 + Math.random() * 360;
         const m = new THREE.SpriteMaterial({ map: cloudTex[i % 3], color: cloudColors[i % cloudColors.length], transparent: true, opacity: 0.07 + Math.random() * 0.08, blending: THREE.AdditiveBlending, depthWrite: false, rotation: Math.random() * Math.PI });
@@ -4605,12 +5085,106 @@
           }
         }
       });
+      const bigGalaxies = [];
       for (const [dir, size, rot, squash] of [[new V3(-0.55, -0.35, -0.75), 300, 0.6, 0.55], [new V3(0.7, 0.45, 0.55), 240, 2.1, 0.75]]) {
-        const gx = new THREE.Sprite(new THREE.SpriteMaterial({ map: bigGalaxyTex, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, rotation: rot }));
-        gx.position.copy(dir.normalize()).multiplyScalar(1150);
+        const gx = new THREE.Sprite(new THREE.SpriteMaterial({ map: bigGalaxyTex, transparent: true, opacity: 0.26, blending: THREE.AdditiveBlending, depthWrite: false, rotation: rot }));
+        gx.position.copy(dir.normalize()).multiplyScalar(1750);
+        bigGalaxies.push(gx);
         gx.scale.set(size, size * squash, 1);
         scene.add(gx);
       }
+      // ---------- Rare visitors: a fireball, and a probe drifting by ----------
+      // A fireball: a white-hot head, an orange tail that cools to red, and sparks falling behind
+      const FB_N = phone() ? 80 : 140;
+      const fbGeo = new THREE.BufferGeometry();
+      {
+        const pos = new Float32Array(FB_N * 3), age = new Float32Array(FB_N), jit = new Float32Array(FB_N * 3), size = new Float32Array(FB_N);
+        for (let i = 0; i < FB_N; i++) {
+          age[i] = Math.pow(i / (FB_N - 1), 1.25);
+          const spark = Math.random() < 0.3 ? 2.6 : 1;               // some bits fly further off: sparks
+          jit.set([(Math.random() - 0.5) * spark, (Math.random() - 0.5) * spark, (Math.random() - 0.5) * spark], i * 3);
+          size[i] = (0.6 + Math.random() * 0.8) * (spark > 1 ? 0.55 : 1);
+        }
+        fbGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        fbGeo.setAttribute("aAge", new THREE.BufferAttribute(age, 1));
+        fbGeo.setAttribute("aJit", new THREE.BufferAttribute(jit, 3));
+        fbGeo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
+      }
+      const fbMat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+        uniforms: { uHead: { value: new V3() }, uDir: { value: new V3(1, 0, 0) }, uLen: { value: 0 }, uOp: { value: 0 }, uTime: { value: 0 }, uPR: { value: 1 } },
+        vertexShader: /* glsl */ `
+          attribute float aAge, aSize; attribute vec3 aJit;
+          uniform vec3 uHead, uDir; uniform float uLen, uTime, uPR;
+          varying vec3 vCol; varying float vA;
+          void main() {
+            float a = aAge;
+            // the tail trails behind the head, wobbling and spreading as it cools
+            vec3 p = uHead - uDir * uLen * a + aJit * (0.25 + 4.0 * a * a) * (0.6 + 0.4 * sin(uTime * 9.0 + a * 20.0));
+            vec4 mv = modelViewMatrix * vec4(p, 1.0);
+            gl_Position = projectionMatrix * mv;
+            float s = aSize * (0.6 + 4.6 * pow(1.0 - a, 1.6)) * uPR * (260.0 / -mv.z);
+            gl_PointSize = max(1.0, s);
+            vCol = mix(vec3(1.0, 0.95, 0.8) * 2.4, vec3(1.0, 0.48, 0.12) * 1.4, smoothstep(0.0, 0.3, a));
+            vCol = mix(vCol, vec3(0.65, 0.1, 0.04), smoothstep(0.45, 1.0, a));
+            vA = pow(1.0 - a, 1.3) * min(1.0, s);
+          }`,
+        fragmentShader: /* glsl */ `
+          uniform float uOp; varying vec3 vCol; varying float vA;
+          void main() {
+            float d = length(gl_PointCoord - 0.5);
+            gl_FragColor = vec4(vCol * exp(-d * d * 14.0) * vA * uOp, 1.0);
+          }`,
+      });
+      const fireball = new THREE.Points(fbGeo, fbMat);
+      fireball.frustumCulled = false;
+      fireball.visible = false;
+      const fbGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(2.6, 1.9, 1.1), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+      fireball.add(fbGlow); // (positioned in world space each frame; the Points' own matrix stays identity)
+      scene.add(fireball);
+      const fbState = { dur: 0, start: 0, from: new V3(), to: new V3(), next: 14000 + Math.random() * 12000 };
+
+      // A probe: gold-foil body, a white dish, long solar wings and blinking lights. Every minute
+      // or so it drifts slowly across the far background.
+      const probe = new THREE.Group();
+      {
+        const foil = new THREE.MeshStandardMaterial({ color: 0xd9a63a, metalness: 0.75, roughness: 0.32, emissive: 0x1a1000 });
+        const white = new THREE.MeshStandardMaterial({ color: 0xe8ecf3, metalness: 0.2, roughness: 0.45 });
+        const cellTex = canvasTexture(256, 64, (g, w, h) => {
+          g.fillStyle = "#2b4c9e"; g.fillRect(0, 0, w, h);
+          g.strokeStyle = "#a9c6ff"; g.lineWidth = 3;
+          for (let x = 0; x <= w; x += w / 8) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); }
+          g.beginPath(); g.moveTo(0, h / 2); g.lineTo(w, h / 2); g.stroke();
+        });
+        const wing = new THREE.MeshStandardMaterial({ map: cellTex, metalness: 0.3, roughness: 0.3, emissive: 0x2a3f80, emissiveMap: cellTex, emissiveIntensity: 0.55 });
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.6, 8), foil);
+        body.rotation.z = Math.PI / 2;
+        probe.add(body);
+        const dish = new THREE.Mesh(new THREE.SphereGeometry(1.1, 24, 12, 0, Math.PI * 2, 0, 0.55), white);
+        dish.rotation.x = -Math.PI / 2;
+        dish.position.set(0, 0.2, 0.9);
+        probe.add(dish);
+        const boom = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 6.6, 6), white);
+        boom.rotation.z = Math.PI / 2;
+        probe.add(boom);
+        for (const side of [-1, 1]) for (const k of [0, 1]) {
+          const w = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.05, 0.03), wing);
+          w.position.set(side * (1.4 + k * 1.4), 0, 0);
+          probe.add(w);
+        }
+        probe.userData.lights = [["#ff3b3b", -3.4], ["#3bff8a", 3.4], ["#ffffff", 0]].map(([c, x]) => {
+          const l = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(c).multiplyScalar(2.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+          l.position.set(x, x ? 0 : 0.75, 0);
+          l.scale.setScalar(0.9);
+          probe.add(l);
+          return l;
+        });
+      }
+      probe.scale.setScalar(phone() ? 2.2 : 2.6);
+      probe.visible = false;
+      scene.add(probe);
+      const probeState = { dur: 0, start: 0, from: new V3(), to: new V3(), spin: new V3(), next: 30000 + Math.random() * 20000 };
+
       // ---------- Shooting stars: quick bright streaks every few seconds ----------
       const meteors = [];
       for (let i = 0; i < 3; i++) {
@@ -4626,7 +5200,11 @@
       let nextMeteor = 2500;
 
       // ---------- The planets ----------
-      const SPAN_X = 64, SPAN_Y = 36;
+      // A tall phone screen gets the same system stood upright: left-to-right becomes top-to-bottom
+      // (the planets themselves stay upright; only where they sit changes)
+      const TALL = phone() && window.innerHeight / window.innerWidth > 1.2;
+      const SPAN_X = TALL ? 24 : 64, SPAN_Y = TALL ? 60 : 36;
+      const place = (x, y) => TALL ? [(y - 0.5) * SPAN_X, (0.5 - x) * SPAN_Y] : [(x - 0.5) * SPAN_X, -(y - 0.5) * SPAN_Y];
       const col = (hex) => new THREE.Color(hex);
       const things = [...planets, station];
       // Each planet's look. Colors go dark -> light; spot = a storm on gas planets.
@@ -4658,6 +5236,9 @@
             uAtmo: { value: glowColor }, uSeam: { value: col("#ED174C") },
             uSpot: { value: look.spot ? new THREE.Vector4(...new V3(...look.spot.slice(0, 3)).normalize().toArray(), look.spot[3]) : new THREE.Vector4() },
             uSpotColor: { value: col(look.spotColor || "#ffffff") },
+            uMoon: { value: new THREE.Vector4() }, uNight: { value: 0 }, uPtr: { value: new THREE.Vector4() },
+            uCloud: { value: new THREE.Vector4() }, uCloudRot: { value: 0 }, uCloudSeed: { value: seed + 40 },
+            uRingN: { value: new V3() }, uRingC: { value: new V3() }, uRingIO: { value: new THREE.Vector2() }, uRadW: { value: 1 },
           },
         });
       }
@@ -4764,6 +5345,7 @@
           const moonMat = planetMaterial({ type: 1, c: ["#202028", "#4a4a56", "#9a9aa8", "#e6e6ee"] }, seed + 90, col("#c8c8d8"));
           parts.moon = new THREE.Mesh(new THREE.SphereGeometry(mR, 48, 32), moonMat);
           parts.moonMat = moonMat;
+          parts.mR = mR;
           tilt.add(parts.moon);
         }
 
@@ -4773,7 +5355,7 @@
         group.add(hit);
         hitMeshes.push(hit);
 
-        group.position.set((p.x - 0.5) * SPAN_X, -(p.y - 0.5) * SPAN_Y, ((p.depth || 1) - 0.95) * 16 + (((k * 53) % 9) - 4));
+        group.position.set(...place(p.x, p.y), ((p.depth || 1) - 0.95) * 16 + (((k * 53) % 9) - 4));
         scene.add(group);
         P3.set(p, parts);
       }
@@ -4831,7 +5413,7 @@
         hit.userData.thing = station;
         group.add(hit);
         hitMeshes.push(hit);
-        group.position.set((station.x - 0.5) * SPAN_X, -(station.y - 0.5) * SPAN_Y, 2);
+        group.position.set(...place(station.x, station.y), 2);
         group.scale.setScalar(R);
         scene.add(group);
         return { group, body, waves, waveMats, beaconMat, R: 2.4 };
@@ -5129,12 +5711,16 @@
         }
       }
       const eqM = new THREE.Matrix4(), eqQ = new THREE.Quaternion(), eqV = new V3(), eqS = new V3(), eqZ = new V3(0, 0, 1);
+      // While a song plays, the Radio's EQ ring and the far pulsar pulse on the same beat
+      const BEAT_MS = 500; // 120 beats a minute
+      const onAir = () => !!nowPlayingLine && nowPlayingLine.startsWith(T.onAir);
       function updateEq(tm) {
-        const playing = nowPlayingLine && nowPlayingLine.startsWith(T.onAir);
+        const playing = onAir();
         const amp = playing ? 1 : 0.35;
+        const beat = playing ? Math.pow(0.5 + 0.5 * Math.cos((tm / BEAT_MS) * Math.PI * 2), 6) : 0;
         for (let i = 0; i < EQ; i++) {
           const a = (i / EQ) * Math.PI * 2;
-          const h = 0.12 + amp * Math.abs(Math.sin(tm / 170 + i * 0.9) * Math.sin(tm / 530 + i * 0.37)) * 0.9;
+          const h = 0.12 + amp * Math.abs(Math.sin(tm / 170 + i * 0.9) * Math.sin(tm / 530 + i * 0.37)) * 0.9 + beat * 0.3;
           eqV.set(Math.cos(a) * (2.5 + h / 2), Math.sin(a) * (2.5 + h / 2), 0);
           eqQ.setFromAxisAngle(eqZ, a - Math.PI / 2);
           eqS.set(0.07, h, 0.07);
@@ -5180,10 +5766,26 @@
       flash.scale.setScalar(5);
       scene.add(flash);
 
+      { const mcp = planets.find((p) => p.name === "MCP"); if (mcp) P3.get(mcp).mat.uniforms.uNight.value = 1; }
+
       // ---------- Labels (plain HTML, so the text stays sharp) ----------
       const labelBox = document.createElement("div");
       labelBox.id = "labels3d";
       canvas3d.after(labelBox); // early in the page, so panels (Ask me, cards) are drawn on top of the names
+      // Cinema bars during the opening shot; they open up when we land
+      for (const id of ["lb-bot", "lb-top"]) {
+        const bar = document.createElement("div");
+        bar.id = id;
+        bar.className = "letterbox";
+        labelBox.after(bar);
+      }
+      // Lines of light from the octopus to the planets its answer came from
+      const SVGNS = "http://www.w3.org/2000/svg";
+      const beamSvg = document.createElementNS(SVGNS, "svg");
+      beamSvg.id = "ask-beams";
+      beamSvg.setAttribute("aria-hidden", "true");
+      labelBox.after(beamSvg);
+      const beams = new Map(), ripples = new Map();
       const labels = new Map();
       for (const t of things) {
         const el = document.createElement("div");
@@ -5211,8 +5813,8 @@
       for (const t of stops) if (!CHAPTERS.some((c) => c.names.includes(t.name))) CHAPTERS[CHAPTERS.length - 1].names.push(t.name);
       for (const c of CHAPTERS) c.things = stops.filter((t) => c.names.includes(t.name));
       const TXJ = TR
-        ? { chapter: "BÖLÜM", count: `${stops.length} DURAK  ·  ${CHAPTERS.length} BÖLÜM`, end: "Aklına takılan bir şey mi var?", ask: "Ahtapota sor", note: "Bana not bırak", endKick: "YOLCULUĞUN SONU", drag: "SÜRÜKLE  ·  360°" }
-        : { chapter: "CHAPTER", count: `${stops.length} STOPS  ·  ${CHAPTERS.length} CHAPTERS`, end: "Something on your mind?", ask: "Ask the octopus", note: "Leave me a note", endKick: "END OF THE JOURNEY", drag: "DRAG  ·  360°" };
+        ? { chapter: "BÖLÜM", count: `${stops.length} DURAK  ·  ${CHAPTERS.length} BÖLÜM`, end: "Aklına takılan bir şey mi var?", ask: "Ahtapota sor", note: "Bana not bırak", endKick: "YOLCULUĞUN SONU", drag: "SÜRÜKLE  ·  360°", dragM: "YANA KAYDIR  ·  360°" }
+        : { chapter: "CHAPTER", count: `${stops.length} STOPS  ·  ${CHAPTERS.length} CHAPTERS`, end: "Something on your mind?", ask: "Ask the octopus", note: "Leave me a note", endKick: "END OF THE JOURNEY", drag: "DRAG  ·  360°", dragM: "SWIPE SIDEWAYS  ·  360°" };
 
       const journey = document.createElement("div");
       journey.id = "journey";
@@ -5227,8 +5829,9 @@
       hero.querySelector(".cue").textContent = TX.cue;
       addSection("hero", hero);
 
-      let stopNo = 0;
+      let stopNo = 0, chNo = 0;
       for (const ch of CHAPTERS) {
+        chNo++;
         // A chapter's title screen: a huge outlined numeral, the title, and its planets
         const s = document.createElement("section");
         s.className = "chapter";
@@ -5237,7 +5840,7 @@
         const roman = document.createElement("span");
         roman.className = "ch-roman";
         roman.setAttribute("aria-hidden", "true");
-        roman.textContent = ch.n;
+        roman.textContent = String(chNo).padStart(2, "0");
         const kick = document.createElement("p");
         kick.className = "ch-kicker scramble";
         kick.textContent = TXJ.chapter + " " + ch.n;
@@ -5260,10 +5863,11 @@
         for (const t of ch.things) {
           stopNo++;
           const st = document.createElement("section");
-          st.className = "stop";
+          st.className = "stop " + (stopNo % 2 ? "side-l" : "side-r"); // text left + planet right, then the other way
           const si = document.createElement("div");
           si.className = "stop-inner";
           si.style.setProperty("--c", t.color);
+          si.style.setProperty("--f", (stopNo / stops.length).toFixed(3));
           const num = document.createElement("p");
           num.className = "stop-num scramble";
           num.textContent = String(stopNo).padStart(2, "0") + " / " + String(stops.length).padStart(2, "0") + (t.title ? "  ·  " + t.title.toUpperCase() : "");
@@ -5287,10 +5891,10 @@
           more.addEventListener("click", () => openThing(t));
           const drag = document.createElement("p");
           drag.className = "stop-drag";
-          drag.textContent = TXJ.drag;
+          drag.textContent = phone() ? TXJ.dragM : TXJ.drag;
           si.append(num, h2, short, mine, more, drag);
           st.append(si);
-          addSection("stop", st, { t, ch });
+          addSection("stop", st, { t, ch, side: stopNo % 2 ? 1 : -1 });
         }
       }
 
@@ -5327,7 +5931,16 @@
         nav.append(b);
         return b;
       });
+      const railTrack = document.createElement("span"), railFill = document.createElement("span");
+      railTrack.className = "rail";
+      railFill.className = "rail-fill";
+      nav.prepend(railTrack, railFill);
       document.body.append(nav);
+      const railBar = document.createElement("div");
+      railBar.id = "rail-bar";
+      railBar.innerHTML = "<i></i>";
+      document.body.append(railBar);
+      let railKey = "";
       const homeBtn = document.createElement("button");
       homeBtn.id = "home-btn";
       homeBtn.textContent = TX.home;
@@ -5369,7 +5982,17 @@
         const tanH = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
         let d0 = Math.max((SPAN_X / 2 + 3) / (tanH * aspect), (SPAN_Y / 2 + 3) / tanH);
         if (phone()) d0 = Math.min(d0, 120);
+        // A tall phone screen: turn the camera a quarter so the wide system stands up and fits
+        const turned = (dist, lift, tilt) => {
+          // the camera moves down a little so the system sits higher (text goes underneath)
+          const look = new V3(0, -lift * dist * tanH, 0);
+          const pos = look.clone().add(new V3(0, dist * tilt, dist * Math.sqrt(1 - tilt * tilt)));
+          return { pos, look };
+        };
+        const dTall = Math.max((SPAN_Y / 2 + 4) / tanH, (SPAN_X / 2 + 5) / (tanH * aspect));
         keys = sections.map((s) => {
+          if (s.kind === "hero" && TALL) return turned(dTall * 1.26, 0.2, 0.14);
+          if (s.kind === "outro" && TALL) return turned(dTall * 1.62, 0.37, 0.42);
           if (s.kind === "hero") return { pos: new V3(0, d0 * 0.1, d0), look: new V3(0, -1, 0) };
           if (s.kind === "outro") return framing(new V3(0, 0, 0), new V3(-0.35, 0.6, 1).normalize(), SPAN_X / 2 + 4, phone() ? 0.9 : 0.62, phone() ? 0.42 : 0.38);
           if (s.kind === "chapter") {
@@ -5385,20 +6008,26 @@
           const P = P3.get(s.t).group.position;
           // Look from the outside of the system inward: the planet in front, the rest behind it
           const D = new V3((P.x / (SPAN_X / 2)) * 0.6, 0.16 + (P.y / (SPAN_Y / 2)) * 0.25, 1).normalize();
-          return framing(P, D, viewRadius(s.t), phone() ? 0.36 : 0.28, phone() ? 0.36 : 0.42);
+          // phones: the planet a comfortable size above the text, not filling the screen
+          if (phone()) return framing(P, D, viewRadius(s.t), 0.24, 0.42);
+          // Computers: the planet big, on one side of the frame (the text takes the other side)
+          const k = framing(P, D, viewRadius(s.t), s.t === station ? 0.34 : 0.5, 0.04);
+          k.side = s.side * 0.44;
+          return k;
         });
       }
 
       // Where the camera is for a scroll position (1.0 = the second section, ...)
       const camPos = new V3(), camLook = new V3(), tmpBack = new V3();
-      let camRoll = 0;
+      let camRoll = 0, camSide = 0;
       function cameraAt(p) {
         const n = keys.length - 1;
         p = Math.max(0, Math.min(n, p));
         const i = Math.min(n - 1, Math.floor(p));
         const f = p - i;
-        // Hold still near each section, fly in between
-        const e = ease.smoother(Math.max(0, Math.min(1, (f - 0.05) / 0.9)));
+        // Ease out of each section and into the next; it starts moving with the first wheel click
+        const u = Math.max(0, Math.min(1, (f - 0.02) / 0.96));
+        const e = (ease.smoother(u) + u * u * (3 - 2 * u)) / 2;
         const a = keys[i], b = keys[i + 1];
         camPos.lerpVectors(a.pos, b.pos, e);
         camLook.lerpVectors(a.look, b.look, e);
@@ -5407,7 +6036,8 @@
         camPos.y += arc * travel * 0.1;                                         // rise a little on the way
         tmpBack.copy(camPos).sub(camLook).normalize();
         camPos.addScaledVector(tmpBack, arc * travel * 0.22);                    // and pull back to see more
-        camRoll = arc * 0.07 * (i % 2 ? 1 : -1);                                // a gentle bank, like a ship turning
+        camRoll = (a.roll || 0) + ((b.roll || 0) - (a.roll || 0)) * e + arc * 0.07 * (i % 2 ? 1 : -1); // + a gentle bank, like a ship turning
+        camSide = (a.side || 0) + ((b.side || 0) - (a.side || 0)) * e;          // where on screen the subject sits
       }
 
       // ---------- The opening shot ----------
@@ -5434,17 +6064,19 @@
         if (lastW && w === lastW && (typing || Math.abs(h - lastH) / lastH < 0.3)) return;
         const keep = lastW ? progress() : 0;
         lastW = w; lastH = h;
-        const pr = Math.min(window.devicePixelRatio || 1, phone() ? 1.5 : 1.75);
+        const pr = Math.min(window.devicePixelRatio || 1, phone() ? 1.4 : 1.75) * quality.prK;
         renderer.setPixelRatio(pr);
         renderer.setSize(w, h, false);
         composer.setPixelRatio(pr);
         composer.setSize(w, h);
         bloom.setSize(w / 2, h / 2);
+        film.uRes.value.set(w * pr, h * pr);
+        film.uAspect.value = w / h;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        farStars.material.uniforms.uPR.value = nearDust.material.uniforms.uPR.value = comet.material.uniforms.uPR.value = renderer.getPixelRatio();
+        farStars.material.uniforms.uPR.value = nearDust.material.uniforms.uPR.value = comet.material.uniforms.uPR.value = dustMat.uniforms.uPR.value = fbMat.uniforms.uPR.value = renderer.getPixelRatio();
         sigPointMats.forEach((m) => { m.uniforms.uPR.value = renderer.getPixelRatio(); });
-        sectionH = hero.offsetHeight || h;
+        sectionH = (sections[1].el.offsetTop - sections[0].el.offsetTop) || h;
         makeKeys();
         if (keep) window.scrollTo(0, keep * sectionH);
         document.getElementById("hint").textContent = phone() ? TX.hintM : TX.hint;
@@ -5471,7 +6103,14 @@
       // then after a few quiet seconds it drifts back to its place.
       const orbit = { yaw: 0, pitch: 0, vYaw: 0, vPitch: 0, down: false, moved: 0, x: 0, y: 0, lastMove: 0 };
       const UI_SEL = "#card, #radio, #intro, #ask, #stop-nav, #lang, button, a, input, textarea";
+      // Touch: a sideways swipe turns the view (up and down still scroll the page)
+      let touchTry = null;
       window.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "touch" && mode === "live" && !e.target.closest(UI_SEL)) {
+          touchTry = { id: e.pointerId, x: e.clientX, y: e.clientY };
+          orbit.moved = 0;
+          return;
+        }
         if (e.pointerType !== "mouse" || e.button !== 0 || mode !== "live" || e.target.closest(UI_SEL)) return;
         orbit.down = true;
         orbit.moved = 0;
@@ -5480,8 +6119,20 @@
         orbit.vYaw = orbit.vPitch = 0;
       });
       window.addEventListener("pointermove", (e) => {
+        if (touchTry && e.pointerId === touchTry.id && !orbit.down) {
+          const dx = e.clientX - touchTry.x, dy = e.clientY - touchTry.y;
+          if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+            orbit.down = true;
+            orbit.touch = true;
+            orbit.x = e.clientX;
+            orbit.y = e.clientY;
+            orbit.moved = 6;
+            orbit.vYaw = orbit.vPitch = 0;
+          } else if (Math.abs(dy) > 12) touchTry = null; // it's a scroll
+          return;
+        }
         if (!orbit.down) return;
-        const dx = e.clientX - orbit.x, dy = e.clientY - orbit.y;
+        const dx = e.clientX - orbit.x, dy = orbit.touch ? 0 : e.clientY - orbit.y;
         orbit.x = e.clientX;
         orbit.y = e.clientY;
         orbit.moved += Math.abs(dx) + Math.abs(dy);
@@ -5494,10 +6145,14 @@
         orbit.lastMove = performance.now();
         needsRender = true;
       });
-      window.addEventListener("pointerup", () => {
+      const endDrag = () => {
         orbit.down = false;
+        orbit.touch = false;
+        touchTry = null;
         html.classList.remove("dragging");
-      });
+      };
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("pointercancel", endDrag);
       document.addEventListener("click", (e) => {
         if (orbit.moved >= 5) { e.stopPropagation(); orbit.moved = 0; return; } // that was a drag, not a click
         if (!window.sky3d || e.target.closest("#card, #radio, #intro, #ask, button, a")) return;
@@ -5543,7 +6198,7 @@
         if (Math.abs(progress() - i) < 0.02 && !jump) return;
         const steps = Math.abs(progress() - i);
         jump = {
-          fromPos: camBase.pos.clone(), fromLook: camBase.look.clone(), fromRoll: camBase.roll,
+          fromPos: camBase.pos.clone(), fromLook: camBase.look.clone(), fromRoll: camBase.roll, fromSide: camBase.side || 0,
           start: performance.now(),
           dur: Math.min(4200, 2600 + 220 * steps),   // slow and calm, a little longer for far trips
           to: i,
@@ -5560,7 +6215,14 @@
       for (const ev of ["wheel", "touchstart", "keydown", "pointerdown"]) window.addEventListener(ev, stopTween, { passive: true });
 
       function panelOpen() { return card.classList.contains("open") || radio.classList.contains("open"); }
-      const syncPanel = () => { html.classList.toggle("panel-open", panelOpen()); needsRender = true; };
+      const syncPanel = () => {
+        html.classList.toggle("panel-open", panelOpen());
+        // "03 / 10" in the card's corner, like the stop it came from
+        const i = card.classList.contains("open") ? stops.indexOf(cardPlanet) : -1;
+        if (i >= 0) card.dataset.num = String(i + 1).padStart(2, "0") + " / " + String(stops.length).padStart(2, "0");
+        else delete card.dataset.num;
+        needsRender = true;
+      };
       new MutationObserver(syncPanel).observe(card, { attributes: true, attributeFilter: ["class"] });
       new MutationObserver(syncPanel).observe(radio, { attributes: true, attributeFilter: ["class"] });
 
@@ -5604,10 +6266,55 @@
         document.addEventListener("pointerleave", () => html.classList.remove("cursor-on"));
         document.addEventListener("pointerenter", () => cur.shown && html.classList.add("cursor-on"));
       }
+      // The card tilts a little toward the mouse, with a soft light where the pointer is
+      const untilt = () => {
+        card.classList.remove("tilting");
+        card.style.setProperty("--rx", "0deg");
+        card.style.setProperty("--ry", "0deg");
+      };
+      if (finePointer) {
+        card.addEventListener("pointermove", (e) => {
+          if (!card.classList.contains("open") || phone()) return;
+          const r = card.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+          card.style.setProperty("--ry", ((x - 0.5) * 7).toFixed(2) + "deg");
+          card.style.setProperty("--rx", ((0.5 - y) * 6).toFixed(2) + "deg");
+          card.style.setProperty("--mx", (x * 100).toFixed(1) + "%");
+          card.style.setProperty("--my", (y * 100).toFixed(1) + "%");
+          card.classList.add("tilting");
+        });
+        card.addEventListener("pointerleave", untilt);
+      }
+      new MutationObserver(() => { if (!card.classList.contains("open") && card.classList.contains("tilting")) untilt(); }).observe(card, { attributes: true, attributeFilter: ["class"] });
       // ---------- Every frame ----------
       const labelAmt = new Map(); // how visible each planet's name label is right now
+      const labelSize = new Map();
       let needsRender = true;
-      let last = 0, pSmooth = 0, activeSec = -1, panelT = 0, frameNo = 0;
+      let last = 0, pSmooth = 0, activeSec = -1, panelT = 0, frameNo = 0, stageS = 0, bhDim = 0;
+      let restSec = -1, restSince = 0, pushS = 0, fovS = FOV, chapterHitAt = -1e9;
+      let maskSec = null, maskRect = null;
+      const tmpQ = new THREE.Quaternion(), tmp3 = new V3(), tmp4 = new V3();
+      const ev1 = new V3(), ev2 = new V3(), ev3 = new V3(), ev4 = new V3(), probeTilt = new THREE.Euler(), screenDown = new V3();
+      const CARD_TURN = -0.21; // radians the camera swings round the planet when its card opens
+      // Pointer (computers) or phone tilt, from -1 to 1; the camera drifts with it a little
+      const ptr = { x: 0, y: 0 };
+      window.addEventListener("pointermove", (e) => {
+        if (e.pointerType !== "mouse") return;
+        ptr.x = (e.clientX / window.innerWidth) * 2 - 1;
+        ptr.y = (e.clientY / window.innerHeight) * 2 - 1;
+      }, { passive: true });
+      if (!window.matchMedia("(pointer: fine)").matches && !reduceMotion && "DeviceOrientationEvent" in window) {
+        const clamp1 = (v) => Math.max(-1, Math.min(1, v));
+        window.addEventListener("deviceorientation", (e) => {
+          if (e.gamma == null || e.beta == null) return;
+          ptr.x = clamp1(e.gamma / 25);
+          ptr.y = clamp1((e.beta - 50) / 25);
+        }, { passive: true });
+        // iPhones ask first; the first tap is a good moment
+        if (typeof DeviceOrientationEvent.requestPermission === "function") {
+          window.addEventListener("pointerdown", () => DeviceOrientationEvent.requestPermission().catch(() => {}), { once: true });
+        }
+      }
       const tmp = new V3(), tmp2 = new V3();
       ["scroll", "resize", "pointermove", "keydown", "click"].forEach((ev) => window.addEventListener(ev, () => { needsRender = true; }, { passive: true }));
 
@@ -5625,20 +6332,35 @@
 
         const target = progress();
         pSmooth = reduceMotion || jump ? target : pSmooth + (target - pSmooth) * (1 - Math.exp(-dt / 160));
-        const litAny = planets.some((p) => (p.litUntil || 0) > now) || now - (station.pingAt || -1e9) < 1600;
+        const litAny = planets.some((p) => (p.litUntil || 0) > now || now - (p.waveAt || -1e9) < 1200) || now - (station.pingAt || -1e9) < 1600;
         const moving = !reduceMotion || mode !== "live" || Math.abs(target - pSmooth) > 0.0005 || tween || jump || litAny || Math.abs(panelT - (panelOpen() ? 1 : 0)) > 0.001;
-        if (!needsRender && !moving) return;
+        if (!needsRender && !moving) { quality.prevRendered = false; return; }
         frameNo++;
-        if (phone() && mode === "live" && !needsRender && !tween && Math.abs(target - pSmooth) < 0.002 && frameNo % 2) return;
+        if (phone() && mode === "live" && !needsRender && !tween && Math.abs(target - pSmooth) < 0.002 && frameNo % 2) { quality.prevRendered = false; return; }
         needsRender = false;
+        // Measure only back-to-back drawn frames, after the opening (shaders compile then)
+        if (quality.prevRendered && mode === "live" && now - liveStart > 3000 && quality.step < 3 && !document.hidden) {
+          quality.sum += dt;
+          if (++quality.n >= (LITE ? 45 : 90)) {
+            if (quality.sum / quality.n > (LITE ? 21 : 24)) {
+              quality.step++;
+              if (quality.step === 1) { quality.prK = 0.8; lastW = 0; resize(); }
+              else if (quality.step === 2) { bloom.enabled = false; if (LITE) { quality.prK = 0.65; lastW = 0; resize(); } }
+              else { quality.prK = 0.55; lastW = 0; resize(); }
+              console.warn("3D: lowering quality, step", quality.step);
+            }
+            quality.sum = quality.n = 0;
+          }
+        }
+        quality.prevRendered = true;
 
         const tm = reduceMotion ? 0 : now;
         shared.uTime.value = tm / 1000;
         const sinceStart = mode === "prologue" ? now - proStart : now - (flightStart || proStart);
         const fade = reduceMotion ? 1 : Math.min(1, sinceStart / 1800);
         scene.backgroundIntensity = fade;
-        farStars.material.uniforms.uFade.value = nearDust.material.uniforms.uFade.value = fade;
-        farStars.material.uniforms.uTime.value = nearDust.material.uniforms.uTime.value = tm / 1000;
+        farStars.material.uniforms.uFade.value = nearDust.material.uniforms.uFade.value = dustMat.uniforms.uFade.value = fade;
+        farStars.material.uniforms.uTime.value = nearDust.material.uniforms.uTime.value = dustMat.uniforms.uTime.value = tm / 1000;
 
         // Which section are we at? Its text comes in; leaving a stop closes its card.
         const nearest = Math.round(pSmooth);
@@ -5647,6 +6369,11 @@
         if (at !== activeSec) {
           sections.forEach((s, i) => s.el.classList.toggle("active", i === at));
           if (at >= 0) sections[at].el.querySelectorAll(".scramble").forEach(scramble);
+          // Entering a chapter: its signature moment (a rush of light, then its planets ring out one by one)
+          if (at >= 0 && sections[at].kind === "chapter" && !reduceMotion && mode === "live") {
+            chapterHitAt = now;
+            sections[at].ch.things.forEach((t, j) => { t.waveAt = now + 350 + j * 220; });
+          }
           const shown = radio.classList.contains("open") ? station : card.classList.contains("open") ? cardPlanet : null;
           if (shown && (at < 0 || shown !== sections[at].t)) {
             closeCard();
@@ -5659,6 +6386,24 @@
           const t = pendingOpen;
           pendingOpen = null;
           saved2D.openThing(t);
+        }
+        const lagPx = Math.round((target - pSmooth) * sectionH * 10) / 10;
+        if (journey.dataset.lag !== String(lagPx)) {
+          journey.dataset.lag = String(lagPx);
+          journey.style.transform = lagPx ? `translate3d(0, ${lagPx}px, 0)` : "";
+        }
+        html.classList.toggle("at-outro", at === LAST);
+        const hk = Math.min(1, pSmooth).toFixed(3);
+        if (hero.dataset.k !== hk) { hero.dataset.k = hk; hero.style.setProperty("--k", hk); }
+        {
+          const k = Math.round((pSmooth / LAST) * 1000) / 1000;
+          const near = sections[Math.max(0, Math.min(LAST, nearest))];
+          const c = near.t ? near.t.color : near.ch ? near.ch.things[0].color : "#ffffff";
+          const key = k + c;
+          if (key !== railKey) {
+            railKey = key;
+            for (const el of [nav, railBar]) { el.style.setProperty("--rail-k", k); el.style.setProperty("--rail-c", c); }
+          }
         }
         const overview = mode === "live" ? Math.max(0, 1 - Math.min(pSmooth, Math.abs(pSmooth - LAST)) / 0.5) : 0;
         if (navDots[nearest] && !navDots[nearest].classList.contains("on")) navDots.forEach((b, i) => b.classList.toggle("on", i === nearest));
@@ -5677,15 +6422,17 @@
           camPos.copy(PRO_POS).add(tmp.set(Math.sin(now / 5200) * 3, Math.sin(now / 4100) * 1.5 - k * 6, 0));
           camLook.copy(PRO_LOOK);
           camRoll = -0.04 + Math.sin(now / 6000) * 0.015;
+          camSide = 0;
           placeSun(ease.inOutCubic(Math.min(1, (now - proStart) / 7000)));
         } else if (mode === "flight") {
+          camSide = 0;
           const raw = Math.min(1, (now - flightStart) / FLIGHT_MS);
           flightK = ease.inOutCubic(raw);
           const hero0 = keys[0];
           bezier(PRO_POS, flightCtrl, hero0.pos, flightK, camPos);
           placeSun(1 - (1 - SUN_SET) * flightK);
           camLook.lerpVectors(PRO_LOOK, hero0.look, ease.inOutCubic(Math.min(1, raw * 1.15)));
-          camRoll = (1 - flightK) * -0.04 + Math.sin(Math.PI * flightK) * 0.12;
+          camRoll = (1 - flightK) * -0.04 + Math.sin(Math.PI * flightK) * 0.12 + flightK * (keys[0].roll || 0);
           if (raw >= 1) {
             mode = "live";
             html.classList.remove("flying");
@@ -5695,8 +6442,11 @@
           const calm = 1 - Math.min(1, Math.abs(pSmooth - nearest) * 3);
           camPos.add(tmp.set(Math.sin(now / 7300) * 0.9, Math.sin(now / 5900) * 0.5, Math.sin(now / 8800) * 0.6).multiplyScalar(calm * (0.4 + overview)));
         }
+        let settle = 0;
         if (jump) {
           const k = ease.inOutCubic(jumpK);
+          // On arrival the camera leans in a touch too far and settles back, like a real crane
+          settle = reduceMotion ? 0 : 0.035 * Math.sin(Math.PI * Math.max(0, Math.min(1, (jumpK - 0.68) / 0.32)));
           const arc = Math.sin(Math.PI * k);
           const travel = jump.fromPos.distanceTo(camPos);
           tmp.lerpVectors(jump.fromPos, camPos, k);
@@ -5705,18 +6455,29 @@
           camPos.copy(tmp).addScaledVector(tmp2, arc * Math.min(30, travel * 0.15)); // and ease back to see the sky
           camLook.lerpVectors(jump.fromLook, camLook, ease.inOutCubic(Math.min(1, jumpK * 1.1)));
           camRoll = jump.fromRoll + (camRoll - jump.fromRoll) * k + arc * 0.04;
+          camSide = jump.fromSide + (camSide - jump.fromSide) * k;
           if (jumpK >= 1) jump = null;
         }
+        // Resting at a stop or a chapter: a very slow push in, like a film shot that holds
+        if (at !== restSec) { restSec = at; restSince = now; }
+        const restKind = at >= 0 ? sections[at].kind : "";
+        const pushGoal = !reduceMotion && mode === "live" && !jump && (restKind === "stop" || restKind === "chapter")
+          ? (phone() ? 0.02 : 0.055) * ease.inOutCubic(Math.min(1, (now - restSince) / 11000)) : 0;
+        pushS += (pushGoal - pushS) * (1 - Math.exp(-dt / (pushGoal > pushS ? 400 : 500)));
+        camPos.lerp(camLook, pushS + settle);
         camBase.pos.copy(camPos);
         camBase.look.copy(camLook);
         camBase.roll = camRoll;
+        camBase.side = camSide;
         // A card is open on a big screen: slide the planet to the left side, centered in height
         panelT += ((panelOpen() && !phone() ? 1 : 0) - panelT) * (reduceMotion ? 1 : 1 - Math.exp(-dt / 260));
         if (panelT > 0.001 && at >= 0 && keys[at].right) {
           const key = keys[at];
-          const shift = tmp.copy(key.right).multiplyScalar(key.dist * key.tanH * camera.aspect * 0.4 * panelT).addScaledVector(key.lift, -panelT);
+          const shift = tmp.copy(key.lift).multiplyScalar(-panelT);
           camPos.add(shift);
           camLook.add(shift);
+          const off = tmp.copy(camPos).sub(camLook).applyAxisAngle(UP, CARD_TURN * ease.inOutCubic(panelT)).multiplyScalar(1 - 0.14 * ease.inOutCubic(panelT));
+          camPos.copy(camLook).add(off);
         }
         // Dragging: turn around what we look at. Glide a little after letting go, and after
         // 2.5 quiet seconds (or as soon as you scroll) drift back to the normal view.
@@ -5737,45 +6498,157 @@
         if (Math.abs(orbit.yaw) > 0.0005 || Math.abs(orbit.pitch) > 0.0005) {
           const off = tmp.copy(camPos).sub(camLook);
           // The more you turn, the closer you get (at a planet): you skim past its surface
-          if (atStop) off.multiplyScalar(1 - 0.42 * Math.min(1, (Math.abs(orbit.yaw) + Math.abs(orbit.pitch)) * 1.4));
+          if (atStop) off.multiplyScalar(1 - (phone() ? 0.12 : 0.42) * Math.min(1, (Math.abs(orbit.yaw) + Math.abs(orbit.pitch)) * 1.4));
           off.applyAxisAngle(UP, orbit.yaw);
           const side = tmp2.crossVectors(off, UP).normalize();
           off.applyAxisAngle(side, orbit.pitch);
           camPos.copy(camLook).add(off);
         }
-        camera.position.copy(camPos).add(tmp.set(mouse.x * 0.8, -mouse.y * 0.5, 0));
+        const mk = 1 - Math.exp(-dt / 300);
+        mouse.x += (ptr.x - mouse.x) * mk;
+        mouse.y += (ptr.y - mouse.y) * mk;
+        const par = finePointer ? 1 : 1.8;
+        camera.position.copy(camPos).add(tmp.set(mouse.x * 0.8 * par, -mouse.y * 0.5 * par, 0).applyQuaternion(camera.quaternion));
         camera.up.set(Math.sin(camRoll), Math.cos(camRoll), 0);
         camera.lookAt(camLook);
+        // The lens breathes: wider while flying fast, back to normal when we arrive
+        let fovGoal = FOV;
+        if (mode === "flight") fovGoal += Math.sin(Math.PI * flightK) * 14;
+        if (jump) fovGoal += Math.sin(Math.PI * ease.inOutCubic(jumpK)) * 9;
+        fovGoal += Math.min(5, Math.abs(target - pSmooth) * 12);
+        if (reduceMotion) fovGoal = FOV;
+        fovS += (fovGoal - fovS) * (1 - Math.exp(-dt / 180));
+        // Put the subject left or right of the middle by sliding the picture (like a tilt-shift
+        // lens), not by turning the camera: dragging still turns around the planet itself
+        const sideNow = camSide + (-0.4 - camSide) * ease.inOutCubic(panelT);
+        const filmOff = -sideNow * camera.aspect * Math.tan(THREE.MathUtils.degToRad(fovS / 2)) * camera.getFilmWidth();
+        if (Math.abs(camera.fov - fovS) > 0.01 || Math.abs(camera.filmOffset - filmOff) > 0.001) {
+          camera.fov = fovS;
+          camera.filmOffset = filmOff;
+          camera.updateProjectionMatrix();
+        }
         speed = dt > 0 ? camera.position.distanceTo(lastCamPos) / dt : 0;     // units per millisecond
         tmp2.copy(camera.position).sub(lastCamPos);
         lastCamPos.copy(camera.position);
 
         // Light-speed streaks: longer and brighter the faster the camera moves
         if (mode === "flight" && speed > 0.01) {
+          streaks.position.set(0, 0, 0);
+          streaks.quaternion.identity();
           streakMat.uniforms.uDir.value.copy(tmp2).normalize();
           streakMat.uniforms.uLen.value = Math.min(90, speed * 70);
           streakMat.uniforms.uOp.value = Math.min(1, speed * 1.4);
+        } else if (mode === "live" && !reduceMotion && speed > 0.07) {
+          // A long fast move (between chapters, or a quick scroll): a short burst of light speed
+          // around the camera itself
+          streaks.position.copy(camera.position);
+          streaks.quaternion.copy(camera.quaternion);
+          streakMat.uniforms.uDir.value.copy(tmp2).applyQuaternion(tmpQ.copy(camera.quaternion).invert()).normalize();
+          streakMat.uniforms.uLen.value = Math.min(40, speed * 55);
+          streakMat.uniforms.uOp.value = Math.max(streakMat.uniforms.uOp.value * 0.85, Math.min(0.3, (speed - 0.07) * 2.5));
         } else {
           streakMat.uniforms.uOp.value *= 0.85;
         }
+        const hitK = (now - chapterHitAt) / 1300;
+        if (hitK >= 0 && hitK < 1 && mode === "live") {
+          // a burst of light speed straight ahead, fading out
+          streaks.position.copy(camera.position);
+          streaks.quaternion.copy(camera.quaternion);
+          streakMat.uniforms.uDir.value.set(0, 0, -1);
+          streakMat.uniforms.uLen.value = 30 * (1 - hitK);
+          streakMat.uniforms.uOp.value = Math.max(streakMat.uniforms.uOp.value, 0.42 * Math.pow(1 - hitK, 2));
+        }
+        film.uFlash.value = hitK >= 0 && hitK < 1 ? 0.13 * Math.sin(Math.PI * Math.min(1, hitK * 2.2)) * (1 - hitK) : 0;
         streaks.visible = streakMat.uniforms.uOp.value > 0.01;
-        bloom.strength = 0.42 + (mode === "flight" ? Math.sin(Math.PI * flightK) * 0.35 : 0);
+        bloom.strength = 0.42 + (mode === "flight" ? Math.sin(Math.PI * flightK) * 0.35 : 0) + (mode === "live" ? streakMat.uniforms.uOp.value * 0.4 : 0);
+
+        // ----- The film look -----
+        film.uTime.value = tm / 1000;
+        horizon.material.uniforms.uTime.value = tm / 1000;
+        // The giant planet belongs to the opening shot: as we land it slowly sets below the frame,
+        // and the sun behind it goes with it
+        const gone = mode === "prologue" || mode === "idle" ? 0 : pullIntro || reduceMotion ? 1
+          : ease.inOutCubic(Math.max(0, Math.min(1, (now - flightStart - FLIGHT_MS * 0.4) / (FLIGHT_MS * 0.6 + 2200))));
+        if (gone !== horizonGone) {
+          horizonGone = gone;
+          horizon.position.set(HORIZON_C.x, HORIZON_C.y - gone * 1500, HORIZON_C.z);
+          horizonAir.position.copy(horizon.position);
+          horizonAirC.copy(horizon.position);
+          horizon.visible = horizonAir.visible = gone < 0.999;
+          for (const sp of [sunCore, sunHalo, sunRays]) sp.visible = gone < 0.6;
+        }
+        film.uCA.value = phone() || reduceMotion ? 0 : Math.min(0.008, speed * 0.03 + (mode === "flight" ? Math.sin(Math.PI * flightK) * 0.004 : 0));
+        let flareI = 0;
+        if (mode === "prologue" || mode === "flight") {
+          const sp = tmp.copy(sunCore.position).project(camera);
+          if (sp.z < 1 && Math.abs(sp.x) < 1.3 && Math.abs(sp.y) < 1.3) {
+            film.uFlare.value.x = sp.x * 0.5 + 0.5;
+            film.uFlare.value.y = sp.y * 0.5 + 0.5;
+            flareI = sunRays.material.opacity * (mode === "flight" ? 1 - flightK : 1);
+          }
+        }
+        film.uFlare.value.z = reduceMotion ? 0 : flareI;
 
         // Clear the stage: at a stop, planets in front of it or on top of the text shrink away
         const atChapter = at >= 0 && sections[at].kind === "chapter" ? sections[at].ch : null;
         const stage = atStop || atChapter ? Math.max(0, 1 - Math.abs(pSmooth - nearest) / 0.45) : 0;
         const actPos = atStop ? P3.get(atStop).group.position : atChapter ? keys[at].look : null;
         const dAct = actPos ? camera.position.distanceTo(actPos) : 0;
+        const sideOf = atStop && !phone() ? sections[at].side || 0 : 0;
+        const box = sideOf > 0 ? [-1.3, 0.05, -1.3, 0.72] : sideOf < 0 ? [-0.05, 1.3, -1.3, 0.72] : [-0.6, 0.6, -1.2, 0.1];
+        rockBox.value.set(box[0], box[1], box[2], box[3]);
         for (const t of things) {
           const parts = P3.get(t);
           let goal = 1;
           if (actPos && t !== atStop && !(atChapter && atChapter.things.includes(t))) {
             const d = camera.position.distanceTo(parts.group.position);
             const v = tmp.copy(parts.group.position).project(camera);
-            const onText = (Math.abs(v.x) < 0.6 && v.y < 0.1 && v.y > -1.2) || v.y > 0.72;
+            const onText = (v.x > box[0] && v.x < box[1] && v.y > box[2] && v.y < box[3]) || v.y > 0.72;
             if (d < dAct * 1.25 || (onText && d < dAct * 4)) goal = Math.max(0, 1 - stage * 2);
           }
           parts.vis = parts.vis === undefined ? 1 : parts.vis + (goal - parts.vis) * (reduceMotion ? 1 : 1 - Math.exp(-dt / 220));
+        }
+        // ...and the busy background calms down too: rocks over the text, the black hole, the galaxies
+        stageS += ((atStop || atChapter ? stage : 0) - stageS) * (reduceMotion ? 1 : 1 - Math.exp(-dt / 300));
+        rockClear.value = stageS;
+        // The black hole steps back hardest when it sits right behind the planet we're visiting
+        let bhGoal = 0;
+        if (actPos) {
+          const a = tmp.copy(BH_POS).project(camera), b = tmp2.copy(actPos).project(camera);
+          const d = Math.hypot((a.x - b.x) * camera.aspect, a.y - b.y);
+          bhGoal = a.z < 1 && d < 1.1 ? 0.95 : atStop ? 0.55 : 0.4;
+        }
+        bhDim += (bhGoal - bhDim) * (reduceMotion ? 1 : 1 - Math.exp(-dt / 300));
+        blackHole.material.uniforms.uDim.value = 1 - bhDim;
+        for (const g of bigGalaxies) g.material.opacity = 0.26 * (1 - 0.7 * stageS);
+        if (!phone() && !reduceMotion && actPos) {
+          const fc = tmp.copy(actPos).project(camera);
+          film.uFocusC.value.set(fc.x * 0.5 + 0.5, fc.y * 0.5 + 0.5);
+        }
+        film.uFocus.value = phone() || reduceMotion ? 0 : stageS * (atStop ? 1 : 0.6);
+
+        // ----- The stop's big name slides behind its planet (computers) -----
+        const mSec = sideOf && !panelOpen() ? sections[at] : null;
+        if (mSec !== maskSec) {
+          if (maskSec) { const old = maskSec.el.querySelector("h2"); old.style.maskImage = old.style.webkitMaskImage = ""; }
+          maskSec = mSec;
+          maskRect = null;
+        }
+        if (mSec) {
+          const h2 = mSec.h2 || (mSec.h2 = mSec.el.querySelector("h2"));
+          if (!maskRect || frameNo % 30 === 0) {
+            const r = h2.getBoundingClientRect();
+            maskRect = { left: r.left, top: r.top - (Number(journey.dataset.lag) || 0) };
+          }
+          const parts = P3.get(atStop);
+          const c = tmp3.copy(parts.group.position).project(camera);
+          const e = tmp4.set(1, 0, 0).applyQuaternion(camera.quaternion).multiplyScalar(parts.R * parts.group.scale.x).add(parts.group.position).project(camera);
+          const W = window.innerWidth, Hh = window.innerHeight;
+          const rr = Math.hypot((e.x - c.x) * 0.5 * W, (e.y - c.y) * 0.5 * Hh);
+          const mx = (c.x * 0.5 + 0.5) * W - maskRect.left;
+          const my = (-c.y * 0.5 + 0.5) * Hh - (maskRect.top + (Number(journey.dataset.lag) || 0));
+          const g = c.z < 1 ? `radial-gradient(circle ${rr.toFixed(1)}px at ${mx.toFixed(1)}px ${my.toFixed(1)}px, transparent 96%, #000 100%)` : "";
+          if (h2.style.maskImage !== g) h2.style.maskImage = h2.style.webkitMaskImage = g;
         }
 
         // The flash where the terminal folded into a point of light
@@ -5800,10 +6673,38 @@
           parts.mat.uniforms.uGlow.value = pulse;
           parts.atmo.material.uniforms.uStrength.value = (parts.look.type === 2 ? 0.55 : 0.9) * (1 + parts.hover * 0.6 + pulse * 1.5);
           if (parts.clouds) parts.clouds.rotation.y = tm * p.spin * 0.6;
-          if (parts.ring) parts.ring.material.uniforms.uCenter.value.copy(parts.group.position);
+          const mu = parts.mat.uniforms;
+          mu.uRadW.value = parts.R * parts.group.scale.x;
+          if (parts.ring) {
+            parts.ring.material.uniforms.uCenter.value.copy(parts.group.position);
+            parts.ring.getWorldDirection(mu.uRingN.value);
+            mu.uRingC.value.copy(parts.group.position);
+            mu.uRingIO.value.set(parts.R * 1.35, parts.R * 2.3).multiplyScalar(parts.group.scale.x);
+          }
+          if (parts.clouds && !phone()) {
+            // the light and the turn of the cloud layer, as seen from the ground
+            parts.clouds.getWorldQuaternion(tmpQ).invert();
+            const lc = tmp3.copy(LIGHT).applyQuaternion(tmpQ);
+            mu.uCloud.value.set(lc.x, lc.y, lc.z, 1);
+            mu.uCloudRot.value = parts.spinner.rotation.y - parts.clouds.rotation.y;
+          } else mu.uCloud.value.w = 0;
           if (parts.moon) {
             const a = tm * p.moon.speed * 0.5 + k;
             parts.moon.position.set(Math.cos(a) * parts.R * p.moon.dist, Math.sin(a) * parts.R * 0.25, Math.sin(a) * parts.R * p.moon.dist);
+            // its shadow on the planet (an eclipse, when it passes in front of the light)
+            parts.moon.getWorldPosition(tmp3);
+            parts.mat.uniforms.uMoon.value.set(tmp3.x, tmp3.y, tmp3.z, parts.mR * parts.group.scale.x);
+          }
+          // A soft light on the side facing the mouse pointer
+          const pu = parts.mat.uniforms.uPtr.value;
+          const ptrOn = finePointer && p === hovered && mode === "live";
+          pu.w += ((ptrOn ? 1 : 0) - pu.w) * (reduceMotion ? 1 : 0.12);
+          if (ptrOn) {
+            ndc.set((cur.x / window.innerWidth) * 2 - 1, -(cur.y / window.innerHeight) * 2 + 1);
+            ray.setFromCamera(ndc, camera);
+            const C = parts.group.position, O = ray.ray.origin, D = ray.ray.direction;
+            tmp3.copy(O).addScaledVector(D, tmp4.copy(C).sub(O).dot(D)).sub(C);
+            if (tmp3.lengthSq() > 1e-6) pu.set(...tmp3.normalize().toArray(), pu.w);
           }
           if (parts.stars) {
             parts.stars.forEach((s, i) => {
@@ -5824,6 +6725,57 @@
           }
         });
 
+        // ----- Ask me answered from these planets: rings ripple out, and a line of light runs
+        // from the octopus to each one -----
+        let octo = null;
+        for (const p of planets) {
+          const askLit = Math.max(0, ((p.litUntil || 0) - now) / 2000);
+          const waveK = (now - (p.waveAt || -1e9)) / 1100;   // a chapter just began: one ring
+          const wave = waveK >= 0 && waveK < 1 ? 1 - waveK : 0;
+          const lit = Math.max(askLit, wave);
+          const parts = P3.get(p);
+          let rip = ripples.get(p), beam = beams.get(p);
+          if (beam && askLit <= 0) beam.style.opacity = "0";
+          if (lit <= 0) {
+            if (rip) rip.visible = false;
+            continue;
+          }
+          if (!rip) {
+            rip = new THREE.Group();
+            for (let i = 0; i < 2; i++) {
+              rip.add(new THREE.Mesh(new THREE.RingGeometry(1, 1.04, 72), new THREE.MeshBasicMaterial({ color: new THREE.Color(p.color).multiplyScalar(1.6), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })));
+            }
+            scene.add(rip);
+            ripples.set(p, rip);
+          }
+          rip.visible = parts.group.visible;
+          rip.position.copy(parts.group.position);
+          rip.quaternion.copy(camera.quaternion);
+          rip.children.forEach((m, i) => {
+            const ph = askLit <= 0 ? Math.min(0.999, waveK + i * 0.18) : reduceMotion ? 0.4 : (((now / 1000) + i * 0.5) % 1);
+            m.scale.setScalar(parts.R * (1.1 + ph * 1.5));
+            m.material.opacity = (1 - ph) * (1 - ph) * (askLit > 0 ? 0.6 * Math.min(1, askLit * 3) : 0.75);
+          });
+          if (askLit <= 0) continue; // a chapter wave has no line to the octopus
+          if (!beam) {
+            beam = document.createElementNS(SVGNS, "line");
+            beam.setAttribute("stroke", p.color);
+            beam.style.color = p.color;
+            beamSvg.append(beam);
+            beams.set(p, beam);
+          }
+          octo = octo || document.querySelector("#octo-button svg, #octo-button .octo")?.getBoundingClientRect();
+          if (!octo || !parts.group.visible) { beam.style.opacity = "0"; continue; }
+          const sp = tmp3.copy(parts.group.position).project(camera);
+          const x2 = (sp.x * 0.5 + 0.5) * window.innerWidth, y2 = (-sp.y * 0.5 + 0.5) * window.innerHeight;
+          beam.setAttribute("x1", octo.left + octo.width * 0.62);
+          beam.setAttribute("y1", octo.top + octo.height * 0.3);
+          beam.setAttribute("x2", x2);
+          beam.setAttribute("y2", y2);
+          beam.style.strokeDashoffset = String(reduceMotion ? 0 : -now / 14);
+          beam.style.opacity = String(sp.z < 1 ? Math.min(1, lit * 3) * 0.85 : 0);
+        }
+
         // ----- The satellite -----
         const satPop = popOn ? ease.outBack(Math.max(0, Math.min(1, ((now - liveStart) / 1000 - 0.3 - planets.length * 0.1) / 0.9))) : 1;
         sat.group.scale.setScalar(Math.max(0.0001, 1.1 * satPop * (station === hovered ? 1.06 : 1) * P3.get(station).vis));
@@ -5842,13 +6794,15 @@
         sat.waveMats[3].opacity = ping < 1 ? 1 - ping : 0;
 
         // ----- The rest of the sky -----
-        belt.rotation.y = tm * 0.000012;
+        beltSpin.rotation.y = tm * 0.000012;
         blackHole.quaternion.copy(camera.quaternion); // the square always faces you; the shader does the 3D
         blackHole.material.uniforms.uEnvI.value = fade;
         blackHole.material.uniforms.uTime.value = tm / 1000;
         beamSpin.rotation.y = tm * 0.0026;
         beamMat.uniforms.uOp.value = fade;
-        pulsarCore.material.opacity = (0.75 + 0.25 * Math.sin(tm * 0.0164)) * fade;
+        const beat = onAir() && !reduceMotion ? Math.pow(0.5 + 0.5 * Math.cos((tm / BEAT_MS) * Math.PI * 2), 6) : 0;
+        pulsarCore.material.opacity = (onAir() ? 0.5 + 0.5 * beat : 0.75 + 0.25 * Math.sin(tm * 0.0164)) * fade;
+        pulsarCore.scale.setScalar(26 * (1 + beat * 0.35));
         // Shooting stars: one every 3-7 seconds, somewhere in front of you
         if (!reduceMotion && mode === "live") {
           if (now - liveStart > nextMeteor) {
@@ -5878,6 +6832,79 @@
             m.line.geometry.attributes.color.setXYZ(0, b, b, b * 1.05);
             m.line.geometry.attributes.color.needsUpdate = true;
           }
+        }
+
+        // ----- Rare visitors -----
+        if (!reduceMotion && mode === "live") {
+          const fwd = ev1.set(0, 0, -1).applyQuaternion(camera.quaternion);
+          const right = ev2.set(1, 0, 0).applyQuaternion(camera.quaternion);
+          const up = ev3.set(0, 1, 0).applyQuaternion(camera.quaternion);
+          const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+          // A fireball: from high on one side, down across the sky in about three seconds
+          const fb = fbState;
+          if (!fb.dur && now - liveStart > fb.next) {
+            const D = 220 + Math.random() * 120, side = Math.random() < 0.5 ? -1 : 1;
+            const hw = D * tanH * camera.aspect, hh = D * tanH;
+            fb.from.copy(camera.position).addScaledVector(fwd, D).addScaledVector(right, side * hw * (0.55 + Math.random() * 0.4)).addScaledVector(up, hh * (0.75 + Math.random() * 0.3));
+            fb.to.copy(camera.position).addScaledVector(fwd, D + (Math.random() - 0.5) * 60).addScaledVector(right, -side * hw * (0.1 + Math.random() * 0.5)).addScaledVector(up, -hh * (0.1 + Math.random() * 0.5));
+            fb.start = now;
+            fb.dur = 2600 + Math.random() * 900;
+            fireball.visible = true;
+          }
+          if (fb.dur) {
+            const k = (now - fb.start) / fb.dur;
+            if (k >= 1) {
+              fb.dur = 0;
+              fb.next = now - liveStart + 30000 + Math.random() * 15000;
+              fireball.visible = false;
+            } else {
+              const head = ev4.lerpVectors(fb.from, fb.to, k);
+              const len = fb.from.distanceTo(fb.to);
+              fbMat.uniforms.uHead.value.copy(head);
+              fbMat.uniforms.uDir.value.subVectors(fb.to, fb.from).normalize();
+              fbMat.uniforms.uLen.value = len * 0.38 * Math.min(1, k * 3);
+              fbMat.uniforms.uTime.value = now / 1000;
+              const op = Math.min(1, k / 0.08) * (k > 0.8 ? Math.max(0, 1 - (k - 0.8) / 0.2) : 1);
+              fbMat.uniforms.uOp.value = op;
+              fbGlow.position.copy(head);
+              fbGlow.scale.setScalar(7 * (0.85 + 0.15 * Math.sin(now / 25)) * (0.4 + 0.6 * op));
+              fbGlow.material.opacity = 0.5 * op;
+            }
+          }
+          // The probe: slowly across the upper part of the view, turning a little
+          const pr = probeState;
+          if (!pr.dur && now - liveStart > pr.next) {
+            const D = 95 + Math.random() * 40, side = Math.random() < 0.5 ? -1 : 1;
+            const hw = D * tanH * camera.aspect, hh = D * tanH;
+            const y = hh * (0.55 + Math.random() * 0.25);   // high in the sky, above most planets
+            pr.from.copy(camera.position).addScaledVector(fwd, D).addScaledVector(right, side * hw * 1.25).addScaledVector(up, y);
+            pr.to.copy(camera.position).addScaledVector(fwd, D + (Math.random() - 0.5) * 30).addScaledVector(right, -side * hw * 1.25).addScaledVector(up, y + (Math.random() - 0.5) * hh * 0.3);
+            pr.spin.set((Math.random() - 0.5) * 0.25, (Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.2);
+            pr.start = now;
+            pr.dur = 26000 + Math.random() * 9000;
+            probe.visible = true;
+          }
+          if (pr.dur) {
+            const k = (now - pr.start) / pr.dur;
+            if (k >= 1) {
+              pr.dur = 0;
+              pr.next = now - liveStart + 60000 + Math.random() * 35000;
+              probe.visible = false;
+            } else {
+              probe.position.lerpVectors(pr.from, pr.to, k);
+              const t = (now - pr.start) / 1000;
+              // mostly facing us (so its wings show), turning slowly
+              probe.quaternion.copy(camera.quaternion).multiply(tmpQ.setFromEuler(probeTilt.set(0.35 + pr.spin.x * t, -0.45 + pr.spin.y * t, 0.12 + pr.spin.z * t)));
+              // navigation lights: red and green blink together, the white one double-flashes
+              const [red, green, strobe] = probe.userData.lights;
+              const blink = (now % 1600) < 700 ? 1 : 0.15;
+              red.material.opacity = green.material.opacity = blink;
+              const sp = now % 1800;
+              strobe.material.opacity = sp < 70 || (sp > 200 && sp < 270) ? 1 : 0;
+            }
+          }
+        } else if (reduceMotion) {
+          fireball.visible = probe.visible = false;
         }
         for (const s of brightStars) {
           s.material.opacity = (0.7 + 0.3 * Math.sin(tm / 1000 * s.userData.speed + s.userData.phase)) * fade;
@@ -5918,24 +6945,44 @@
 
         // ----- Labels: in the overview, and for a chapter's planets on its title screen -----
         const w = window.innerWidth, h = window.innerHeight;
+        const placed = [];
+        screenDown.set(0, -1, 0).applyQuaternion(camera.quaternion);
         for (const [t, el] of labels) {
           const parts = P3.get(t);
           const ch = CHAPTERS.find((c) => c.things.includes(t));
           const amount = Math.max(overview, ch ? chapterOn(ch) : 0);
           labelAmt.set(t, amount);
           const v = tmp.copy(parts.group.position);
-          v.y -= (t === station ? 3.0 : parts.R * 1.15 + 0.8);
+          v.addScaledVector(screenDown, t === station ? 3.0 : parts.R * 1.15 + 0.8);
           v.project(camera);
           const show = v.z < 1 && amount > 0.01;
-          const op = show ? String(Math.round(amount * Math.min(1, parts.group.scale.x) * 100) / 100) : "0";
-          if (el.style.opacity !== op) el.style.opacity = op;
-          if (show) el.style.transform = `translate(${(v.x * 0.5 + 0.5) * w}px, ${(-v.y * 0.5 + 0.5) * h}px) translateX(-50%)`;
+          let size = labelSize.get(el);
+          if (!size || frameNo % 60 === 0) { size = { w: el.offsetWidth, h: el.offsetHeight }; labelSize.set(el, size); }
+          const x = Math.max(size.w / 2 + 10, Math.min(w - size.w / 2 - 10, (v.x * 0.5 + 0.5) * w));
+          const y = (-v.y * 0.5 + 0.5) * h;
+          // a planet that's off the side of the screen doesn't leave its name stuck at the edge
+          const edge = Math.max(0, Math.min(1, (1.12 - Math.abs(v.x)) / 0.12));
+          placed.push({ t, el, show, x, y, size, op: show ? amount * Math.min(1, parts.group.scale.x) * edge : 0, depth: v.z });
           el.classList.toggle("hot", t === hovered);
           if (t === station) {
             // The song line only in the overview (on a chapter screen it would cover other names)
             const line = overview < 0.5 ? "" : nowPlayingLine.length > 30 ? nowPlayingLine.slice(0, 29) + "…" : nowPlayingLine;
             if (el.lastChild.textContent !== line) el.lastChild.textContent = line;
           }
+        }
+        // Nearer (and hovered) names win; one that would sit on top of a winner fades back
+        placed.sort((a, b) => (b.t === hovered) - (a.t === hovered) || a.depth - b.depth);
+        const kept = [];
+        for (const L of placed) {
+          let op = L.op;
+          if (L.show && op > 0.05) {
+            const r = { x0: L.x - L.size.w / 2 - 4, x1: L.x + L.size.w / 2 + 4, y0: L.y - 2, y1: L.y + L.size.h + 2 };
+            if (kept.some((k) => r.x0 < k.x1 && r.x1 > k.x0 && r.y0 < k.y1 && r.y1 > k.y0)) op *= 0.18;
+            else kept.push(r);
+          }
+          const ops = String(Math.round(op * 100) / 100);
+          if (L.el.style.opacity !== ops) L.el.style.opacity = ops;
+          if (L.show) L.el.style.transform = `translate(${L.x}px, ${L.y}px) translateX(-50%)`;
         }
         if (radioShort.textContent !== nowPlayingLine) radioShort.textContent = nowPlayingLine;
 
@@ -5987,7 +7034,9 @@
         loop();
       }
       window.sky3d = {
-        scene, bloom, blackHole, // for measuring in tests
+        scene, bloom, blackHole, camera, film, // for measuring in tests
+        visitNow() { fbState.next = probeState.next = 0; }, // (tests: bring the visitors right away)
+        probe, fireball,
         start() {
           if (mode === "flight" || mode === "live") return;
           window.scrollTo(0, 0);
