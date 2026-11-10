@@ -2063,6 +2063,66 @@
       .cta button { padding: 0 16px; font-size: 14px; }
       .outro-safe { font-size: 11.5px; padding: 0 12px; }
     }
+
+    /* ---------- Phones (2026-11-10): a chapter menu, a thumb rail, nothing on top of anything ---------- */
+    .brand-caret { display: none; }
+    #top-links button.home { display: none; }
+    @media (max-width: 699px) {
+      /* "Opening ▾" opens a small menu: back to start + the chapters */
+      html.sky3d .brand-caret {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin: -3px 0 0 3px;
+        border-right: 1.5px solid rgba(255, 255, 255, 0.7);
+        border-bottom: 1.5px solid rgba(255, 255, 255, 0.7);
+        transform: rotate(45deg);
+        transition: transform 0.3s var(--ease);
+      }
+      html.menu-open .brand-caret { transform: translateY(3px) rotate(-135deg); }
+      html.sky3d #top-links {
+        position: absolute;
+        left: 0;
+        top: calc(100% + 8px);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        min-width: 210px;
+        margin: 0;
+        padding: 6px;
+        background: rgba(16, 14, 30, 0.86);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 20px;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        transition: opacity 0.25s ease, transform 0.35s var(--ease);
+      }
+      html.menu-open #top-links { opacity: 1; transform: none; pointer-events: auto; }
+      #top-links button { text-align: left; padding: 11px 14px; font-size: 15px; border-radius: 14px; }
+      #top-links button .dot { display: inline-block; width: 7px; height: 7px; margin-right: 10px; border-radius: 50%; background: var(--c, #fff); box-shadow: 0 0 8px var(--c, #fff); vertical-align: 1px; }
+      #top-links button.home { display: block; color: rgba(240, 240, 250, 0.7); }
+
+      /* The thumb rail: a dot per screen on the right edge; slide a finger along it to pick one */
+      html.sky3d #stop-nav { display: flex; right: 2px; gap: 0; touch-action: none; padding: 4px 0; }
+      html.sky3d #stop-nav button { width: 26px; height: 21px; }
+      html.sky3d #stop-nav button::before { inset: 7.5px 10px; }
+      html.sky3d #stop-nav button.chapter::before { inset: 9.5px 8px; }
+      html.sky3d #stop-nav .rail, html.sky3d #stop-nav .rail-fill { top: 14px; bottom: 14px; }
+      #stop-nav button::after { display: block; right: 34px; font-size: 13px; padding: 5px 12px; }
+      #stop-nav button.on.stop::after, #stop-nav button.on.chapter::after { opacity: 0; }
+      #stop-nav.scrubbing button.pick::after { opacity: 1; transform: translate(0, -50%); }
+      #stop-nav.scrubbing button.pick::before { background: var(--c); transform: scale(2); box-shadow: 0 0 12px var(--c); }
+      html.at-outro #stop-nav, html.panel-open #stop-nav, html.menu-open #stop-nav { opacity: 0; pointer-events: none; }
+      /* the text keeps clear of the rail */
+      #journey .stop, #journey .chapter { padding-left: 26px; padding-right: 30px; }
+
+      /* The hero: title and hint well above the octopus */
+      .hero-copy { bottom: 178px; }
+    }
   </style>
 </head>
 <body>
@@ -2092,7 +2152,7 @@
 
   <!-- A thin glass bar at the top: the name, where you are, the chapters, language, and the octopus -->
   <header id="topbar" class="ui">
-    <div id="brand"><i class="brand-mark" aria-hidden="true"></i>Opening</div>
+    <div id="brand"><i class="brand-mark" aria-hidden="true"></i>Opening<i class="brand-caret" aria-hidden="true"></i></div>
     <span id="top-where" aria-live="polite"></span>
     <nav id="top-links" aria-label="Chapters"></nav>
     <div id="lang" role="group" aria-label="Language">
@@ -2507,7 +2567,7 @@
         tr: { short: "Yapay zekânın karnesi: cevabını bildiğin sorularla sınav yapıp kaçını bildiğine bakıyorsun.",
               about: "Yapay zekâ aynı soruya her seferinde biraz farklı cevap verebiliyor, bu yüzden \"bence iyi çalışıyor\" demek yetmiyor. Sabit bir soru listesiyle ölçünce, bir değişikliğin işi iyileştirip iyileştirmediğini sayıyla görüyorsun.",
               mine: "Ahtapotu 40 soruyla sınava soktum, 38'inde doğru karar verdi." } },
-      { name: "Chess Log", x: 0.84, y: 0.8, size: 30, color: "#fdba74", dark: "#7c2d12", spin: 0.00045,
+      { name: "Chess Log", x: 0.84, y: 0.8, tall: [0.86, 0.72], size: 30, color: "#fdba74", dark: "#7c2d12", spin: 0.00045,
         spots: [{ lat: -0.2, lon: 1, size: 0.15, color: "#7c2d12" }, { lat: 0.4, lon: 3.5, size: 0.12, color: "#7c2d12" }, { lat: 0, lon: 5, size: 0.1, color: "#7c2d12" }],
         moon: { dist: 1.9, size: 0.2, speed: -0.0011 },
         about: "A project for logging my chess games. Built with Lovable, it taught me what I don't want: a copy of something that already exists.",
@@ -2540,7 +2600,7 @@
               about: "Verileri \"ad: değer\" çiftleriyle yazmanın ortak yolu, her programlama dili okuyabiliyor. Telefonundaki hava durumu uygulaması da bilgiyi sunucudan çoğu zaman JSON olarak alıyor. Bu sitedeki 76ers skoru da sana JSON olarak geliyor.",
               mine: "Bir Python sözlüğüne neredeyse tıpatıp benziyor. (Evet, Instagram'da herkes ona Jason diyor.)" } },
       // My team. ball = basketball seams, starRing = the 13 stars from the Sixers logo
-      { name: "76", title: "Philadelphia 76ers", x: 0.45, y: 0.17, size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
+      { name: "76", title: "Philadelphia 76ers", x: 0.45, y: 0.17, tall: [0.88, 0.25], size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
         ball: true, seam: "#ED174C", starRing: true,
         short: "Philadelphia's professional basketball team in the NBA; everyone just calls them the \"Sixers\". The 76 in the name comes from 1776, the year the US declared its independence.",
         about: "The Sixers' most loved legend is Allen Iverson: he was the 2001 MVP and famous for his crossover. I love fast players who score a lot, just like him, and that's why Maxey is my favorite.",
@@ -2549,7 +2609,7 @@
               about: "Sixers'ın en sevilen efsanesi Allen Iverson: 2001'de MVP seçildi ve crossover çalımıyla ünlüydü. Ben de onun gibi hızlı, çok sayı atan oyuncuları seviyorum; Maxey'i sevmemin sebebi de bu.",
               mine: "Bu sezon favori takımım Philadelphia, favori oyuncum Tyrese Maxey." } },
       // split = the planet cuts itself into 4 pieces now and then (that's what chunking is)
-      { name: "Chunking", x: 0.73, y: 0.62, size: 30, color: "#2dd4bf", dark: "#134e4a", spin: 0.0004,
+      { name: "Chunking", x: 0.73, y: 0.62, tall: [0.76, 0.5], size: 30, color: "#2dd4bf", dark: "#134e4a", spin: 0.0004,
         bands: 4, split: true,
         short: "Like sorting a wardrobe into drawers: throw everything into one drawer and you can't find your socks. Put one sock in one drawer and its pair in another, and the pair is lost.",
         about: "Splitting a long text into small pieces (chunks) before searching. Each piece is turned into numbers (an embedding) and stored; when a question comes in, the closest pieces are found and handed to the AI. Common ways: a fixed size (say, every 300 words), by heading or paragraph, or with pieces that overlap a little, so a sentence on the border between two pieces isn't cut in half.",
@@ -2558,7 +2618,7 @@
               about: "Uzun bir metni aramadan önce küçük parçalara (chunk) bölmek. Her parça ayrı ayrı sayılara (embedding) çevrilip saklanıyor. Soru gelince en yakın parçalar bulunup yapay zekâya veriliyor. Yaygın yöntemler şunlar: sabit boyda bölmek (ör. her 300 kelimede bir), başlığa ya da paragrafa göre bölmek, ya da parçaları birbirine biraz bindirerek bölmek (overlap). Bindirme, iki parçanın sınırına denk gelen cümlenin yarıda kalmasını önlüyor.",
               mine: "Yazılarımı bölmeden 9 büyük parça yapınca ahtapot 40 sorudan 36'sını bildi. Başlıklara bölüp 77 parça yapınca 38'ini bildi." } },
       // Reranking: a second, more careful read of the search results
-      { name: "Reranking", x: 0.62, y: 0.72, size: 30, color: "#8ea2ff", dark: "#1e1b4b", spin: 0.0004,
+      { name: "Reranking", x: 0.62, y: 0.72, tall: [0.68, 0.86], size: 30, color: "#8ea2ff", dark: "#1e1b4b", spin: 0.0004,
         bands: 5, viewR: 2.15, // its ring of cards reaches ~2x the radius, so the camera stays further back
         short: "Like hiring: HR quickly picks 20 CVs out of hundreds, then the manager reads those 20 side by side with the job ad and puts the best one on top.",
         about: "The second step of a search. First, embeddings quickly find the pieces closest in meaning; then a second model, the reranker, reads the question together with each piece and puts them in a new order. It's slower but more accurate, so it only gets the few candidates the first step brought back. One more thing: the model has to know its users' language.",
@@ -2581,7 +2641,7 @@
     });
 
     // The radio satellite. Not a planet, but it floats and gets clicked the same way.
-    const station = { name: "Radio", x: 0.9, y: 0.47, size: 22, color: "#5eead4", grow: 1 };
+    const station = { name: "Radio", x: 0.9, y: 0.47, tall: [0.97, 0.4], size: 22, color: "#5eead4", grow: 1 };
     let nowPlayingLine = ""; // filled in from Last.fm, shown under the satellite
 
     // My path: Java -> Python -> MCP/JSON -> RAG -> Evals, and Chunking is next.
@@ -5673,6 +5733,8 @@
       // (the planets themselves stay upright; only where they sit changes)
       const TALL = phone() && window.innerHeight / window.innerWidth > 1.2;
       const SPAN_X = TALL ? 24 : 64, SPAN_Y = TALL ? 60 : 36;
+      // tall phones: a planet can have its own spot (tall: [x, y]) so rings and names don't overlap
+      const spot = (t) => (TALL && t.tall) || [t.x, t.y];
       const place = (x, y) => TALL ? [(y - 0.5) * SPAN_X, (0.5 - x) * SPAN_Y] : [(x - 0.5) * SPAN_X, -(y - 0.5) * SPAN_Y];
       const col = (hex) => new THREE.Color(hex);
       const things = [...planets, station];
@@ -5825,7 +5887,7 @@
         group.add(hit);
         hitMeshes.push(hit);
 
-        group.position.set(...place(p.x, p.y), ((p.depth || 1) - 0.95) * 16 + (((k * 53) % 9) - 4));
+        group.position.set(...place(...spot(p)), ((p.depth || 1) - 0.95) * 16 + (((k * 53) % 9) - 4));
         scene.add(group);
         P3.set(p, parts);
       }
@@ -5883,7 +5945,7 @@
         hit.userData.thing = station;
         group.add(hit);
         hitMeshes.push(hit);
-        group.position.set(...place(station.x, station.y), 2);
+        group.position.set(...place(...spot(station)), 2);
         group.scale.setScalar(R);
         scene.add(group);
         return { group, body, waves, waveMats, beaconMat, R: 2.4 };
@@ -6337,11 +6399,11 @@
       for (const c of CHAPTERS) c.things = stops.filter((t) => c.names.includes(t.name));
       const TXJ = TR
         ? { chapter: "BÖLÜM", count: `${stops.length} DURAK  ·  ${CHAPTERS.length} BÖLÜM`, end: "Aklına takılan bir şey mi var?", ask: "Ahtapota sor", note: "Bana not bırak", endKick: "YOLCULUĞUN SONU", drag: "SÜRÜKLE  ·  360°", dragM: "YANA KAYDIR  ·  360°",
-            badge: `${stops.length} durak · ${CHAPTERS.length} bölüm`, heroA: "Yol boyunca", heroB: ["", "öğrendiklerim", ""],
+            badge: `${stops.length} durak · ${CHAPTERS.length} bölüm`, heroA: "Öğrendiklerimin", heroB: ["", "haritası", ""],
             endA: "Aklına takılan", endB: ["", "bir şey", " mi var?"],
             share: "Paylaş", copied: "Bağlantı kopyalandı", safe: "Notları sadece ben okurum, isim yazmak zorunda değilsin.", notePh: "Hangi gezegen aklında kaldı?" }
         : { chapter: "CHAPTER", count: `${stops.length} STOPS  ·  ${CHAPTERS.length} CHAPTERS`, end: "Something on your mind?", ask: "Ask the octopus", note: "Leave me a note", endKick: "END OF THE JOURNEY", drag: "DRAG  ·  360°", dragM: "SWIPE SIDEWAYS  ·  360°",
-            badge: `${stops.length} stops · ${CHAPTERS.length} chapters`, heroA: "What I picked up", heroB: ["", "along the way", ""],
+            badge: `${stops.length} stops · ${CHAPTERS.length} chapters`, heroA: "A map of", heroB: ["what I've ", "learned", ""],
             endA: "Something on", endB: ["your ", "mind", "?"],
             share: "Share", copied: "Link copied", safe: "Only I read the notes, and your name is optional.", notePh: "Which planet stuck with you?" };
 
@@ -6546,18 +6608,73 @@
       homeBtn.textContent = TX.home;
       homeBtn.addEventListener("click", () => goTo(0));
       document.body.append(homeBtn);
-      document.getElementById("brand").addEventListener("click", () => goTo(0));
+      // The logo: back to start on computers; on phones it opens the chapter menu
+      const menuOn = (on) => document.documentElement.classList.toggle("menu-open", on);
+      document.getElementById("brand").addEventListener("click", (e) => {
+        if (!phone()) return goTo(0);
+        e.stopPropagation();
+        menuOn(!document.documentElement.classList.contains("menu-open"));
+      });
+      document.addEventListener("click", (e) => { if (!e.target.closest("#topbar")) menuOn(false); }, true);
+      window.addEventListener("scroll", () => menuOn(false), { passive: true });
       // The glass bar: one link per chapter, and where we are right now
       const topLinks = document.getElementById("top-links"), topWhere = document.getElementById("top-where");
       const chapterSec = CHAPTERS.map((ch) => sections.findIndex((s) => s.kind === "chapter" && s.ch === ch));
       const topBtns = CHAPTERS.map((ch, i) => {
         const b = document.createElement("button");
         b.type = "button";
-        b.textContent = ch.title;
-        b.addEventListener("click", () => goTo(chapterSec[i]));
+        const dot = document.createElement("i");
+        dot.className = "dot";
+        dot.style.setProperty("--c", ["#8fb4ff", "#c4a1ff", "#ffc48a"][i] || "#fff"); // = TONE_CSS (defined further down)
+        b.append(dot, ch.title);
+        b.addEventListener("click", () => { menuOn(false); goTo(chapterSec[i]); });
         topLinks.append(b);
         return b;
       });
+      // phones: the menu starts with "Back to start"
+      {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "home";
+        b.textContent = TX.home;
+        b.addEventListener("click", () => { menuOn(false); goTo(0); });
+        topLinks.prepend(b);
+      }
+      // Phones: slide a thumb along the dots on the right; the name shows, a tiny buzz on each
+      // new dot, and on release the camera flies there
+      {
+        let pick = -1, moved = false, skipClick = false;
+        const at = (y) => {
+          let best = -1, bd = 1e9;
+          navDots.forEach((b, i) => { const r = b.getBoundingClientRect(); const d = Math.abs(r.top + r.height / 2 - y); if (d < bd) { bd = d; best = i; } });
+          return best;
+        };
+        const mark = (i) => {
+          if (i === pick) return;
+          if (pick >= 0) moved = true;
+          pick = i;
+          navDots.forEach((b, j) => b.classList.toggle("pick", j === i));
+          try { navigator.vibrate && navigator.vibrate(6); } catch {}
+        };
+        nav.addEventListener("pointerdown", (e) => {
+          if (e.pointerType !== "touch") return;
+          pick = -1; moved = false;
+          nav.classList.add("scrubbing");
+          try { nav.setPointerCapture(e.pointerId); } catch {}
+          mark(at(e.clientY));
+        });
+        nav.addEventListener("pointermove", (e) => { if (nav.classList.contains("scrubbing")) mark(at(e.clientY)); });
+        const end = () => {
+          if (!nav.classList.contains("scrubbing")) return;
+          nav.classList.remove("scrubbing");
+          navDots.forEach((b) => b.classList.remove("pick"));
+          if (pick >= 0) { skipClick = true; setTimeout(() => { skipClick = false; }, 400); goTo(pick); }
+          pick = -1;
+        };
+        nav.addEventListener("pointerup", end);
+        nav.addEventListener("pointercancel", end);
+        nav.addEventListener("click", (e) => { if (skipClick) { e.stopPropagation(); e.preventDefault(); } }, true);
+      }
       let whereKey = "";
       const setWhere = (i) => {
         const s = sections[i];
@@ -6626,8 +6743,8 @@
         };
         const dTall = Math.max((SPAN_Y / 2 + 4) / tanH, (SPAN_X / 2 + 5) / (tanH * aspect));
         keys = sections.map((s) => {
-          if (s.kind === "hero" && TALL) return turned(dTall * 1.4, 0.3, 0.14);
-          if (s.kind === "outro" && TALL) return turned(dTall * 1.62, 0.37, 0.42);
+          if (s.kind === "hero" && TALL) return turned(dTall * 1.8, 0.33, 0.14);       // the system between the glass bar and the title
+          if (s.kind === "outro" && TALL) return turned(dTall * 3.1, 0.54, 0.3);        // small and high: a constellation above the text
           if (s.kind === "hero") {
             // the system sits a little higher and further, so the title underneath stays clear
             const dh = d0 * (phone() ? 1 : 1.16), sh = phone() ? 0 : dh * tanH * 0.16; // further back, so the top planets clear the glass bar
@@ -6642,7 +6759,7 @@
             let rad = 0;
             s.ch.things.forEach((t) => { rad = Math.max(rad, C.distanceTo(P3.get(t).group.position) + viewRadius(t)); });
             const D = new V3((C.x / (SPAN_X / 2)) * 0.5, 0.42, 1).normalize();
-            return framing(C, D, rad, phone() ? 0.64 : 0.58, phone() ? 0.32 : 0.3);
+            return framing(C, D, rad, TALL ? 0.78 : phone() ? 0.64 : 0.58, TALL ? 0.38 : phone() ? 0.32 : 0.3);
           }
           const P = P3.get(s.t).group.position;
           // Look from the outside of the system inward: the planet in front, the rest behind it
@@ -7392,6 +7509,7 @@
             const x = Math.max(0, Math.min(1, (d - dAct * 0.3) / (dAct * 0.3)));
             let hide = 1 - x * x * (3 - 2 * x);
             if (onText && d < dAct * 4) hide = 1;
+            if (TALL && atChapter) hide = 1; // tall phones: a chapter screen is its own page, only its planets
             goal = 1 - Math.min(1, stage * 2) * hide;
           }
           parts.vis = parts.vis === undefined ? 1 : parts.vis + (goal - parts.vis) * (reduceMotion ? 1 : 1 - Math.exp(-dt / 220));
@@ -7738,7 +7856,7 @@
         for (const [t, el] of labels) {
           const parts = P3.get(t);
           const ch = CHAPTERS.find((c) => c.things.includes(t));
-          const amount = Math.max(overview, ch ? chapterOn(ch) : 0);
+          const amount = Math.max(TALL ? 0 : overview, ch ? chapterOn(ch) : 0); // tall phones: names only on chapter screens (the overview is too tight)
           labelAmt.set(t, amount);
           const v = tmp.copy(parts.group.position);
           v.addScaledVector(screenDown, t === station ? 3.0 : parts.R * 1.15 + 0.8);
