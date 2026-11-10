@@ -2114,6 +2114,7 @@
       html.sky3d #stop-nav .rail, html.sky3d #stop-nav .rail-fill { top: 14px; bottom: 14px; }
       #stop-nav button::after { display: block; right: 34px; font-size: 13px; padding: 5px 12px; }
       #stop-nav button.on.stop::after, #stop-nav button.on.chapter::after { opacity: 0; }
+      #stop-nav button:hover::after { opacity: 0; } /* a tap leaves "hover" stuck on phones */
       #stop-nav.scrubbing button.pick::after { opacity: 1; transform: translate(0, -50%); }
       #stop-nav.scrubbing button.pick::before { background: var(--c); transform: scale(2); box-shadow: 0 0 12px var(--c); }
       html.at-outro #stop-nav, html.panel-open #stop-nav, html.menu-open #stop-nav { opacity: 0; pointer-events: none; }
@@ -2600,7 +2601,7 @@
               about: "Verileri \"ad: değer\" çiftleriyle yazmanın ortak yolu, her programlama dili okuyabiliyor. Telefonundaki hava durumu uygulaması da bilgiyi sunucudan çoğu zaman JSON olarak alıyor. Bu sitedeki 76ers skoru da sana JSON olarak geliyor.",
               mine: "Bir Python sözlüğüne neredeyse tıpatıp benziyor. (Evet, Instagram'da herkes ona Jason diyor.)" } },
       // My team. ball = basketball seams, starRing = the 13 stars from the Sixers logo
-      { name: "76", title: "Philadelphia 76ers", x: 0.45, y: 0.17, tall: [0.88, 0.25], size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
+      { name: "76", title: "Philadelphia 76ers", x: 0.45, y: 0.17, tall: [0.86, 0.1], size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
         ball: true, seam: "#ED174C", starRing: true,
         short: "Philadelphia's professional basketball team in the NBA; everyone just calls them the \"Sixers\". The 76 in the name comes from 1776, the year the US declared its independence.",
         about: "The Sixers' most loved legend is Allen Iverson: he was the 2001 MVP and famous for his crossover. I love fast players who score a lot, just like him, and that's why Maxey is my favorite.",
@@ -5887,7 +5888,8 @@
         group.add(hit);
         hitMeshes.push(hit);
 
-        group.position.set(...place(...spot(p)), ((p.depth || 1) - 0.95) * 16 + (((k * 53) % 9) - 4));
+        // tall phones: the column is thin, so spread planets front-to-back too; turning it then opens a real 3D cluster
+        group.position.set(...place(...spot(p)), ((p.depth || 1) - 0.95) * 16 + (((k * 53) % 9) - 4) + (TALL ? (((k * 7) % 5) - 2) * 4.5 : 0));
         scene.add(group);
         P3.set(p, parts);
       }
@@ -6758,7 +6760,7 @@
             C.divideScalar(s.ch.things.length);
             let rad = 0;
             s.ch.things.forEach((t) => { rad = Math.max(rad, C.distanceTo(P3.get(t).group.position) + viewRadius(t)); });
-            const D = new V3((C.x / (SPAN_X / 2)) * 0.5, 0.42, 1).normalize();
+            const D = new V3((C.x / (SPAN_X / 2)) * 0.5, TALL ? 0.1 : 0.42, 1).normalize(); // tall phones: nearly head-on (planets spread front-to-back there)
             return framing(C, D, rad, TALL ? 0.78 : phone() ? 0.64 : 0.58, TALL ? 0.38 : phone() ? 0.32 : 0.3);
           }
           const P = P3.get(s.t).group.position;
@@ -7436,7 +7438,8 @@
           streakMat.uniforms.uDir.value.copy(tmp2).normalize();
           streakMat.uniforms.uLen.value = Math.min(90, speed * 70);
           streakMat.uniforms.uOp.value = Math.min(1, speed * 1.4);
-        } else if (mode === "live" && !reduceMotion && speed > 0.07) {
+        } else if (mode === "live" && !reduceMotion && speed > 0.07 && !(orbit.down || Math.abs(orbit.yaw) > 0.01 || Math.abs(orbit.pitch) > 0.01)) {
+          // (not while you turn the view by hand: from far away a small turn is a big swing, not a flight)
           // A long fast move (between chapters, or a quick scroll): a short burst of light speed
           // around the camera itself
           streaks.position.copy(camera.position);
