@@ -2066,6 +2066,7 @@
 
     /* ---------- Phones (2026-11-10): a chapter menu, a thumb rail, nothing on top of anything ---------- */
     .brand-caret { display: none; }
+    #phone-vignette { display: none; }
     #top-links button.home { display: none; }
     @media (max-width: 699px) {
       /* "Opening ▾" opens a small menu: back to start + the chapters */
@@ -2121,6 +2122,8 @@
       /* the text keeps clear of the rail */
       #journey .stop, #journey .chapter { padding-left: 26px; padding-right: 30px; }
 
+      /* Phones draw the sky without the film pass: the dark corners are a plain gradient on top */
+      html.sky3d #phone-vignette { display: block; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 55%, rgba(2, 2, 8, 0.55) 100%); }
       /* Chapter pages: a quiet hint under the chips */
       .page-hint { margin: 16px 0 0; font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.22em; color: rgba(236, 236, 248, 0.6); }
       .chapter-inner > .page-hint { opacity: 0; transition: opacity 0.8s ease 0.6s; }
@@ -4490,6 +4493,7 @@
       const canvas3d = document.createElement("canvas");
       canvas3d.id = "sky3d";
       document.body.prepend(canvas3d);
+      { const v = document.createElement("div"); v.id = "phone-vignette"; v.setAttribute("aria-hidden", "true"); canvas3d.after(v); }
       // Throws if the device has no WebGL -> the 2D sky takes over (see the top)
       const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, powerPreference: "high-performance" });
       // A shader that doesn't compile on this GPU doesn't throw by itself; note it and fail below
@@ -5910,6 +5914,13 @@
         hit.userData.thing = p;
         group.add(hit);
         hitMeshes.push(hit);
+        // Phones have no glow pass; a faint halo in the planet's own color gives back some of that glow
+        if (LITE) {
+          const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(p.color).multiplyScalar(0.32), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+          halo.scale.setScalar(R * (p.ring ? 5.2 : 4.4));
+          halo.renderOrder = -1;
+          group.add(halo);
+        }
 
         // tall phones: the column is thin, so spread planets front-to-back too; turning it then opens a real 3D cluster
         group.position.set(...place(...spot(p)), ((p.depth || 1) - 0.95) * 16 + (((k * 53) % 9) - 4) + (TALL ? (((k * 7) % 5) - 2) * 4.5 : 0));
@@ -7961,12 +7972,12 @@
           }
         }
 
-        composer.render();
+        if (LITE) renderer.render(scene, camera); else composer.render();
       }
 
       // ---------- Start ----------
       renderer.compile(scene, camera);
-      composer.render();
+      if (LITE) renderer.render(scene, camera); else composer.render();
       if (shaderFailed) throw new Error("a shader didn't compile on this GPU");
       html.classList.add("sky3d");
       if ("scrollRestoration" in history) history.scrollRestoration = "manual";
