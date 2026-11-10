@@ -2121,6 +2121,29 @@
       /* the text keeps clear of the rail */
       #journey .stop, #journey .chapter { padding-left: 26px; padding-right: 30px; }
 
+      /* Chapter pages: a quiet hint under the chips */
+      .page-hint { margin: 16px 0 0; font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.22em; color: rgba(236, 236, 248, 0.6); }
+      .chapter-inner > .page-hint { opacity: 0; transition: opacity 0.8s ease 0.6s; }
+      .chapter.active .chapter-inner > .page-hint { opacity: 1; }
+      /* The chapter names stay written next to their dashes on the rail */
+      #stop-nav button.chapter::after, #stop-nav button.chapter:hover::after {
+        opacity: 0.5;
+        transform: translate(0, -50%);
+        right: 26px;
+        padding: 2px 0;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: none;
+        border: 0;
+        backdrop-filter: none;
+        text-shadow: 0 0 10px rgba(0, 0, 10, 0.95);
+      }
+      #stop-nav button.chapter.on::after { opacity: 1; color: var(--c); }
+      html:not(.journeying) #stop-nav button.chapter::after { opacity: 0; } /* the overview needs the room */
+      html.sky3d #stop-nav button { height: 34px; }
+      html.sky3d #stop-nav button.chapter::before { inset: 15px 8px; }
       /* The hero: title and hint well above the octopus */
       .hero-copy { bottom: 178px; }
     }
@@ -2659,7 +2682,7 @@
     // ---------- Phone layout ----------
     // On phones the sky becomes a path you scroll down. Planets zigzag left and right
     // in the order I learned things. Anything not in this list (a new planet) goes at the end.
-    const mobileOrder = ["Java", "Python", "JSON", "MCP", "RAG", "Chunking", "Evals", "Reranking", "76", "Chess Log", "Radio"];
+    const mobileOrder = ["Java", "Python", "JSON", "MCP", "RAG", "Chunking", "Reranking", "Evals", "76", "Chess Log", "Radio"];
     const MOBILE_TOP = 170; // px from the top of the page to the first planet
     const MOBILE_GAP = 210; // px between planets
 
@@ -6384,27 +6407,31 @@
         labels.set(t, el);
       }
 
-      // ---------- The journey: an opening screen, 3 chapters of stops, and an ending ----------
+      // ---------- The journey: an opening screen, chapters of stops (phone: chapter pages), and an ending ----------
       const stops = [
         ...mobileOrder.map((n) => things.find((t) => t.name === n)).filter(Boolean),
         ...things.filter((t) => !mobileOrder.includes(t.name)),
       ];
       const CHAPTERS = TR
-        ? [{ n: "I", title: "Temeller", names: ["Java", "Python", "JSON"] },
-           { n: "II", title: "Yapay zekâ", names: ["MCP", "RAG", "Chunking", "Evals", "Reranking"] },
-           { n: "III", title: "Kodun dışında", names: ["76", "Chess Log", "Radio"] }]
-        : [{ n: "I", title: "Foundations", names: ["Java", "Python", "JSON"] },
-           { n: "II", title: "Into AI", names: ["MCP", "RAG", "Chunking", "Evals", "Reranking"] },
-           { n: "III", title: "Beyond the code", names: ["76", "Chess Log", "Radio"] }];
+        ? [{ n: "I", title: "Temeller", names: ["Java", "Python", "JSON", "MCP"] },
+           { n: "II", title: "Yapay zekâda arama", names: ["RAG", "Chunking", "Reranking"] },
+           { n: "III", title: "Modeller ve ölçüm", names: ["Evals"] },
+           { n: "IV", title: "Kodun dışında", names: ["76", "Chess Log", "Radio"] }]
+        : [{ n: "I", title: "Foundations", names: ["Java", "Python", "JSON", "MCP"] },
+           { n: "II", title: "Search in AI", names: ["RAG", "Chunking", "Reranking"] },
+           { n: "III", title: "Models and evals", names: ["Evals"] },
+           { n: "IV", title: "Beyond the code", names: ["76", "Chess Log", "Radio"] }];
+      // Tall phones: each chapter is one page (its planets together, tap one to read it), no stop-by-stop slides
+      const PAGES = TALL;
       // A planet added later that isn't in any chapter goes into the last one
       for (const t of stops) if (!CHAPTERS.some((c) => c.names.includes(t.name))) CHAPTERS[CHAPTERS.length - 1].names.push(t.name);
       for (const c of CHAPTERS) c.things = stops.filter((t) => c.names.includes(t.name));
       const TXJ = TR
-        ? { chapter: "BÖLÜM", count: `${stops.length} DURAK  ·  ${CHAPTERS.length} BÖLÜM`, end: "Aklına takılan bir şey mi var?", ask: "Ahtapota sor", note: "Bana not bırak", endKick: "YOLCULUĞUN SONU", drag: "SÜRÜKLE  ·  360°", dragM: "YANA KAYDIR  ·  360°",
+        ? { chapter: "BÖLÜM", count: `${stops.length} DURAK  ·  ${CHAPTERS.length} BÖLÜM`, end: "Aklına takılan bir şey mi var?", ask: "Ahtapota sor", note: "Bana not bırak", endKick: "YOLCULUĞUN SONU", drag: "SÜRÜKLE  ·  360°", dragM: "YANA KAYDIR  ·  360°", pageHint: "GEZEGENE DOKUN  ·  YANA KAYDIR 360°",
             badge: `${stops.length} durak · ${CHAPTERS.length} bölüm`, heroA: "Öğrendiklerimin", heroB: ["", "haritası", ""],
             endA: "Aklına takılan", endB: ["", "bir şey", " mi var?"],
             share: "Paylaş", copied: "Bağlantı kopyalandı", safe: "Notları sadece ben okurum, isim yazmak zorunda değilsin.", notePh: "Hangi gezegen aklında kaldı?" }
-        : { chapter: "CHAPTER", count: `${stops.length} STOPS  ·  ${CHAPTERS.length} CHAPTERS`, end: "Something on your mind?", ask: "Ask the octopus", note: "Leave me a note", endKick: "END OF THE JOURNEY", drag: "DRAG  ·  360°", dragM: "SWIPE SIDEWAYS  ·  360°",
+        : { chapter: "CHAPTER", count: `${stops.length} STOPS  ·  ${CHAPTERS.length} CHAPTERS`, end: "Something on your mind?", ask: "Ask the octopus", note: "Leave me a note", endKick: "END OF THE JOURNEY", drag: "DRAG  ·  360°", dragM: "SWIPE SIDEWAYS  ·  360°", pageHint: "TAP A PLANET  ·  SWIPE SIDEWAYS 360°",
             badge: `${stops.length} stops · ${CHAPTERS.length} chapters`, heroA: "A map of", heroB: ["what I've ", "learned", ""],
             endA: "Something on", endB: ["your ", "mind", "?"],
             share: "Share", copied: "Link copied", safe: "Only I read the notes, and your name is optional.", notePh: "Which planet stuck with you?" };
@@ -6466,14 +6493,16 @@
           const b = document.createElement("button");
           b.type = "button";
           b.textContent = t.name;
-          b.addEventListener("click", () => goTo(secOf.get(t)));
+          b.addEventListener("click", () => (PAGES ? openThing(t) : goTo(secOf.get(t))));
           li.append(b);
           list.append(li);
         });
         inner.append(roman, kick, h, list);
+        if (PAGES) { const hint = document.createElement("p"); hint.className = "page-hint"; hint.textContent = TXJ.pageHint; inner.append(hint); }
         s.append(inner);
         addSection("chapter", s, { ch });
 
+        if (PAGES) { stopNo += ch.things.length; continue; }
         for (const t of ch.things) {
           stopNo++;
           const st = document.createElement("section");
@@ -6575,9 +6604,12 @@
       addSection("outro", outro);
       document.getElementById("space").after(journey);
 
-      const secOf = new Map(sections.filter((s) => s.t).map((s) => [s.t, sections.indexOf(s)]));
+      // Where each planet lives: its stop, or on phone pages its chapter's page
+      const secOf = new Map(PAGES
+        ? sections.filter((s) => s.kind === "chapter").flatMap((s) => s.ch.things.map((t) => [t, sections.indexOf(s)]))
+        : sections.filter((s) => s.t).map((s) => [s.t, sections.indexOf(s)]));
       const stopSections = sections.filter((s) => s.kind === "stop");
-      const radioShort = sections[secOf.get(station)].el.querySelector(".stop-short");
+      const radioShort = PAGES ? null : sections[secOf.get(station)].el.querySelector(".stop-short");
       const LAST = sections.length - 1;
 
       // ---------- Ways around: dots on the right, "Back to start", the logo, Esc ----------
@@ -6588,9 +6620,9 @@
         const b = document.createElement("button");
         const label = s.kind === "hero" ? TX.all : s.kind === "chapter" ? s.ch.n + "  " + s.ch.title : s.kind === "outro" ? TXJ.end : s.t.title || s.t.name;
         b.className = s.kind;
-        b.style.setProperty("--c", s.t ? s.t.color : "#ffffff");
+        b.style.setProperty("--c", s.t ? s.t.color : s.ch ? ["#8fb4ff", "#c4a1ff", "#ffb3c6", "#ffc48a"][CHAPTERS.indexOf(s.ch)] || "#fff" : "#ffffff");
         b.setAttribute("aria-label", label);
-        b.dataset.name = s.kind === "stop" ? s.t.name : label;
+        b.dataset.name = s.kind === "stop" ? s.t.name : s.kind === "chapter" && PAGES ? s.ch.title : label;
         b.addEventListener("click", () => goTo(i));
         nav.append(b);
         return b;
@@ -6627,7 +6659,7 @@
         b.type = "button";
         const dot = document.createElement("i");
         dot.className = "dot";
-        dot.style.setProperty("--c", ["#8fb4ff", "#c4a1ff", "#ffc48a"][i] || "#fff"); // = TONE_CSS (defined further down)
+        dot.style.setProperty("--c", ["#8fb4ff", "#c4a1ff", "#ffb3c6", "#ffc48a"][i] || "#fff"); // = TONE_CSS (defined further down)
         b.append(dot, ch.title);
         b.addEventListener("click", () => { menuOn(false); goTo(chapterSec[i]); });
         topLinks.append(b);
@@ -6694,8 +6726,8 @@
         topBtns.forEach((b, j) => b.classList.toggle("on", CHAPTERS[j] === ch));
       };
       // Each chapter has its own faint tone in the dark parts of the sky
-      const TONE_CSS = ["#8fb4ff", "#c4a1ff", "#ffc48a"];
-      const TONES = [new V3(0.22, 0.42, 1.0), new V3(0.62, 0.36, 1.0), new V3(1.0, 0.6, 0.24)];
+      const TONE_CSS = ["#8fb4ff", "#c4a1ff", "#ffb3c6", "#ffc48a"];
+      const TONES = [new V3(0.22, 0.42, 1.0), new V3(0.62, 0.36, 1.0), new V3(1.0, 0.45, 0.62), new V3(1.0, 0.6, 0.24)];
       const toneOf = (i) => { const s = sections[Math.max(0, Math.min(LAST, i))]; return s.ch ? TONES[CHAPTERS.indexOf(s.ch)] : null; };
       const toneNow = new V3(), toneGoal = new V3();
       window.addEventListener("keydown", (e) => {
@@ -6760,6 +6792,7 @@
             C.divideScalar(s.ch.things.length);
             let rad = 0;
             s.ch.things.forEach((t) => { rad = Math.max(rad, C.distanceTo(P3.get(t).group.position) + viewRadius(t)); });
+            if (PAGES) rad = Math.max(rad, 9); // a page with one planet (for now) shows it, not just its surface
             const D = new V3((C.x / (SPAN_X / 2)) * 0.5, TALL ? 0.1 : 0.42, 1).normalize(); // tall phones: nearly head-on (planets spread front-to-back there)
             return framing(C, D, rad, TALL ? 0.78 : phone() ? 0.64 : 0.58, TALL ? 0.38 : phone() ? 0.32 : 0.3);
           }
@@ -7438,7 +7471,7 @@
           streakMat.uniforms.uDir.value.copy(tmp2).normalize();
           streakMat.uniforms.uLen.value = Math.min(90, speed * 70);
           streakMat.uniforms.uOp.value = Math.min(1, speed * 1.4);
-        } else if (mode === "live" && !reduceMotion && speed > 0.07 && !(orbit.down || Math.abs(orbit.yaw) > 0.01 || Math.abs(orbit.pitch) > 0.01)) {
+        } else if (mode === "live" && !reduceMotion && !phone() && speed > 0.07 && !(orbit.down || Math.abs(orbit.yaw) > 0.01 || Math.abs(orbit.pitch) > 0.01)) {
           // (not while you turn the view by hand: from far away a small turn is a big swing, not a flight)
           // A long fast move (between chapters, or a quick scroll): a short burst of light speed
           // around the camera itself
@@ -7451,7 +7484,7 @@
           streakMat.uniforms.uOp.value *= 0.85;
         }
         const hitK = (now - chapterHitAt) / 1300;
-        if (hitK >= 0 && hitK < 1 && mode === "live") {
+        if (hitK >= 0 && hitK < 1 && mode === "live" && !phone()) { // phones: no light-speed lines at all (they read as glitches there)
           // a burst of light speed straight ahead, fading out
           streaks.position.copy(camera.position);
           streaks.quaternion.copy(camera.quaternion);
@@ -7744,7 +7777,8 @@
         }
 
         // ----- Rare visitors -----
-        if (!reduceMotion && mode === "live") {
+        // (not on phones: the camera sits close there, so a visitor could pass right by the lens and look huge)
+        if (!reduceMotion && mode === "live" && !phone()) {
           const fwd = ev1.set(0, 0, -1).applyQuaternion(camera.quaternion);
           const right = ev2.set(1, 0, 0).applyQuaternion(camera.quaternion);
           const up = ev3.set(0, 1, 0).applyQuaternion(camera.quaternion);
@@ -7893,7 +7927,7 @@
           if (L.el.style.opacity !== ops) L.el.style.opacity = ops;
           if (L.show) L.el.style.transform = `translate(${L.x}px, ${L.y}px) translateX(-50%)`;
         }
-        if (radioShort.textContent !== nowPlayingLine) radioShort.textContent = nowPlayingLine;
+        if (radioShort && radioShort.textContent !== nowPlayingLine) radioShort.textContent = nowPlayingLine;
 
         // ----- The custom cursor -----
         if (finePointer) {
