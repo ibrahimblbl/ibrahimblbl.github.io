@@ -2110,7 +2110,7 @@
 
       /* The thumb rail: a quiet line of small dots on the right edge (no names at rest);
          slide a finger along it and the name under the finger shows */
-      html.sky3d #stop-nav { display: flex; right: 1px; gap: 0; touch-action: none; padding: 4px 0; opacity: 0.55; transition: opacity 0.3s ease; }
+      html.sky3d #stop-nav { display: flex; right: 1px; gap: 0; touch-action: none; padding: 4px 0; transition: opacity 0.3s ease; }
       html.sky3d #stop-nav.scrubbing { opacity: 1; }
       html.sky3d #stop-nav button { width: 24px; height: 19px; }
       html.sky3d #stop-nav button::before { inset: 7.5px 10px; background: rgba(255, 255, 255, 0.4); }
@@ -2120,7 +2120,21 @@
       html.sky3d #stop-nav .rail { background: rgba(255, 255, 255, 0.08); }
       html.sky3d #stop-nav .rail-fill { box-shadow: none; opacity: 0.7; }
       #stop-nav button::after { display: block; right: 32px; font-size: 13px; padding: 5px 12px; }
-      #stop-nav button.on.stop::after, #stop-nav button.on.chapter::after { opacity: 0; }
+      #stop-nav button.on.stop::after { opacity: 0; }
+      /* The chapter names stay written next to their dashes (the visitor sees where they are) */
+      #stop-nav button.chapter::after, #stop-nav button.chapter:hover::after {
+        opacity: 0.72; transform: translate(0, -50%); right: 24px; padding: 2px 0;
+        font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+        background: none; border: 0; backdrop-filter: none; text-shadow: 0 0 10px rgba(0, 0, 10, 0.95), 0 0 3px rgba(0, 0, 10, 0.9);
+      }
+      #stop-nav button.chapter.on::after, #stop-nav button.chapter.cur::after { opacity: 1; color: var(--c); }
+      html:not(.journeying) #stop-nav button.chapter::after { opacity: 0; } /* the first screen needs the room */
+      html.sky3d #stop-nav button.chapter { height: 26px; }
+      html.sky3d #stop-nav button.stop { height: 16px; }
+      /* the rail sits high, beside the planet, clear of the text in the lower half */
+      html.sky3d #stop-nav { top: 84px; transform: none; }
+      /* on a planet's own screen only the chapter you're in keeps its name; while the finger slides, all show */
+      html.journeying #stop-nav:not(.scrubbing) button.chapter:not(.cur)::after { opacity: 0; }
       #stop-nav button:hover::after { opacity: 0; } /* a tap leaves "hover" stuck on phones */
       #stop-nav.scrubbing button.pick::after { opacity: 1; transform: translate(0, -50%); }
       #stop-nav.scrubbing button.pick::before { background: var(--c); transform: scale(2); box-shadow: 0 0 12px var(--c); }
@@ -2133,9 +2147,12 @@
 
       /* A calm screen: at the bottom only the octopus. "Leave me a note" lives in its panel and on
          the ending; "Back to start" in the Opening menu; "Ask me" stays readable for screen readers */
-      html.sky3d #note-quick, html.sky3d #home-btn { display: none; }
+      html.sky3d #home-btn { display: none; }
+      /* Ask me and Leave me a note: small, right next to the octopus */
+      html.sky3d #note-quick { font-size: 11.5px; padding: 4px 10px; gap: 6px; left: 84px; top: calc(50% + 16px); }
+      html.sky3d #note-quick svg { width: 13px; height: 13px; }
       html.sky3d.journeying #octo-hi { opacity: 0; } /* the hello belongs to the first screen; on a stop it would sit on the text */
-      html.sky3d .ask-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+      html.sky3d .ask-label { font-size: 11.5px; padding: 4px 10px; }
 
       /* A stop: the planet big in the upper part (the camera places it), its text underneath */
       #journey .stop { padding-bottom: 112px; }
@@ -7619,6 +7636,7 @@
           journey.style.transform = lagPx ? `translate3d(0, ${lagPx}px, 0)` : "";
         }
         html.classList.toggle("at-outro", at === LAST);
+        html.classList.toggle("at-stop", at >= 0 && sections[at].kind === "stop"); // (phones: the rail shows only the current chapter's name there)
         // Crossing into another chapter: fly through a cloud in its tone
         if (nearest !== passFrom) {
           const a = sections[Math.max(0, Math.min(LAST, passFrom))], b = sections[Math.max(0, Math.min(LAST, nearest))];
@@ -7652,7 +7670,12 @@
           }
         }
         const overview = mode === "live" ? Math.max(0, 1 - Math.min(pSmooth, Math.abs(pSmooth - LAST)) / 0.5) : 0;
-        if (navDots[nearest] && !navDots[nearest].classList.contains("on")) navDots.forEach((b, i) => b.classList.toggle("on", i === nearest));
+        if (navDots[nearest] && !navDots[nearest].classList.contains("on")) {
+          navDots.forEach((b, i) => b.classList.toggle("on", i === nearest));
+          // the chapter we're in (also on its planets' screens), so its name can stay written
+          let c = nearest; while (c > 0 && sections[c].kind !== "chapter") c--;
+          navDots.forEach((b, i) => b.classList.toggle("cur", i === c && sections[c].kind === "chapter"));
+        }
         html.classList.toggle("journeying", pSmooth > 0.5);
         // How much each chapter is "on screen" (its planets get their names shown)
         const chapterOn = (ch) => {
