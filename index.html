@@ -2108,13 +2108,18 @@
       #top-links button .dot { display: inline-block; width: 7px; height: 7px; margin-right: 10px; border-radius: 50%; background: var(--c, #fff); box-shadow: 0 0 8px var(--c, #fff); vertical-align: 1px; }
       #top-links button.home { display: block; color: rgba(240, 240, 250, 0.7); }
 
-      /* The thumb rail: a dot per screen on the right edge; slide a finger along it to pick one */
-      html.sky3d #stop-nav { display: flex; right: 2px; gap: 0; touch-action: none; padding: 4px 0; }
-      html.sky3d #stop-nav button { width: 26px; height: 21px; }
-      html.sky3d #stop-nav button::before { inset: 7.5px 10px; }
-      html.sky3d #stop-nav button.chapter::before { inset: 9.5px 8px; }
-      html.sky3d #stop-nav .rail, html.sky3d #stop-nav .rail-fill { top: 14px; bottom: 14px; }
-      #stop-nav button::after { display: block; right: 34px; font-size: 13px; padding: 5px 12px; }
+      /* The thumb rail: a quiet line of small dots on the right edge (no names at rest);
+         slide a finger along it and the name under the finger shows */
+      html.sky3d #stop-nav { display: flex; right: 1px; gap: 0; touch-action: none; padding: 4px 0; opacity: 0.55; transition: opacity 0.3s ease; }
+      html.sky3d #stop-nav.scrubbing { opacity: 1; }
+      html.sky3d #stop-nav button { width: 24px; height: 19px; }
+      html.sky3d #stop-nav button::before { inset: 7.5px 10px; background: rgba(255, 255, 255, 0.4); }
+      html.sky3d #stop-nav button.chapter::before { inset: 8.5px 8px; }
+      html.sky3d #stop-nav button.on::before { transform: scale(1.5); box-shadow: 0 0 6px var(--c); }
+      html.sky3d #stop-nav .rail, html.sky3d #stop-nav .rail-fill { top: 13px; bottom: 13px; }
+      html.sky3d #stop-nav .rail { background: rgba(255, 255, 255, 0.08); }
+      html.sky3d #stop-nav .rail-fill { box-shadow: none; opacity: 0.7; }
+      #stop-nav button::after { display: block; right: 32px; font-size: 13px; padding: 5px 12px; }
       #stop-nav button.on.stop::after, #stop-nav button.on.chapter::after { opacity: 0; }
       #stop-nav button:hover::after { opacity: 0; } /* a tap leaves "hover" stuck on phones */
       #stop-nav.scrubbing button.pick::after { opacity: 1; transform: translate(0, -50%); }
@@ -2125,31 +2130,77 @@
 
       /* Phones draw the sky without the film pass: the dark corners are a plain gradient on top */
       html.sky3d #phone-vignette { display: block; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 55%, rgba(2, 2, 8, 0.55) 100%); }
-      /* Chapter pages: a quiet hint under the chips */
-      .page-hint { margin: 16px 0 0; font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.22em; color: rgba(236, 236, 248, 0.6); }
-      .chapter-inner > .page-hint { opacity: 0; transition: opacity 0.8s ease 0.6s; }
-      .chapter.active .chapter-inner > .page-hint { opacity: 1; }
-      /* The chapter names stay written next to their dashes on the rail */
-      #stop-nav button.chapter::after, #stop-nav button.chapter:hover::after {
-        opacity: 0.5;
-        transform: translate(0, -50%);
-        right: 26px;
-        padding: 2px 0;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 10px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        background: none;
-        border: 0;
-        backdrop-filter: none;
-        text-shadow: 0 0 10px rgba(0, 0, 10, 0.95);
-      }
-      #stop-nav button.chapter.on::after { opacity: 1; color: var(--c); }
-      html:not(.journeying) #stop-nav button.chapter::after { opacity: 0; } /* the overview needs the room */
-      html.sky3d #stop-nav button { height: 34px; }
-      html.sky3d #stop-nav button.chapter::before { inset: 15px 8px; }
+
+      /* A calm screen: at the bottom only the octopus. "Leave me a note" lives in its panel and on
+         the ending; "Back to start" in the Opening menu; "Ask me" stays readable for screen readers */
+      html.sky3d #note-quick, html.sky3d #home-btn { display: none; }
+      html.sky3d.journeying #octo-hi { opacity: 0; } /* the hello belongs to the first screen; on a stop it would sit on the text */
+      html.sky3d .ask-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+      /* A stop: the planet big in the upper part (the camera places it), its text underneath */
+      #journey .stop { padding-bottom: 112px; }
+      .stop-num { margin-bottom: 8px; font-size: 11.5px; }
+      .stop h2 { font-size: clamp(46px, 15vw, 76px); margin-bottom: 12px; }
+      .stop-short { max-width: 34ch; font-size: 15.5px; line-height: 1.5; margin-bottom: 18px; }
+      .stop-drag { margin-top: 14px; font-size: 10px; color: rgba(236, 236, 248, 0.55); }
       /* The hero: title and hint well above the octopus */
-      .hero-copy { bottom: 178px; }
+      .hero-copy { bottom: 150px; }
+    }
+
+    /* ---------- Cinematic round (2026-11-10) ---------- */
+    /* The card grows out of its planet (JS points --ox/--oy at the planet) and shrinks back into it */
+    #card {
+      transform-origin: var(--ox, 50%) var(--oy, 100%);
+      transform: translate(-50%, 0) scale(0.16);
+      transition: opacity 0.32s ease, transform 0.42s cubic-bezier(0.55, 0, 0.8, 0.45); /* closing: back in, quickly */
+    }
+    #card.open {
+      transform: translate(-50%, 0) scale(1);
+      transition: opacity 0.38s ease, transform 0.62s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (min-width: 700px) {
+      #card { transform: translate(0, -50%) perspective(1100px) rotateX(0deg) rotateY(0deg) scale(0.16); }
+      #card.open {
+        transform: translate(0, -50%) perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(1);
+        transition: opacity 0.4s ease 0.12s, transform 0.66s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+      }
+      #card.open.tilting { transition: opacity 0.4s ease, transform 0.18s ease-out; }
+    }
+    /* its lines follow a moment later, one after another */
+    #card.open > :not(#close) { animation-duration: 0.55s; }
+    #card.open > :nth-child(2) { animation-delay: 0.2s; }
+    #card.open > :nth-child(3) { animation-delay: 0.27s; }
+    #card.open > :nth-child(4) { animation-delay: 0.34s; }
+    #card.open > :nth-child(5) { animation-delay: 0.41s; }
+    #card.open > :nth-child(6) { animation-delay: 0.48s; }
+
+    /* A stop's name resolves: soft and a little spread out, then sharp and together */
+    .stop h2 .ch {
+      transform: translate(calc((var(--i) - var(--mid, 0)) * 0.07em), 0.12em);
+      transition: opacity 0.55s ease, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1); /* no blur: per-letter filters stutter in Safari */
+      transition-delay: calc(var(--i) * 28ms + 0.06s);
+    }
+    .stop.active h2 .ch { transform: none; }
+    /* the lines under it rise in turn, coming into focus */
+    .stop-inner > :not(h2) { transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .stop.active .stop-num { transition-delay: 0s; }
+    .stop.active .stop-short { transition-delay: 0.26s; }
+    .stop.active .stop-mine { transition-delay: 0.36s; }
+    .stop.active .stop-more { transition-delay: 0.46s; }
+    .stop.active .stop-drag { transition-delay: 0.56s; }
+
+    /* Buttons never move under the pointer: hover lights them, pressing dims them and draws an inner ring */
+    .stop-more:hover, .cta button:hover, #home-btn:hover, #note-quick:hover, #octo-button:hover .ask-label { transform: none; }
+    html.journeying #home-btn:hover { transform: none; }
+    #top-ask:hover, .btn-light:hover { transform: none; }
+    #top-ask:active, .btn-light:active { transform: none; filter: brightness(0.86); box-shadow: inset 0 0 0 1px rgba(13, 12, 24, 0.25); }
+    .stop-more, .cta button, #home-btn, #note-quick, .ask-label, #top-ask { transition: background 0.25s ease, box-shadow 0.25s ease, filter 0.12s ease, opacity 0.35s ease; }
+    .stop-more:hover { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 16%, transparent), 0 10px 30px color-mix(in srgb, var(--c) 20%, transparent); }
+    .cta button:hover, #home-btn:hover { box-shadow: 0 0 0 4px rgba(196, 161, 255, 0.1), 0 10px 30px rgba(196, 161, 255, 0.18); }
+    .stop-more:active, .cta button:active, #home-btn:active, #note-quick:active, #octo-button:active .ask-label, #top-ask:active {
+      transform: none;
+      filter: brightness(0.86);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 0 0 3px color-mix(in srgb, var(--c, #c4a1ff) 22%, transparent);
     }
   </style>
 </head>
@@ -2515,7 +2566,8 @@
       height = window.innerHeight;
       // Rebuilding the canvas is expensive. On phones the height changes while scrolling
       // (the address bar hides and shows), so only rebuild if the width changed or it got taller.
-      if (width !== canvasW || height > canvasH) {
+      // While the 3D sky runs this canvas is hidden, so leave it alone (start2D sizes it if needed).
+      if (!window.sky3d && (width !== canvasW || height > canvasH)) {
         canvasW = width;
         canvasH = height;
         canvas.width = width * dpr;
@@ -2662,11 +2714,17 @@
       if (TR && p.tr) Object.assign(p, p.tr); // Turkish card text replaces the English one
     }
 
-    // Building a surface picture takes a moment, so do it early, one planet at a time,
-    // while the intro is still typing (the sky isn't visible yet anyway)
-    planets.forEach((p, i) => {
-      if (!p.ball) setTimeout(() => { if (!p.tex) { p.tex = buildTexture(p); p.air = hexRgb(p.color).map((c) => c * 0.5 + 128); } }, 300 + i * 120);
-    });
+    // Building a surface picture takes a moment, so do it ahead of time, one planet at a time.
+    // Only the 2D sky uses these pictures, so this runs only once we know it's the 2D sky
+    // (start2D, or as soon as the 3D sky gives up); drawSphere would also build a missing one.
+    let texturesQueued = false;
+    function prebuildTextures() {
+      if (texturesQueued) return;
+      texturesQueued = true;
+      planets.forEach((p, i) => {
+        if (!p.ball) setTimeout(() => { if (!p.tex) { p.tex = buildTexture(p); p.air = hexRgb(p.color).map((c) => c * 0.5 + 128); } }, 300 + i * 120);
+      });
+    }
 
     // The radio satellite. Not a planet, but it floats and gets clicked the same way.
     const station = { name: "Radio", x: 0.9, y: 0.47, tall: [0.97, 0.4], size: 22, color: "#5eead4", grow: 1 };
@@ -2791,6 +2849,8 @@
     function start2D() {
       if (window.sky2dStarted) return;
       window.sky2dStarted = true;
+      resize(); // the window may have changed size while the 3D sky had it
+      prebuildTextures();
       skyStart = performance.now();
       // Opening shot: the camera starts close in on the middle of the screen (where the
       // terminal shrank into a point of light) and slowly pulls back to show the whole sky
@@ -3712,6 +3772,24 @@
 
     const card = document.getElementById("card");
 
+    // The card grows out of its planet and goes back into it: point its transform origin at the
+    // planet's place on screen (measured in the card's own box, as it will sit once open)
+    function aimCard(p) {
+      if (!p || typeof window.screenPos !== "function") return;
+      let sp = null;
+      try { sp = window.screenPos(p); } catch (err) { return; }
+      if (!sp || !isFinite(sp.x) || !isFinite(sp.y)) return;
+      const w = card.offsetWidth, h = card.offsetHeight;
+      if (!w || !h) return;
+      const wide = window.matchMedia("(min-width: 700px)").matches;
+      const left = wide ? card.offsetLeft : card.offsetLeft - w / 2;  // (the open card is shifted by its translate)
+      const top = wide ? card.offsetTop - h / 2 : card.offsetTop;
+      const ox = Math.max(-0.6 * w, Math.min(1.6 * w, sp.x - left));
+      const oy = Math.max(-0.9 * h, Math.min(1.9 * h, sp.y - top));
+      card.style.setProperty("--ox", ox.toFixed(1) + "px");
+      card.style.setProperty("--oy", oy.toFixed(1) + "px");
+    }
+
     // Open a planet's card, or the radio panel for the satellite
     function openThing(p) {
       closeAsk();
@@ -3740,7 +3818,10 @@
       if (p.name === "Chess Log") showChessStats();
       if (p.name === "76") showSixers();
       // Keyboard and screen reader users land inside the card; we remember where they came from
-      if (!card.classList.contains("open")) cameFrom = document.activeElement;
+      if (!card.classList.contains("open")) {
+        cameFrom = document.activeElement;
+        aimCard(p);
+      }
       card.classList.add("open");
       document.getElementById("close").focus({ preventScroll: true });
       document.getElementById("hint").classList.add("gone"); // they've got it
@@ -3750,6 +3831,7 @@
     let cameFrom = null;
     function closeCard() {
       if (!card.classList.contains("open")) return;
+      aimCard(cardPlanet);
       card.classList.remove("open");
       if (cameFrom && cameFrom !== document.body) cameFrom.focus({ preventScroll: true });
       cameFrom = null;
@@ -4062,8 +4144,8 @@
     // The example questions have ready answers, written from my posts:
     // clicking them never calls Gemini and doesn't use up the daily limit.
     const ASK_PRESETS = [
-      {"q":"What is this site for?","sources":[],"answer":"Opening is my personal site, and every planet on it is something I learned on my way to AI engineering. I started it in October 2026 because I wanted one place to keep what I learn, and to build something of my own that doesn't exist anywhere else. Instead of a plain list, every topic is a planet you can click: Java, Python, MCP, JSON, RAG, Evals and Chunking, plus my hobbies, chess and the 76ers. The octopus in the corner is part of it too: you can ask it about anything I've written here. As I learn new things, new planets will show up.","tr":{"q":"Bu sitenin amacı ne?","answer":"Opening benim kişisel sitem; buradaki her gezegen, yapay zekâ mühendisliğine giden yolda öğrendiğim bir şeyi anlatıyor. Siteye Ekim 2026'da başladım, çünkü öğrendiklerimi tek bir yerde toplamak ve başka hiçbir yerde olmayan, bana ait bir şey yapmak istedim. Düz bir liste yerine her konu tıklayabileceğin bir gezegen: Java, Python, MCP, JSON, RAG, Evals ve Chunking, bir de hobilerim satranç ve 76ers. Köşedeki ahtapot da işin parçası: burada yazdığım her şeyi ona sorabilirsin. Yeni şeyler öğrendikçe yeni gezegenler de gelecek."}},
-      {"q":"How did you build this site, and what helped you?","sources":[],"answer":"I built this site together with Claude Code, Anthropic's AI coding assistant. I decided what I wanted, and we wrote the code step by step while it explained every part to me. The site is plain HTML, CSS and JavaScript in a single file, and the planets are drawn on a canvas. It's hosted for free on GitHub Pages, and a small Cloudflare Worker answers your questions here and fetches the 76ers scores, with Google's Gemini writing the answers. The whole site costs nothing to run: every service it uses is on a free tier.","tr":{"q":"Bu siteyi nasıl yaptın, nelerden yardım aldın?","answer":"Bu siteyi Anthropic'in yapay zekâ kodlama asistanı Claude Code ile birlikte yaptım. Ne istediğime ben karar verdim, kodu da adım adım birlikte yazdık; her parçayı bana tek tek açıkladı. Site tek bir dosyada sade HTML, CSS ve JavaScript'ten oluşuyor, gezegenler de canvas üzerine çiziliyor. GitHub Pages'te ücretsiz yayında; burada sorduğun soruları ve 76ers skorlarını küçük bir Cloudflare Worker hallediyor, cevapları da Google'ın Gemini modeli yazıyor. Sitenin hiçbir maliyeti yok: kullandığım her servis ücretsiz katmanda."}},
+      {"q":"What is this site for?","sources":[],"answer":"Opening is my personal site, and every planet on it is something I learned on my way to AI engineering. I started it in October 2026 because I wanted one place to keep what I learn, and to build something of my own that doesn't exist anywhere else. Instead of a plain list, every topic is a planet you can click: Java, Python, MCP, JSON, RAG, Evals, Chunking and Reranking, plus my hobbies, chess and the 76ers. The octopus in the corner is part of it too: you can ask it about anything I've written here. As I learn new things, new planets will show up.","tr":{"q":"Bu sitenin amacı ne?","answer":"Opening benim kişisel sitem; buradaki her gezegen, yapay zekâ mühendisliğine giden yolda öğrendiğim bir şeyi anlatıyor. Siteye Ekim 2026'da başladım, çünkü öğrendiklerimi tek bir yerde toplamak ve başka hiçbir yerde olmayan, bana ait bir şey yapmak istedim. Düz bir liste yerine her konu tıklayabileceğin bir gezegen: Java, Python, MCP, JSON, RAG, Evals, Chunking ve Reranking, bir de hobilerim satranç ve 76ers. Köşedeki ahtapot da işin parçası: burada yazdığım her şeyi ona sorabilirsin. Yeni şeyler öğrendikçe yeni gezegenler de gelecek."}},
+      {"q":"How did you build this site, and what helped you?","sources":[],"answer":"I built this site together with Claude Code, Anthropic's AI coding assistant. I decided what I wanted, and we wrote the code step by step while it explained every part to me. The site is plain HTML, CSS and JavaScript in a single file, and the planets live in a 3D scene built with the Three.js library. It's hosted for free on GitHub Pages, and a small Cloudflare Worker answers your questions here and fetches the 76ers scores, with Google's Gemini writing the answers. The whole site costs nothing to run: every service it uses is on a free tier.","tr":{"q":"Bu siteyi nasıl yaptın, nelerden yardım aldın?","answer":"Bu siteyi Anthropic'in yapay zekâ kodlama asistanı Claude Code ile birlikte yaptım. Ne istediğime ben karar verdim, kodu da adım adım birlikte yazdık; her parçayı bana tek tek açıkladı. Site tek bir dosyada sade HTML, CSS ve JavaScript'ten oluşuyor; gezegenler de Three.js kütüphanesiyle kurulmuş 3D bir sahnede duruyor. GitHub Pages'te ücretsiz yayında; burada sorduğun soruları ve 76ers skorlarını küçük bir Cloudflare Worker hallediyor, cevapları da Google'ın Gemini modeli yazıyor. Sitenin hiçbir maliyeti yok: kullandığım her servis ücretsiz katmanda."}},
       {"q":"What did you learn building RAG?","sources":["RAG"],"answer":"RAG (Retrieval-Augmented Generation) means the system first finds the right piece of my notes, then a language model writes the answer based on that piece. I started with a simple version: a keyword search over my notes, connected to Claude as a tool. It found the right note for 6 of 8 easy questions (75%), but only 1 of 6 hard questions that used different words than my notes (17%). The big lesson was that keyword search can't tell when two different words mean the same thing. Embeddings fix that by comparing meaning instead of exact words, and this Ask me box is my first RAG that uses them.","tr":{"q":"RAG kurarken ne öğrendin?","answer":"RAG (Retrieval-Augmented Generation), önce notlarımdan doğru parçayı bulup sonra bir dil modeline cevabı o parçaya göre yazdırmak demek. İşe basit bir sürümle başladım: notlarımda anahtar kelimeyle arama yapan ve Claude'a araç olarak bağlanan küçük bir kod. Kolay 8 sorunun 6'sında doğru notu buldu (%75), ama notlarımdakinden farklı kelimeler kullanan 6 zor sorunun sadece 1'inde (%17). En büyük ders şu oldu: anahtar kelime araması, farklı iki kelimenin aynı şeyi anlattığını anlayamıyor. Embedding'ler kelimelere değil anlama baktığı için bunu çözüyor; bu Ask me kutusu da embedding kullanan ilk RAG'im."}},
       {"q":"Why does AI use Python instead of Java?","sources":["Python","Java"],"answer":"Python doesn't actually do the heavy math in AI; it gives the orders. Training a model means billions of multiplications, and those run in fast C, C++ and CUDA code underneath, so Python is the steering wheel and C is the engine. AI was also built by researchers who needed to test ideas quickly, and a quick experiment takes a few lines in Python, while Java first wants a class, types and a main method. Then a snowball started: TensorFlow and PyTorch came out in Python, so new libraries were written for Python, so newcomers learned Python. Java is still valuable for the big systems that serve AI to users.","tr":{"q":"Yapay zekâda neden Java değil de Python kullanılıyor?","answer":"Aslında yapay zekâdaki ağır hesapları Python yapmıyor, o sadece emir veriyor. Bir modeli eğitmek milyarlarca çarpma demek; bunları altta çalışan hızlı C, C++ ve CUDA kodu yapıyor. Yani Python direksiyon, C motor. Üstelik yapay zekâyı, fikirlerini hızlıca denemek isteyen araştırmacılar geliştirdi: Python'da bir deneme birkaç satır sürerken Java önce bir sınıf, tipler ve main metodu istiyor. Sonra kartopu etkisi başladı: TensorFlow ve PyTorch Python'la çıktı, yeni kütüphaneler de Python için yazıldı, yeni başlayanlar da Python öğrendi. Java ise yapay zekâyı kullanıcılara ulaştıran büyük sistemlerde hâlâ çok değerli."}},
       {"q":"What surprised you about MCP?","sources":["MCP"],"answer":"MCP (Model Context Protocol) is the standard way to plug tools into Claude, a bit like USB for AI tools. I built my own tool that searches my notes and connected it to Claude Code. What surprised me most is that Claude decides by itself when to use the tool, and it doesn't even send the whole question, just a word it picks. The tool's description changes that decision, so writing a good description is as important as writing the code. In my first real test I asked when Denver won its first championship, and Claude called my tool on its own and found the answer, 2023, in my notes.","tr":{"q":"MCP'de seni en çok ne şaşırttı?","answer":"MCP (Model Context Protocol), Claude'a araç bağlamanın standart yolu; yapay zekâ araçlarının USB'si gibi düşünebilirsin. Notlarımda arama yapan kendi aracımı yazıp Claude Code'a bağladım. Beni en çok şaşırtan, aracı ne zaman kullanacağına Claude'un kendisinin karar vermesi oldu. Üstelik sorunun tamamını bile göndermiyor, kendi seçtiği bir kelimeyi gönderiyor. Bu kararı aracın açıklaması değiştiriyor; yani iyi bir açıklama yazmak, kodu yazmak kadar önemli. İlk gerçek denememde Denver'ın ilk şampiyonluğunu ne zaman kazandığını sordum: Claude aracımı kendiliğinden çağırdı ve cevabı (2023) notlarımda buldu."}},
@@ -4454,10 +4536,23 @@
       document.getElementById("sky3d")?.remove();
       document.getElementById("journey")?.remove();
       document.getElementById("labels3d")?.remove();
-      document.documentElement.classList.remove("sky3d", "panel-open");
+      // Everything else only the 3D journey added: its rail, buttons, fake cursor, film bars...
+      for (const sel of ["#stop-nav", "#rail-bar", "#home-btn", "#cursor-dot", "#cursor-ring", ".trail", ".letterbox", "#ask-beams", "#phone-vignette"]) {
+        document.querySelectorAll(sel).forEach((el) => el.remove());
+      }
+      // ...and its page states. Above all the custom cursor: it hides the real one, and the fake
+      // one stopped moving with the 3D frame loop, so without this there'd be no cursor at all.
+      document.documentElement.classList.remove("sky3d", "sky3d-on", "panel-open", "custom-cursor", "cursor-on", "journeying", "at-outro",
+        "flying", "prologue", "prologue-seen", "menu-open", "dragging");
+      const topLinks = document.getElementById("top-links"), topWhere = document.getElementById("top-where");
+      if (topLinks) topLinks.textContent = "";
+      if (topWhere) topWhere.textContent = "";
+      const card = document.getElementById("card");
+      if (card) { card.classList.remove("tilting"); card.style.removeProperty("--rx"); card.style.removeProperty("--ry"); }
       window.scrollTo(0, 0);
       window.sky3d = null;
       window.sky3dFailed = true;
+      prebuildTextures(); // the 2D sky will need its planet pictures
       if (window.skyWanted) start2D();
     }
     try {
@@ -4514,13 +4609,17 @@
       const quality = { prK: 1, step: 0, sum: 0, n: 0, prevRendered: false };
       const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 4000);
       const scene = new THREE.Scene();
-      // samples: 4 = smooth edges on computers (phones skip it, it costs more there)
-      const target = new THREE.WebGLRenderTarget(1, 1, { type: floatOK ? THREE.HalfFloatType : THREE.UnsignedByteType, samples: phone() ? 2 : 4 });
-      const composer = new EffectComposer(renderer, target);
-      composer.addPass(new RenderPass(scene, camera));
-      // Phones get a lighter recipe: no glow pass (it's several full-screen blurs) and so no
-      // need for its safety net either
+      // Phones get a lighter recipe: they draw straight to the screen (see the end of the frame),
+      // so none of the passes below exist there: no glow (several full-screen blurs), no safety
+      // net, no film pass, and no full-screen in-between pictures sitting unused on the GPU.
       const LITE = phone();
+      let composer = null;
+      if (!LITE) {
+        // samples: 4 = smooth edges on computers
+        const target = new THREE.WebGLRenderTarget(1, 1, { type: floatOK ? THREE.HalfFloatType : THREE.UnsignedByteType, samples: 4 });
+        composer = new EffectComposer(renderer, target);
+        composer.addPass(new RenderPass(scene, camera));
+      }
       // Safety net: if any pixel ends up as an invalid number (some GPUs make one in rare
       // spots), the glow pass would smear it over the whole screen and turn it black.
       // This checks every pixel's raw bits (a check the GPU's shortcuts can't skip) and
@@ -4538,13 +4637,14 @@
           }`,
       }));
       // Bloom: very bright things (the beacon, the sun, Chunking's core) softly glow
-      const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.42, 0.5, 0.92);
+      // (phones get a stand-in with the same fields, so the frame code can set them freely)
+      const bloom = LITE ? { strength: 0.42, enabled: false, setSize() {} } : new UnrealBloomPass(new THREE.Vector2(256, 256), 0.42, 0.5, 0.92);
       if (floatOK && !LITE) composer.addPass(bloom);
-      composer.addPass(new OutputPass());
+      if (!LITE) composer.addPass(new OutputPass());
       // The "film" look, on the final picture: darker corners, a little moving grain, color
       // fringes when the camera moves fast, a soft focus away from what we're looking at,
       // and lens ghosts when looking toward the sun
-      const filmPass = new ShaderPass({
+      const filmShader = {
         uniforms: {
           tDiffuse: { value: null }, uTime: { value: 0 }, uCA: { value: 0 }, uFocus: { value: 0 },
           uGrain: { value: phone() ? 0.022 : 0.03 }, uVig: { value: 0.42 }, uAspect: { value: 1 },
@@ -4609,9 +4709,14 @@
             col += g * uGrain * (0.55 + 0.45 * (1.0 - dot(col, vec3(0.333))));
             gl_FragColor = vec4(col, 1.0);
           }`,
-      });
-      composer.addPass(filmPass);
-      const film = filmPass.uniforms;
+      };
+      // On phones the film values are still set every frame, they just aren't drawn
+      let film = filmShader.uniforms;
+      if (!LITE) {
+        const filmPass = new ShaderPass(filmShader);
+        composer.addPass(filmPass);
+        film = filmPass.uniforms;
+      }
 
       // One star lights everything, from the left, a bit above and in front
       const LIGHT = new V3(-0.85, 0.38, 0.55).normalize();
@@ -4711,6 +4816,7 @@
         uniform vec3 uRingN, uRingC;       // a ring's plane (its normal and center, world)
         uniform vec2 uRingIO;              // the ring's inner and outer radius (0 = no ring)
         uniform float uRadW;               // this planet's size in the world (for close-up detail)
+        uniform float uDark;               // arriving: how far the light still sits behind the planet
         float h1(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
         varying vec3 vObj;
         varying vec3 vWNormal;
@@ -4726,7 +4832,7 @@
           if (uInside > 0.5 && !gl_FrontFacing) { gl_FragColor = vec4(uAtmo * 0.06, 1.0); return; }
           vec3 p = vObj;
           vec3 col;
-          float wet = 0.0, sheen = 0.0, bolt = 0.0, landK = 0.0;
+          float wet = 0.0, sheen = 0.0, bolt = 0.0, landK = 0.0, auroraK = 0.0;
           if (uType == 0) {
             // Gas: bands along the latitude. Each latitude turns at its own speed (jet streams),
             // and turbulence pushes the bands around.
@@ -4766,6 +4872,7 @@
               bolt = smoothstep(uSpot.w * 1.1, uSpot.w * 0.2, d) * pow(fl, 10.0) * (0.6 + 0.4 * w2);
             }
             sheen = 0.05;
+            auroraK = 1.0;
           } else if (uType == 1) {
             // Rock: land and low plains, fine detail, ice at the poles
             vec3 q = p * 2.3 + uSeed;
@@ -4869,9 +4976,18 @@
           float night = 1.0 - smoothstep(-0.25, 0.05, ndl);
           // Seen with the light behind it, the edge of the air glows warm (back-lit)
           float back = pow(max(dot(-V, uLight), 0.0), 3.0);
-          lit += vec3(1.0, 0.62, 0.38) * fres * back * 0.7;
+          lit += vec3(1.0, 0.62, 0.38) * fres * back * 0.7 * (1.0 - 0.5 * uDark); // (calmer while we arrive with the light behind)
           // Lightning in a gas storm, only visible where it's dark
           lit += vec3(0.75, 0.8, 1.0) * bolt * night * 1.6;
+          // Gas giants: a faint aurora ring round each pole, seen only on the night side.
+          // Curtains = slow noise along the ring (no angles, so nothing undefined at the pole)
+          float aox = (abs(vObj.y) - 0.84) / 0.045;
+          if (auroraK > 0.5 && night > 0.02 && abs(aox) < 2.2) {   // (only the few pixels it can touch pay for it)
+            float oval = exp(-aox * aox);
+            float curtain = 0.35 + 0.65 * vnoise(vec3(vObj.x * 9.0, uTime * 0.22 + uSeed, vObj.z * 9.0));
+            vec3 auC = mix(vec3(0.35, 1.0, 0.72), uAtmo, 0.35);
+            lit += auC * oval * curtain * night * (0.1 + 0.5 * fres) * 0.55;
+          }
           // Tiny lights on the night side (MCP: the tools are awake all night)
           if (uNight > 0.5) {
             float cell = vnoise(vObj * 46.0 + uSeed);
@@ -4938,8 +5054,10 @@
       const RING_FRAG = /* glsl */ `
         uniform vec3 uColor, uLight, uCenter;
         uniform float uInner, uOuter, uRadius;
+        uniform float uTime, uSpark, uGlint, uDark; // sparkle on/off; the arrival light's glint; how far the light still is behind the planet
         varying vec3 vLocal; varying vec3 vWPos;
         float h1(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
+        float h2(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
         void main() {
           float t = (length(vLocal.xy) - uInner) / (uOuter - uInner);
           float band = 0.55 + 0.45 * sin(t * 70.0) * sin(t * 23.0 + 1.0);
@@ -4951,7 +5069,18 @@
           float along = dot(toC, uLight);
           float miss = length(toC - uLight * along);
           float shadow = (along > 0.0 && miss < uRadius) ? 0.12 : 1.0;
-          gl_FragColor = vec4(uColor * (0.2 + 1.1 * shadow), a * 0.85);
+          vec3 c = uColor * (0.2 + 1.1 * shadow) * (1.0 - 0.5 * uDark);
+          // Ice in the ring: a few grains catch the light and twinkle (more while the light sweeps in)
+          if (uSpark > 0.5 && a > 0.05 && shadow > 0.5) {
+            vec2 cell = floor(vLocal.xy * (64.0 / uOuter));
+            float r = h2(cell + 17.0);
+            float tw = 0.5 + 0.5 * sin(uTime * (1.3 + r * 2.2) + r * 40.0);
+            vec2 f = fract(vLocal.xy * (64.0 / uOuter)) - 0.5;
+            float dot0 = 1.0 - smoothstep(0.08, 0.32, length(f));
+            float sp = step(0.93, r) * dot0 * tw * tw * shadow;
+            c += vec3(1.0, 0.96, 1.0) * sp * (0.55 + 1.6 * uGlint) * (1.0 - 0.6 * uDark);
+          }
+          gl_FragColor = vec4(c, a * 0.85);
         }
       `;
 
@@ -5293,58 +5422,9 @@
       const SUN_SET = 0.08; // after the opening flight the sun sits just behind the horizon
       placeSun(SUN_SET);
 
-      // ---------- An asteroid belt around the system ----------
-      const ROCKS = phone() ? 500 : 1300;
-      const rockGeo = new THREE.IcosahedronGeometry(1, 1);
-      {
-        // Dent every rock shape a little so they're lumpy, not perfect balls
-        const p = rockGeo.attributes.position;
-        for (let i = 0; i < p.count; i++) {
-          const k = 0.75 + Math.random() * 0.4;
-          p.setXYZ(i, p.getX(i) * k, p.getY(i) * k * 0.8, p.getZ(i) * k);
-        }
-        rockGeo.computeVertexNormals();
-      }
-      const rockClear = { value: 0 };
-      const rockBox = { value: new THREE.Vector4(-0.6, 0.6, -1.4, 0.1) }; // where the text is (screen -1..1)
-      const rockMat = new THREE.MeshStandardMaterial({ color: 0x7a7068, roughness: 0.95, metalness: 0.05, flatShading: true });
-      // Rocks close to the camera shrink to nothing, so a stop never ends up inside the belt
-      rockMat.onBeforeCompile = (shader) => {
-        shader.vertexShader = shader.vertexShader.replace(
-          "#include <begin_vertex>",
-          `#include <begin_vertex>
-          vec3 rockCenter = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-          transformed *= smoothstep(14.0, 34.0, distance(rockCenter, cameraPosition));
-          // At a stop or chapter screen, rocks in front of the text (lower middle) or the top bar step aside
-          vec4 rc = projectionMatrix * viewMatrix * vec4(rockCenter, 1.0);
-          vec2 sp = rc.xy / max(rc.w, 0.001);
-          float onText = smoothstep(uBox.x - 0.15, uBox.x, sp.x) * (1.0 - smoothstep(uBox.y, uBox.y + 0.15, sp.x))
-                       * smoothstep(uBox.z - 0.15, uBox.z, sp.y) * (1.0 - smoothstep(uBox.w, uBox.w + 0.15, sp.y));
-          float onTop = smoothstep(0.7, 0.85, sp.y);
-          transformed *= 1.0 - uClear * max(onText, onTop) * step(0.0, rc.w);`
-        );
-        shader.uniforms.uClear = rockClear;
-        shader.uniforms.uBox = rockBox;
-        shader.vertexShader = "uniform float uClear;\nuniform vec4 uBox;\n" + shader.vertexShader;
-      };
-      const rocks = new THREE.InstancedMesh(rockGeo, rockMat, ROCKS);
-      {
-        const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new V3(), pp = new V3();
-        for (let i = 0; i < ROCKS; i++) {
-          const a = Math.random() * Math.PI * 2;
-          const r = 1 + (Math.random() + Math.random() - 1) * 0.12;
-          pp.set(Math.cos(a) * 47 * r, (Math.random() - 0.5) * 2.4, Math.sin(a) * 30 * r);
-          e.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-          q.setFromEuler(e);
-          const size = 0.05 + Math.pow(Math.random(), 4) * 0.32;
-          s.set(size, size, size);
-          m.compose(pp, q, s);
-          rocks.setMatrixAt(i, m);
-        }
-      }
+      // ---------- A belt of glittering dust around the system ----------
       const belt = new THREE.Group();
-      // The rocks read as dark specks on screen; the belt is a glittering ring of fine dust instead.
-      // (The rock code above stays for now, unused.)
+      // (Rocks were tried here and read as dark specks; fine dust looks much better.)
       const DUST = phone() ? 2600 : 6500;
       const dustGeo = new THREE.BufferGeometry();
       {
@@ -5594,7 +5674,7 @@
       // ---------- Filling the space around the system ----------
       // Soft clouds of gas at different distances. When the camera turns or flies they slide
       // past each other at different speeds, which is what makes space feel deep, not flat.
-      const cloudTex = [0, 1, 2].map((k) => canvasTexture(256, 256, (g, w) => {
+      const cloudPaint = (g, w) => {
         for (let i = 0; i < 70; i++) {
           const a = Math.random() * Math.PI * 2, r = Math.pow(Math.random(), 0.7) * w * 0.32;
           const x = w / 2 + Math.cos(a) * r, y = w / 2 + Math.sin(a) * r * 0.75, rad = 18 + Math.random() * 46;
@@ -5604,10 +5684,14 @@
           g.fillStyle = blob;
           g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
         }
-      }));
+      };
+      const cloudTex = [0, 1, 2].map(() => canvasTexture(256, 256, cloudPaint));
       const cloudColors = [0x7c4dff, 0x00b3c7, 0xff4f8b, 0x5b6cff, 0x2dd4bf, 0xc084fc];
       const nebulaClouds = [];
-      for (let i = 0; i < (phone() ? 5 : 18); i++) {
+      // (phones: the same 18 clouds, but painted once into the background picture below,
+      // so they color the sky like on computers and cost nothing per frame)
+      const cloudScene = LITE ? new THREE.Scene() : scene;
+      for (let i = 0; i < 18; i++) {
         const u = Math.random() * 1.4 - 0.7, a = Math.random() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
         const r = 260 + Math.random() * 360;
         const m = new THREE.SpriteMaterial({ map: cloudTex[i % 3], color: cloudColors[i % cloudColors.length], transparent: true, opacity: 0.07 + Math.random() * 0.08, blending: THREE.AdditiveBlending, depthWrite: false, rotation: Math.random() * Math.PI });
@@ -5616,8 +5700,17 @@
         const size = 160 + Math.random() * 260;
         c.scale.set(size, size * (0.5 + Math.random() * 0.4), 1);
         c.userData.base = m.opacity;
-        scene.add(c);
+        cloudScene.add(c);
         nebulaClouds.push(c);
+      }
+      if (LITE) {
+        // Paint the clouds on top of the sky already in the cube picture (no clearing first)
+        const auto = renderer.autoClear;
+        renderer.autoClear = false;
+        new THREE.CubeCamera(1, 3000, cubeRT).update(renderer, cloudScene);
+        renderer.autoClear = auto;
+        for (const c of nebulaClouds) c.material.dispose();
+        cloudTex.forEach((t) => t.dispose());
       }
       // Two big spiral galaxies far away, the kind you'd see in a long telescope exposure
       const bigGalaxyTex = canvasTexture(512, 512, (g, w) => {
@@ -5785,13 +5878,15 @@
       const hitMeshes = [];
       const P3 = new Map(); // planet -> its 3D parts
 
-      function planetMaterial(look, seed, glowColor, inside = false) {
+      // light: this planet's own light direction (a uniform object). Each planet has its own, so
+      // the light can sweep onto the one we arrive at while every other planet keeps the sun.
+      function planetMaterial(look, seed, glowColor, inside = false, light = shared.uLight, dark = { value: 0 }) {
         return new THREE.ShaderMaterial({
           vertexShader: PLANET_VERT,
           fragmentShader: PLANET_FRAG,
           side: inside ? THREE.DoubleSide : THREE.FrontSide, // only Chunking's pieces show their inside
           uniforms: {
-            uTime: shared.uTime, uLight: shared.uLight,
+            uTime: shared.uTime, uLight: light, uDark: dark,
             uC1: { value: col(look.c[0]) }, uC2: { value: col(look.c[1]) }, uC3: { value: col(look.c[2]) }, uC4: { value: col(look.c[3]) },
             uType: { value: look.type }, uSeed: { value: seed }, uBands: { value: look.bands || 5 }, uGlow: { value: 0 }, uInside: { value: inside ? 1 : 0 },
             uAtmo: { value: glowColor }, uSeam: { value: col("#ED174C") },
@@ -5804,12 +5899,12 @@
         });
       }
 
-      function atmosphere(R, color, strength) {
+      function atmosphere(R, color, strength, light = shared.uLight) {
         const m = new THREE.Mesh(
           new THREE.SphereGeometry(R * 1.13, 64, 48),
           new THREE.ShaderMaterial({
             side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-            uniforms: { uColor: { value: color }, uLight: shared.uLight, uStrength: { value: strength } },
+            uniforms: { uColor: { value: color }, uLight: light, uStrength: { value: strength } },
             vertexShader: ATMO_VERT, fragmentShader: ATMO_FRAG,
           })
         );
@@ -5832,8 +5927,11 @@
         group.add(tilt);
         const spinner = new THREE.Group();   // turns around its axis
         tilt.add(spinner);
-        const mat = planetMaterial(look, seed, glow, !!p.split);
-        const parts = { p, R, group, spinner, mat, look, pieces: null, core: null, clouds: null, moon: null, atmo: null, seed };
+        const L = { value: LIGHT.clone() }; // this planet's light (see the arrival sweep in the frame loop)
+        const glint = { value: 0 };          // 0..1, peaks while that light sweeps across
+        const darkU = { value: 0 };          // 0..1, how far that light still sits behind the planet
+        const mat = planetMaterial(look, seed, glow, !!p.split, L, darkU);
+        const parts = { p, R, group, spinner, mat, look, pieces: null, core: null, clouds: null, moon: null, atmo: null, seed, L, glint, darkU, dark: 0, sweepAt: -1e9, sweepFrom: 0, L0: new V3() };
 
         if (p.split) {
           // Chunking: 4 pieces that drift apart now and then, with a glowing core inside
@@ -5850,7 +5948,7 @@
         } else {
           spinner.add(new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), mat));
         }
-        parts.atmo = atmosphere(R, glow, look.type === 2 ? 0.55 : 0.9);
+        parts.atmo = atmosphere(R, glow, look.type === 2 ? 0.55 : 0.9, L);
         tilt.add(parts.atmo);
 
         if (look.clouds) {
@@ -5858,7 +5956,7 @@
             new THREE.SphereGeometry(R * 1.012, 96, 64),
             new THREE.ShaderMaterial({
               transparent: true, depthWrite: false,
-              uniforms: { uTime: shared.uTime, uLight: shared.uLight, uSeed: { value: seed + 40 } },
+              uniforms: { uTime: shared.uTime, uLight: L, uSeed: { value: seed + 40 } },
               vertexShader: PLANET_VERT, fragmentShader: CLOUD_FRAG,
             })
           );
@@ -5872,8 +5970,9 @@
             new THREE.ShaderMaterial({
               side: THREE.DoubleSide, transparent: true, depthWrite: false,
               uniforms: {
-                uColor: { value: col("#e9c8ff") }, uLight: shared.uLight, uCenter: { value: new V3() },
+                uColor: { value: col("#e9c8ff") }, uLight: L, uCenter: { value: new V3() },
                 uInner: { value: inner }, uOuter: { value: outer }, uRadius: { value: R },
+                uTime: shared.uTime, uSpark: { value: 1 }, uGlint: glint, uDark: darkU,
               },
               vertexShader: RING_VERT, fragmentShader: RING_FRAG,
             })
@@ -5903,7 +6002,7 @@
 
         if (p.moon) {
           const mR = R * p.moon.size;
-          const moonMat = planetMaterial({ type: 1, c: ["#202028", "#4a4a56", "#9a9aa8", "#e6e6ee"] }, seed + 90, col("#c8c8d8"));
+          const moonMat = planetMaterial({ type: 1, c: ["#202028", "#4a4a56", "#9a9aa8", "#e6e6ee"] }, seed + 90, col("#c8c8d8"), false, L);
           parts.moon = new THREE.Mesh(new THREE.SphereGeometry(mR, 48, 32), moonMat);
           parts.moonMat = moonMat;
           parts.mR = mR;
@@ -5921,6 +6020,7 @@
           halo.scale.setScalar(R * (p.ring ? 5.2 : 4.4));
           halo.renderOrder = -1;
           group.add(halo);
+          parts.halo = halo;
         }
 
         // tall phones: the column is thin, so spread planets front-to-back too; turning it then opens a real 3D cluster
@@ -6353,6 +6453,7 @@
       }
 
       // A distant ringed giant beyond the asteroid belt (seen when you look around)
+      let farGiant = null;
       {
         const giantLook = { type: 0, bands: 9, c: ["#1a1030", "#4b3b7a", "#c9a46a", "#f4e3c0"], spot: [0.4, 0.2, 0.9, 0.12], spotColor: "#e8b27a" };
         const giant = new THREE.Group();
@@ -6364,7 +6465,7 @@
           new THREE.RingGeometry(gR * 1.4, gR * 2.5, 160, 1),
           new THREE.ShaderMaterial({
             side: THREE.DoubleSide, transparent: true, depthWrite: false,
-            uniforms: { uColor: { value: col("#e6d3b3") }, uLight: shared.uLight, uCenter: { value: giant.position }, uInner: { value: gR * 1.4 }, uOuter: { value: gR * 2.5 }, uRadius: { value: gR } },
+            uniforms: { uColor: { value: col("#e6d3b3") }, uLight: shared.uLight, uCenter: { value: giant.position }, uInner: { value: gR * 1.4 }, uOuter: { value: gR * 2.5 }, uRadius: { value: gR }, uTime: shared.uTime, uSpark: { value: 0 }, uGlint: { value: 0 }, uDark: { value: 0 } },
             vertexShader: RING_VERT, fragmentShader: RING_FRAG,
           })
         );
@@ -6372,6 +6473,7 @@
         giant.add(ring);
         giant.rotation.z = 0.18;
         scene.add(giant);
+        farGiant = giant;
       }
 
       // The learning path between planets: faint dashed lines, only in the overview
@@ -6419,7 +6521,7 @@
         labels.set(t, el);
       }
 
-      // ---------- The journey: an opening screen, chapters of stops (phone: chapter pages), and an ending ----------
+      // ---------- The journey: an opening screen, chapters of stops, and an ending ----------
       const stops = [
         ...mobileOrder.map((n) => things.find((t) => t.name === n)).filter(Boolean),
         ...things.filter((t) => !mobileOrder.includes(t.name)),
@@ -6433,17 +6535,15 @@
            { n: "II", title: "Search in AI", names: ["RAG", "Chunking", "Reranking"] },
            { n: "III", title: "Models and evals", names: ["Evals"] },
            { n: "IV", title: "Beyond the code", names: ["76", "Chess Log", "Radio"] }];
-      // Tall phones: each chapter is one page (its planets together, tap one to read it), no stop-by-stop slides
-      const PAGES = TALL;
       // A planet added later that isn't in any chapter goes into the last one
       for (const t of stops) if (!CHAPTERS.some((c) => c.names.includes(t.name))) CHAPTERS[CHAPTERS.length - 1].names.push(t.name);
       for (const c of CHAPTERS) c.things = stops.filter((t) => c.names.includes(t.name));
       const TXJ = TR
-        ? { chapter: "BÖLÜM", count: `${stops.length} DURAK  ·  ${CHAPTERS.length} BÖLÜM`, end: "Aklına takılan bir şey mi var?", ask: "Ahtapota sor", note: "Bana not bırak", endKick: "YOLCULUĞUN SONU", drag: "SÜRÜKLE  ·  360°", dragM: "YANA KAYDIR  ·  360°", pageHint: "GEZEGENE DOKUN  ·  YANA KAYDIR 360°",
+        ? { chapter: "BÖLÜM", count: `${stops.length} DURAK  ·  ${CHAPTERS.length} BÖLÜM`, end: "Aklına takılan bir şey mi var?", ask: "Ahtapota sor", note: "Bana not bırak", endKick: "YOLCULUĞUN SONU", drag: "SÜRÜKLE  ·  360°", dragM: "YANA KAYDIR  ·  360°",
             badge: `${stops.length} durak · ${CHAPTERS.length} bölüm`, heroA: "Öğrendiklerimin", heroB: ["", "haritası", ""],
             endA: "Aklına takılan", endB: ["", "bir şey", " mi var?"],
             share: "Paylaş", copied: "Bağlantı kopyalandı", safe: "Notları sadece ben okurum, isim yazmak zorunda değilsin.", notePh: "Hangi gezegen aklında kaldı?" }
-        : { chapter: "CHAPTER", count: `${stops.length} STOPS  ·  ${CHAPTERS.length} CHAPTERS`, end: "Something on your mind?", ask: "Ask the octopus", note: "Leave me a note", endKick: "END OF THE JOURNEY", drag: "DRAG  ·  360°", dragM: "SWIPE SIDEWAYS  ·  360°", pageHint: "TAP A PLANET  ·  SWIPE SIDEWAYS 360°",
+        : { chapter: "CHAPTER", count: `${stops.length} STOPS  ·  ${CHAPTERS.length} CHAPTERS`, end: "Something on your mind?", ask: "Ask the octopus", note: "Leave me a note", endKick: "END OF THE JOURNEY", drag: "DRAG  ·  360°", dragM: "SWIPE SIDEWAYS  ·  360°",
             badge: `${stops.length} stops · ${CHAPTERS.length} chapters`, heroA: "A map of", heroB: ["what I've ", "learned", ""],
             endA: "Something on", endB: ["your ", "mind", "?"],
             share: "Share", copied: "Link copied", safe: "Only I read the notes, and your name is optional.", notePh: "Which planet stuck with you?" };
@@ -6505,16 +6605,14 @@
           const b = document.createElement("button");
           b.type = "button";
           b.textContent = t.name;
-          b.addEventListener("click", () => (PAGES ? openThing(t) : goTo(secOf.get(t))));
+          b.addEventListener("click", () => goTo(secOf.get(t)));
           li.append(b);
           list.append(li);
         });
         inner.append(roman, kick, h, list);
-        if (PAGES) { const hint = document.createElement("p"); hint.className = "page-hint"; hint.textContent = TXJ.pageHint; inner.append(hint); }
         s.append(inner);
         addSection("chapter", s, { ch });
 
-        if (PAGES) { stopNo += ch.things.length; continue; }
         for (const t of ch.things) {
           stopNo++;
           const st = document.createElement("section");
@@ -6527,6 +6625,7 @@
           num.className = "stop-num scramble";
           num.textContent = String(stopNo).padStart(2, "0") + " / " + String(stops.length).padStart(2, "0") + (t.title ? "  ·  " + t.title.toUpperCase() : "");
           const h2 = document.createElement("h2");
+          h2.style.setProperty("--mid", (([...t.name].length - 1) / 2).toFixed(1)); // letters gather toward the middle
           [...t.name].forEach((c, j) => {
             const span = document.createElement("span");
             span.className = "ch";
@@ -6616,12 +6715,10 @@
       addSection("outro", outro);
       document.getElementById("space").after(journey);
 
-      // Where each planet lives: its stop, or on phone pages its chapter's page
-      const secOf = new Map(PAGES
-        ? sections.filter((s) => s.kind === "chapter").flatMap((s) => s.ch.things.map((t) => [t, sections.indexOf(s)]))
-        : sections.filter((s) => s.t).map((s) => [s.t, sections.indexOf(s)]));
+      // Where each planet lives: its stop
+      const secOf = new Map(sections.filter((s) => s.t).map((s) => [s.t, sections.indexOf(s)]));
       const stopSections = sections.filter((s) => s.kind === "stop");
-      const radioShort = PAGES ? null : sections[secOf.get(station)].el.querySelector(".stop-short");
+      const radioShort = sections[secOf.get(station)].el.querySelector(".stop-short");
       const LAST = sections.length - 1;
 
       // ---------- Ways around: dots on the right, "Back to start", the logo, Esc ----------
@@ -6634,7 +6731,7 @@
         b.className = s.kind;
         b.style.setProperty("--c", s.t ? s.t.color : s.ch ? ["#8fb4ff", "#c4a1ff", "#ffb3c6", "#ffc48a"][CHAPTERS.indexOf(s.ch)] || "#fff" : "#ffffff");
         b.setAttribute("aria-label", label);
-        b.dataset.name = s.kind === "stop" ? s.t.name : s.kind === "chapter" && PAGES ? s.ch.title : label;
+        b.dataset.name = s.kind === "stop" ? s.t.name : s.kind === "chapter" && TALL ? s.ch.title : label;
         b.addEventListener("click", () => goTo(i));
         nav.append(b);
         return b;
@@ -6657,6 +6754,7 @@
       // The logo: back to start on computers; on phones it opens the chapter menu
       const menuOn = (on) => document.documentElement.classList.toggle("menu-open", on);
       document.getElementById("brand").addEventListener("click", (e) => {
+        if (!window.sky3d) return; // back on the 2D sky: there's no journey to go along
         if (!phone()) return goTo(0);
         e.stopPropagation();
         menuOn(!document.documentElement.classList.contains("menu-open"));
@@ -6756,7 +6854,7 @@
         if (t === station) return 2.6;
         // How much room the planet needs around it: things that circle it count too
         // (RAG's ring 2.1, 76's stars 1.8, a moon 1.6, Reranking's ring of cards 2.15, bare planet 1.15)
-        if (t.viewR) return parts.R * (phone() ? Math.min(t.viewR, 1.6) : t.viewR); // phones: as close as a planet with a moon
+        if (t.viewR) return parts.R * (phone() && !TALL ? Math.min(t.viewR, 1.6) : t.viewR); // small wide phones: as close as a planet with a moon
         return parts.R * (t.ring ? 2.1 : t.starRing ? 1.8 : t.moon ? 1.6 : 1.15);
       }
       // Look at point P from direction D, so that something of radius rad fills `fill` of the
@@ -6804,14 +6902,28 @@
             C.divideScalar(s.ch.things.length);
             let rad = 0;
             s.ch.things.forEach((t) => { rad = Math.max(rad, C.distanceTo(P3.get(t).group.position) + viewRadius(t)); });
-            if (PAGES) rad = Math.max(rad, 9); // a page with one planet (for now) shows it, not just its surface
+            if (TALL) rad = Math.max(rad, 9); // a page with one planet (for now) shows it, not just its surface
             const D = new V3((C.x / (SPAN_X / 2)) * 0.5, TALL ? 0.1 : 0.42, 1).normalize(); // tall phones: nearly head-on (planets spread front-to-back there)
             return framing(C, D, rad, TALL ? 0.78 : phone() ? 0.64 : 0.58, TALL ? 0.38 : phone() ? 0.32 : 0.3);
           }
           const P = P3.get(s.t).group.position;
           // Look from the outside of the system inward: the planet in front, the rest behind it
           const D = new V3((P.x / (SPAN_X / 2)) * 0.6, 0.16 + (P.y / (SPAN_Y / 2)) * 0.25, 1).normalize();
-          // phones: the planet a comfortable size above the text, not filling the screen
+          // Tall phones: its own composition, not the computer's shrunk. The planet (with whatever
+          // circles it) big in the space between the glass bar and the stop's text, up to two
+          // thirds of the screen's width; the text sits underneath.
+          if (TALL) {
+            const W = window.innerWidth, H = window.innerHeight;
+            const inner = s.el.querySelector(".stop-inner");
+            const textTop = inner && s.el.offsetHeight ? inner.offsetTop - s.el.offsetTop : H * 0.55;
+            const top = 78, bottom = Math.max(top + 160, textTop - 16);
+            const rPx = Math.min(W * 0.335, (bottom - top) / 2);
+            const yC = (top + bottom) / 2;
+            // room for each planet's little show (the snake, the tool nodes...) and the radio's waves
+            const rad = s.t === station ? viewRadius(s.t) * 1.45 : Math.max(viewRadius(s.t), P3.get(s.t).R * 1.75);
+            return framing(P, D, rad, rPx / (H / 2) / Math.min(1, aspect * 1.1), (H / 2 - yC) / (H / 2));
+          }
+          // other small screens: the planet a comfortable size above the text
           if (phone()) return framing(P, D, viewRadius(s.t), 0.24, 0.42);
           // Computers: the planet big, on one side of the frame (the text takes the other side)
           const k = framing(P, D, viewRadius(s.t), s.t === station ? 0.34 : 0.5, 0.04);
@@ -6864,15 +6976,21 @@
       function resize() {
         const w = window.innerWidth, h = window.innerHeight;
         const typing = /INPUT|TEXTAREA/.test(document.activeElement?.tagName || "");
-        if (lastW && w === lastW && (typing || Math.abs(h - lastH) / lastH < 0.3)) return;
+        // Phones: the address bar and the keyboard change the height all the time, and 100vh
+        // doesn't follow them, so nothing needs redoing. Computers: a window that only got
+        // taller or shorter (a tab bar appearing, a resize) does change 100vh, and the screens
+        // must be measured again or every click lands a little further from its text.
+        if (lastW && w === lastW && (h === lastH || (phone() && (typing || Math.abs(h - lastH) / lastH < 0.3)))) return;
         const keep = lastW ? progress() : 0;
         lastW = w; lastH = h;
         const pr = Math.min(window.devicePixelRatio || 1, phone() ? 1.4 : 1.75) * quality.prK;
         renderer.setPixelRatio(pr);
         renderer.setSize(w, h, false);
-        composer.setPixelRatio(pr);
-        composer.setSize(w, h);
-        bloom.setSize(w / 2, h / 2);
+        if (composer) {
+          composer.setPixelRatio(pr);
+          composer.setSize(w, h);
+          bloom.setSize(w / 2, h / 2);
+        }
         film.uRes.value.set(w * pr, h * pr);
         film.uAspect.value = w / h;
         camera.aspect = w / h;
@@ -6893,8 +7011,9 @@
         if (mode !== "live") return null;
         ndc.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
         ray.setFromCamera(ndc, camera);
-        const hit = ray.intersectObjects(hitMeshes, false)[0];
-        return hit && hit.object.parent.visible ? hit.object.userData.thing : null;
+        // The nearest planet that is actually shown: a hidden one in front mustn't block one behind it
+        const hit = ray.intersectObjects(hitMeshes, false).find((h) => h.object.parent.visible);
+        return hit ? hit.object.userData.thing : null;
       };
       window.screenPos = (t) => {
         const v = P3.get(t).group.getWorldPosition(new V3()).project(camera);
@@ -6908,15 +7027,18 @@
       const UI_SEL = "#card, #radio, #intro, #ask, #stop-nav, #topbar, button, a, input, textarea";
       // Touch: a sideways swipe turns the view (up and down still scroll the page)
       let touchTry = null;
+      // Every new press starts fresh, wherever it lands: "that was a drag" may only swallow
+      // the click of its own gesture. (A touch swipe never ends in a click, and a mouse drag
+      // can end outside the window, so the old flag would otherwise eat the next real tap.)
+      window.addEventListener("pointerdown", () => { orbit.moved = 0; }, true);
       window.addEventListener("pointerdown", (e) => {
+        if (!window.sky3d) return; // switched back to the 2D sky
         if (e.pointerType === "touch" && mode === "live" && !e.target.closest(UI_SEL)) {
           touchTry = { id: e.pointerId, x: e.clientX, y: e.clientY };
-          orbit.moved = 0;
           return;
         }
         if (e.pointerType !== "mouse" || e.button !== 0 || mode !== "live" || e.target.closest(UI_SEL)) return;
         orbit.down = true;
-        orbit.moved = 0;
         orbit.x = e.clientX;
         orbit.y = e.clientY;
         orbit.vYaw = orbit.vPitch = 0;
@@ -6957,8 +7079,9 @@
       window.addEventListener("pointerup", endDrag);
       window.addEventListener("pointercancel", endDrag);
       document.addEventListener("click", (e) => {
+        if (!window.sky3d) return; // switched back to the 2D sky: its own click handling takes over
         if (orbit.moved >= 5) { e.stopPropagation(); orbit.moved = 0; return; } // that was a drag, not a click
-        if (!window.sky3d || e.target.closest("#card, #radio, #intro, #ask, #topbar, button, a")) return;
+        if (e.target.closest("#card, #radio, #intro, #ask, #topbar, button, a")) return;
         const t = window.planetAt(e.clientX, e.clientY);
         if (!t) {
           // Empty space: close what's open (the old handler does that); if nothing is open
@@ -6969,9 +7092,21 @@
         }
         e.stopPropagation();
         const i = secOf.get(t);
-        if (atSection(i)) saved2D.openThing(t);
-        else goTo(i);
+        if (atSection(i)) {
+          const parts = t !== station && P3.get(t);
+          const shown = card.classList.contains("open") && cardPlanet === t;
+          if (parts && !reduceMotion && !shown) {
+            // A small physical answer to the tap: the planet gets a nudge of spin that slows by
+            // itself, one ring of light goes out, and the card follows a beat later
+            parts.nudgeV = (parts.nudgeV || 0) + 0.0026;
+            t.tapAt = performance.now();
+            needsRender = true;
+            clearTimeout(tapOpen);
+            tapOpen = setTimeout(() => { if (window.sky3d && atSection(i)) saved2D.openThing(t); }, 170);
+          } else saved2D.openThing(t);
+        } else goTo(i);
       }, true);
+      let tapOpen = 0;
 
       const progress = () => window.scrollY / sectionH;
 
@@ -6992,7 +7127,6 @@
       // Going somewhere by click (a planet, a dot, "Back to start", empty space): the camera
       // glides straight there, slowly, without rushing past every stop in between.
       // The page jumps to the new place at once; only the camera takes its time.
-      let tween = null; // (kept for the code below; flights now use "jump")
       let jump = null;
       const camBase = { pos: new V3(), look: new V3(), roll: 0 }; // where the camera was last frame
       function goTo(i) {
@@ -7008,14 +7142,51 @@
         };
         window.scrollTo(0, to);
       }
-      const stopTween = (e) => {
-        if (e && e.type === "pointerdown" && e.target.closest("button, a, #brand")) return;
-        if (e && e.type === "keydown" && e.key === "Escape") return;
-        tween = null;
+      // The visitor scrolls during a flight: drop the flight (and any card waiting at its end),
+      // but never cut. The camera keeps blending from where it is right now toward wherever the
+      // scroll position says, over a short moment. Clicks, Shift and the like don't interrupt.
+      const SCROLL_KEYS = ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " ", "Spacebar"];
+      const interruptFlight = (e) => {
+        if (e.type === "keydown" && !SCROLL_KEYS.includes(e.key)) return;
+        if (e.type === "keydown" && /INPUT|TEXTAREA/.test(e.target.tagName || "")) return; // typing a question
+        if (e.type === "touchstart" && e.target.closest && e.target.closest("button, a, #brand, input, textarea")) return;
         pendingOpen = null;
-        jump = null;
+        if (!jump || jump.soft) return; // already blending: let it finish rather than restart every wheel tick
+        jump = {
+          fromPos: camBase.pos.clone(), fromLook: camBase.look.clone(), fromRoll: camBase.roll, fromSide: camBase.side || 0,
+          start: performance.now(), dur: 900, soft: true,
+        };
       };
-      for (const ev of ["wheel", "touchstart", "keydown", "pointerdown"]) window.addEventListener(ev, stopTween, { passive: true });
+      for (const ev of ["wheel", "touchstart", "keydown"]) window.addEventListener(ev, interruptFlight, { passive: true });
+
+      // Settling: whoever stops scrolling between two screens is eased onto the nearer one after
+      // a short pause, so nobody rests on an empty in-between frame. It waits while a finger is
+      // down, a scroll (or its glide) is still going, the view is being turned, a panel or the
+      // menu is open, or something is being typed; any new input cancels it at once.
+      let lastScrollAt = 0, snap = null, touching = 0, ownScrollY = -1;
+      window.addEventListener("scroll", () => {
+        if (Math.abs(window.scrollY - ownScrollY) > 1.5) { lastScrollAt = performance.now(); snap = null; }
+      }, { passive: true });
+      const userInput = () => { snap = null; lastScrollAt = performance.now(); };
+      for (const ev of ["wheel", "keydown", "pointerdown"]) window.addEventListener(ev, userInput, { passive: true, capture: true });
+      window.addEventListener("touchstart", (e) => { touching = e.touches.length; userInput(); }, { passive: true, capture: true });
+      for (const ev of ["touchend", "touchcancel"]) window.addEventListener(ev, (e) => { touching = e.touches.length; lastScrollAt = performance.now(); }, { passive: true, capture: true });
+      function updateSnap(now) {
+        if (snap) {
+          const k = snap.dur ? Math.min(1, (now - snap.start) / snap.dur) : 1;
+          ownScrollY = snap.from + (snap.to - snap.from) * ease.inOutCubic(k);
+          window.scrollTo(0, ownScrollY);
+          if (k >= 1) snap = null;
+          return;
+        }
+        if (!lastScrollAt || mode !== "live" || jump || touching || orbit.down || now - lastScrollAt < 420) return;
+        if (panelOpen() || document.getElementById("ask").classList.contains("open") || html.classList.contains("menu-open")) return;
+        if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "")) return;
+        const p = progress(), i = Math.max(0, Math.min(LAST, Math.round(p)));
+        if (Math.abs(p - i) < 0.01) { lastScrollAt = 0; return; }
+        snap = { from: window.scrollY, to: i * sectionH, start: now, dur: reduceMotion ? 0 : 420 + 700 * Math.abs(p - i) };
+        needsRender = true;
+      }
 
       function panelOpen() { return card.classList.contains("open") || radio.classList.contains("open"); }
       const syncPanel = () => {
@@ -7067,14 +7238,14 @@
         }
         html.classList.add("custom-cursor");
         window.addEventListener("pointermove", (e) => {
-          if (e.pointerType !== "mouse") return;
+          if (e.pointerType !== "mouse" || !window.sky3d) return;
           cur.x = e.clientX; cur.y = e.clientY;
           if (!cur.shown) { cur.rx = cur.x; cur.ry = cur.y; cur.shown = true; html.classList.add("cursor-on"); }
           const overButton = e.target.closest("button, a, input, textarea, label, #brand");
           cursorRing.classList.toggle("over-ui", !!overButton);
         }, { passive: true });
         document.addEventListener("pointerleave", () => html.classList.remove("cursor-on"));
-        document.addEventListener("pointerenter", () => cur.shown && html.classList.add("cursor-on"));
+        document.addEventListener("pointerenter", () => cur.shown && window.sky3d && html.classList.add("cursor-on"));
       }
       // The card tilts a little toward the mouse, with a soft light where the pointer is
       const untilt = () => {
@@ -7084,7 +7255,7 @@
       };
       if (finePointer) {
         card.addEventListener("pointermove", (e) => {
-          if (!card.classList.contains("open") || phone()) return;
+          if (!card.classList.contains("open") || phone() || !window.sky3d) return;
           const r = card.getBoundingClientRect();
           const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
           card.style.setProperty("--ry", ((x - 0.5) * 7).toFixed(2) + "deg");
@@ -7168,6 +7339,130 @@
         }
       }
 
+      // ---------- Ice and dust motes around the planet we visit ----------
+      // A sparse cloud of grains around the visited planet. They are lit by that planet's own
+      // light, so as it sweeps in, grains whose faces line up with it glint once. Being real 3D
+      // points they slide past each other (parallax) when the view is turned.
+      const MOTE_N = phone() ? 160 : 520;
+      const motes = (() => {
+        const g = new THREE.BufferGeometry();
+        const pos = new Float32Array(MOTE_N * 3), nrm = new Float32Array(MOTE_N * 3), rnd = new Float32Array(MOTE_N);
+        const v = new V3();
+        for (let i = 0; i < MOTE_N; i++) {
+          // a thick shell, flattened a little toward the planet's equator
+          v.set(Math.random() * 2 - 1, (Math.random() * 2 - 1) * 0.55, Math.random() * 2 - 1);
+          if (v.lengthSq() < 1e-4) v.set(1, 0, 0);
+          v.normalize().multiplyScalar(1.45 + Math.pow(Math.random(), 0.8) * 2.6);
+          pos.set([v.x, v.y, v.z], i * 3);
+          v.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+          if (v.lengthSq() < 1e-4) v.set(0, 1, 0);
+          v.normalize();
+          nrm.set([v.x, v.y, v.z], i * 3);
+          rnd[i] = Math.random();
+        }
+        g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        g.setAttribute("aN", new THREE.BufferAttribute(nrm, 3));
+        g.setAttribute("aRand", new THREE.BufferAttribute(rnd, 1));
+        const m = new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+          uniforms: { uR: { value: 1 }, uL: { value: LIGHT.clone() }, uVis: { value: 0 }, uTime: shared.uTime, uPR: { value: 1 }, uGlint: { value: 0 }, uColor: { value: new THREE.Color() } },
+          vertexShader: /* glsl */ `
+            attribute vec3 aN; attribute float aRand;
+            uniform float uR, uVis, uTime, uPR, uGlint; uniform vec3 uL;
+            varying float vA;
+            void main() {
+              // slow drift round the planet, each grain at its own pace
+              float a = uTime * (0.012 + 0.03 * aRand);
+              float c = cos(a), s = sin(a);
+              vec3 p = vec3(c * position.x - s * position.z, position.y + sin(uTime * 0.3 + aRand * 20.0) * 0.06, s * position.x + c * position.z) * uR;
+              vec4 mv = modelViewMatrix * vec4(p, 1.0);
+              gl_Position = projectionMatrix * mv;
+              float depth = max(1.0, -mv.z);
+              gl_PointSize = clamp(uPR * (0.55 + aRand * 0.9) * 44.0 / depth, 0.0, 3.2);
+              // the planet's shadow: is the planet between this grain and the light?
+              float along = dot(-p, uL);
+              float miss = length(-p - uL * along);
+              float lit = (along > 0.0 && miss < uR) ? 0.08 : 1.0;
+              float side = 0.5 + 0.5 * dot(normalize(position), uL);       // grains on the day side are brighter
+              float face = dot(aN, uL);
+              float glint = smoothstep(0.955, 0.995, face) * (0.25 + 0.75 * uGlint);
+              float tw = 0.75 + 0.25 * sin(uTime * (0.8 + aRand * 1.7) + aRand * 50.0);
+              vA = (0.14 + 0.42 * side * tw + glint * 1.3) * lit * uVis;
+            }`,
+          fragmentShader: /* glsl */ `
+            uniform vec3 uColor; varying float vA;
+            void main() {
+              float d = length(gl_PointCoord - 0.5);
+              if (d > 0.5) discard;
+              gl_FragColor = vec4(uColor * (1.0 - d * 2.0) * vA, 1.0);
+            }`,
+        });
+        const pts = new THREE.Points(g, m);
+        pts.frustumCulled = false;
+        pts.visible = false;
+        scene.add(pts);
+        return { pts, m, t: null, vis: 0 };
+      })();
+      function updateMotes(atStop, dt) {
+        const want = atStop && atStop !== station && !reduceMotion ? atStop : null;
+        // fade out at the old planet before moving to the new one
+        const goal = want && motes.t === want ? 1 : 0;
+        motes.vis += (goal - motes.vis) * (1 - Math.exp(-dt / (goal ? 600 : 180)));
+        if (motes.vis < 0.02 && motes.t !== want) { motes.t = want; motes.vis = 0; }
+        const parts = motes.t && P3.get(motes.t);
+        motes.pts.visible = !!parts && motes.vis > 0.01 && parts.group.visible;
+        if (!motes.pts.visible) return;
+        const u = motes.m.uniforms;
+        motes.pts.position.copy(parts.group.position);
+        u.uR.value = parts.R * parts.group.scale.x;
+        u.uL.value.copy(parts.L.value);
+        u.uGlint.value = parts.glint.value;
+        u.uVis.value = motes.vis;
+        u.uPR.value = renderer.getPixelRatio();
+        u.uColor.value.set(motes.t.color).lerp(WHITE_C, 0.6).multiplyScalar(0.9);
+      }
+      const WHITE_C = new THREE.Color(1, 1, 1);
+
+      // ---------- Between chapters: flying through a soft cloud in the new chapter's tone ----------
+      // A few big, faint cloud sheets placed in front of the camera drift toward it and past it,
+      // so the change of mood happens "inside" something instead of as a cut. Faint and colored,
+      // never white; fewer sheets on phones (each one covers much of the screen).
+      const passTex = canvasTexture(256, 256, cloudPaint);
+      const PASS_N = phone() ? 2 : 6, PASS_MS = phone() ? 1500 : 1900; // (phones: two sheets, smaller: each one is a lot of pixels to blend)
+      const pass = { start: -1e9, color: new THREE.Color(), sheets: [] };
+      for (let i = 0; i < PASS_N; i++) {
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: passTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, rotation: i * 1.9 }));
+        sp.visible = false;
+        sp.renderOrder = 900;
+        sp.userData = { x: ((i * 0.618) % 1 - 0.5) * 1.3, y: ((i * 0.382 + 0.2) % 1 - 0.5) * 0.9, z: 9 + i * (22 / PASS_N), size: 16 + (i % 3) * 7 };
+        scene.add(sp);
+        pass.sheets.push(sp);
+      }
+      function startPass(chIdx, now) {
+        if (reduceMotion || chIdx < 0 || !TONES[chIdx]) return;
+        const t = TONES[chIdx];
+        pass.color.setRGB(t.x, t.y, t.z);
+        pass.start = now;
+      }
+      function updatePass(now) {
+        const k = (now - pass.start) / PASS_MS;
+        const on = k >= 0 && k < 1;
+        for (const sp of pass.sheets) {
+          sp.visible = on;
+          if (!on) continue;
+          const u = sp.userData;
+          // each sheet comes from ahead and slides past the lens; it is brightest midway
+          const z = u.z - k * 30;
+          const local = Math.max(0, Math.min(1, (z - 1) / (u.z - 1 + 0.001)));
+          const vis = Math.sin(Math.PI * Math.max(0, Math.min(1, k * 1.15))) * (z > 1.2 ? 1 : 0) * Math.min(1, local * 3);
+          const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+          sp.position.set(u.x * Math.max(1.5, z) * tanH * camera.aspect, u.y * Math.max(1.5, z) * tanH, -Math.max(1.2, z)).applyQuaternion(camera.quaternion).add(camera.position);
+          sp.scale.setScalar(u.size * (0.6 + 0.4 * Math.min(1, z / 12)) * (phone() ? 0.7 : 1));
+          sp.material.color.copy(pass.color);
+          sp.material.opacity = vis * (phone() ? 0.17 : 0.11);
+        }
+      }
+
       // ---------- The ending: a point of light retraces the learning path, stop by stop ----------
       const TRACE_SUB = 24;
       const traceGeo = new THREE.BufferGeometry();
@@ -7216,6 +7511,8 @@
       let maskSec = null, maskRect = null;
       const tmpQ = new THREE.Quaternion(), tmp3 = new V3(), tmp4 = new V3();
       const ev1 = new V3(), ev2 = new V3(), ev3 = new V3(), ev4 = new V3(), probeTilt = new THREE.Euler(), screenDown = new V3();
+      const SWEEP_MS = 1800; // the light sweeping onto a planet as we arrive
+      let lastSweepAt = -1e9, passFrom = 0;
       const CARD_TURN = -0.21; // radians the camera swings round the planet when its card opens
       // Pointer (computers) or phone tilt, from -1 to 1; the camera drifts with it a little
       const ptr = { x: 0, y: 0 };
@@ -7244,20 +7541,16 @@
         requestAnimationFrame(frame);
         const dt = Math.max(0, Math.min(64, now - (last || now)));
         last = now;
-
-        if (tween) {
-          const k = Math.min(1, (now - tween.start) / tween.dur);
-          window.scrollTo(0, tween.from + (tween.to - tween.from) * ease.inOutCubic(k));
-          if (k >= 1) tween = null;
-        }
+        updateSnap(now);
 
         const target = progress();
-        pSmooth = reduceMotion || jump ? target : pSmooth + (target - pSmooth) * (1 - Math.exp(-dt / 160));
+        // A flight pins the scroll follower to its destination; an interrupted one ("soft") lets it follow the scroll again
+        pSmooth = reduceMotion || (jump && !jump.soft) ? target : pSmooth + (target - pSmooth) * (1 - Math.exp(-dt / 160));
         const litAny = planets.some((p) => (p.litUntil || 0) > now || now - (p.waveAt || -1e9) < 1200) || now - (station.pingAt || -1e9) < 1600;
-        const moving = !reduceMotion || mode !== "live" || Math.abs(target - pSmooth) > 0.0005 || tween || jump || litAny || Math.abs(panelT - (panelOpen() ? 1 : 0)) > 0.001;
+        const moving = !reduceMotion || mode !== "live" || Math.abs(target - pSmooth) > 0.0005 || jump || litAny || Math.abs(panelT - (panelOpen() ? 1 : 0)) > 0.001;
         if (!needsRender && !moving) { quality.prevRendered = false; return; }
         frameNo++;
-        if (phone() && mode === "live" && !needsRender && !tween && Math.abs(target - pSmooth) < 0.002 && frameNo % 2) { quality.prevRendered = false; return; }
+        if (phone() && mode === "live" && !needsRender && Math.abs(target - pSmooth) < 0.002 && frameNo % 2) { quality.prevRendered = false; return; } // (the arrival light is slow enough for 30 fps)
         needsRender = false;
         // Measure only back-to-back drawn frames, after the opening (shaders compile then)
         if (quality.prevRendered && mode === "live" && now - liveStart > 3000 && quality.step < 3 && !document.hidden) {
@@ -7289,10 +7582,15 @@
         const at = mode === "live" && jumpK > 0.82 && Math.abs(pSmooth - nearest) < 0.3 ? nearest : -1;
         if (at !== activeSec) {
           sections.forEach((s, i) => s.el.classList.toggle("active", i === at));
-          // Leaving a planet, it scatters into dust; arriving, its dust gathers into it
+          // Leaving a planet, it scatters into dust. Arriving, the light sweeps onto it (it waited
+          // in silhouette while we came around; see "Arrival light" below)
           if (!reduceMotion && mode === "live") {
             if (activeSec >= 0 && sections[activeSec].kind === "stop") burst(sections[activeSec].t, -1, now);
-            if (at >= 0 && sections[at].kind === "stop") burst(sections[at].t, 1, now);
+            if (at >= 0 && sections[at].kind === "stop" && P3.get(sections[at].t)) {
+              const ap = P3.get(sections[at].t);
+              ap.sweepFrom = Math.max(ap.dark, 0.9); // (the last bit of darkening hides in the arrival move)
+              ap.sweepAt = lastSweepAt = now;
+            }
           }
           if (at === LAST && mode === "live") startTrace(now);
           if (at >= 0) sections[at].el.querySelectorAll(".scramble").forEach(scramble);
@@ -7301,15 +7599,16 @@
             chapterHitAt = now;
             sections[at].ch.things.forEach((t, j) => { t.waveAt = now + 350 + j * 220; });
           }
+          // (a card opened at its planet's own stop stays open there)
           const shown = radio.classList.contains("open") ? station : card.classList.contains("open") ? cardPlanet : null;
-          if (shown && (at < 0 || shown !== sections[at].t)) {
+          if (shown && (at < 0 || secOf.get(shown) !== at)) {
             closeCard();
             radio.classList.remove("open");
           }
           activeSec = at;
         }
         const atStop = at >= 0 && sections[at].kind === "stop" ? sections[at].t : null;
-        if (pendingOpen && !tween && !jump && atStop === pendingOpen) {
+        if (pendingOpen && !jump && at >= 0 && at === secOf.get(pendingOpen)) {
           const t = pendingOpen;
           pendingOpen = null;
           saved2D.openThing(t);
@@ -7320,6 +7619,12 @@
           journey.style.transform = lagPx ? `translate3d(0, ${lagPx}px, 0)` : "";
         }
         html.classList.toggle("at-outro", at === LAST);
+        // Crossing into another chapter: fly through a cloud in its tone
+        if (nearest !== passFrom) {
+          const a = sections[Math.max(0, Math.min(LAST, passFrom))], b = sections[Math.max(0, Math.min(LAST, nearest))];
+          if (mode === "live" && b && b.ch && (!a || a.ch !== b.ch)) startPass(CHAPTERS.indexOf(b.ch), now);
+          passFrom = nearest;
+        }
         setWhere(nearest);
         {
           // Chapter tone follows the scroll smoothly
@@ -7333,6 +7638,7 @@
           film.uTint.value.copy(toneNow);
         }
         updateBursts(now);
+        updateMotes(atStop, dt);
         const hk = Math.min(1, pSmooth).toFixed(3);
         if (hero.dataset.k !== hk) { hero.dataset.k = hk; hero.style.setProperty("--k", hk); }
         {
@@ -7384,7 +7690,15 @@
           camPos.add(tmp.set(Math.sin(now / 7300) * 0.9, Math.sin(now / 5900) * 0.5, Math.sin(now / 8800) * 0.6).multiplyScalar(calm * (0.4 + overview)));
         }
         let settle = 0;
-        if (jump) {
+        if (jump && jump.soft) {
+          // An interrupted flight: just ease from the pose we had over to where the scroll says, no arc
+          const k = ease.inOutCubic(jumpK);
+          camPos.lerpVectors(jump.fromPos, camPos, k);
+          camLook.lerpVectors(jump.fromLook, camLook, k);
+          camRoll = jump.fromRoll + (camRoll - jump.fromRoll) * k;
+          camSide = jump.fromSide + (camSide - jump.fromSide) * k;
+          if (jumpK >= 1) jump = null;
+        } else if (jump) {
           const k = ease.inOutCubic(jumpK);
           // On arrival the camera leans in a touch too far and settles back, like a real crane
           settle = reduceMotion ? 0 : 0.035 * Math.sin(Math.PI * Math.max(0, Math.min(1, (jumpK - 0.68) / 0.32)));
@@ -7459,7 +7773,7 @@
         // The lens breathes: wider while flying fast, back to normal when we arrive
         let fovGoal = FOV;
         if (mode === "flight") fovGoal += Math.sin(Math.PI * flightK) * 14;
-        if (jump) fovGoal += Math.sin(Math.PI * ease.inOutCubic(jumpK)) * 9;
+        if (jump && !jump.soft) fovGoal += Math.sin(Math.PI * ease.inOutCubic(jumpK)) * 9;
         fovGoal += Math.min(5, Math.abs(target - pSmooth) * 12);
         if (reduceMotion) fovGoal = FOV;
         fovS += (fovGoal - fovS) * (1 - Math.exp(-dt / 180));
@@ -7506,6 +7820,7 @@
         }
         film.uFlash.value = hitK >= 0 && hitK < 1 ? 0.13 * Math.sin(Math.PI * Math.min(1, hitK * 2.2)) * (1 - hitK) : 0;
         streaks.visible = streakMat.uniforms.uOp.value > 0.01;
+        updatePass(now);
         bloom.strength = 0.42 + (mode === "flight" ? Math.sin(Math.PI * flightK) * 0.35 : 0) + (mode === "live" ? streakMat.uniforms.uOp.value * 0.4 : 0);
 
         // ----- The film look -----
@@ -7543,7 +7858,6 @@
         const dAct = actPos ? Math.max(camera.position.distanceTo(actPos), keys[at].pos.distanceTo(actPos)) : 0;
         const sideOf = atStop && !phone() ? sections[at].side || 0 : 0;
         const box = sideOf > 0 ? [-1.3, 0.05, -1.3, 0.72] : sideOf < 0 ? [-0.05, 1.3, -1.3, 0.72] : [-0.6, 0.6, -1.2, 0.1];
-        rockBox.value.set(box[0], box[1], box[2], box[3]);
         for (const t of things) {
           const parts = P3.get(t);
           let goal = 1;
@@ -7558,13 +7872,24 @@
             let hide = 1 - x * x * (3 - 2 * x);
             if (onText && d < dAct * 4) hide = 1;
             if (TALL && atChapter) hide = 1; // tall phones: a chapter screen is its own page, only its planets
+            if (TALL && atStop) {
+              // tall phones: the column is narrow, so a neighbour about as near as the planet we
+              // visit would sit right beside it, as big; only the far ones stay, small, behind
+              const f = Math.max(0, Math.min(1, (d - dAct * 1.5) / (dAct * 0.9)));
+              hide = Math.max(hide, 1 - f * f * (3 - 2 * f));
+              if (v.y > 0.66 && v.z < 1) hide = 1; // nothing peeks out from under the glass bar
+            }
             goal = 1 - Math.min(1, stage * 2) * hide;
           }
           parts.vis = parts.vis === undefined ? 1 : parts.vis + (goal - parts.vis) * (reduceMotion ? 1 : 1 - Math.exp(-dt / 220));
         }
-        // ...and the busy background calms down too: rocks over the text, the black hole, the galaxies
+        // tall phones: the far giant mustn't peek out from under the glass bar at a stop
+        if (TALL) {
+          const v = tmp.copy(farGiant.position).project(camera);
+          farGiant.visible = !(atStop && v.z < 1 && v.y > 0.6);
+        }
+        // ...and the busy background calms down too: the black hole, the galaxies
         stageS += ((atStop || atChapter ? stage : 0) - stageS) * (reduceMotion ? 1 : 1 - Math.exp(-dt / 300));
-        rockClear.value = stageS;
         // The black hole steps back hardest when it sits right behind the planet we're visiting
         let bhGoal = 0;
         if (actPos) {
@@ -7619,7 +7944,56 @@
           parts.hover = (parts.hover || 0) + (hot - (parts.hover || 0)) * (reduceMotion ? 1 : 0.1);
           parts.group.scale.setScalar(Math.max(0.0001, pop * (1 + parts.hover * 0.06) * parts.vis));
           parts.group.visible = parts.group.scale.x > 0.02;
-          parts.spinner.rotation.y = tm * p.spin * 0.45 + (parts.extraSpin || 0);
+          // A tap on the planet nudges its spin; the nudge slows down by itself
+          if (parts.nudgeV) {
+            parts.nudgeA = (parts.nudgeA || 0) + parts.nudgeV * dt;
+            parts.nudgeV *= Math.exp(-dt / 420);
+            if (Math.abs(parts.nudgeV) < 1e-5) parts.nudgeV = 0;
+          }
+          parts.spinner.rotation.y = tm * p.spin * 0.45 + (parts.extraSpin || 0) + (parts.nudgeA || 0);
+          // ----- Arrival light -----
+          // While the camera comes around to a planet's stop, that planet waits in silhouette
+          // (its own light sits behind it, so only a thin rim glows). On arrival the light sweeps
+          // round to the sun's direction and the line between day and night crosses the face.
+          // Ring, moon, cloud shadows and the air shell all read this planet's light, so they follow.
+          {
+            const si = secOf.get(p);
+            const own = si !== undefined && sections[si] && sections[si].kind === "stop" && sections[si].t === p;
+            let glint = 0;
+            if (!own || reduceMotion || mode !== "live") parts.dark = 0;
+            else if (at === si) {
+              const k = Math.min(1, (now - parts.sweepAt) / SWEEP_MS);
+              parts.dark = parts.sweepFrom * (1 - ease.inOutCubic(k));
+              glint = parts.sweepFrom * Math.sin(Math.PI * k);
+            } else if (Math.round(target) === si) {
+              parts.dark += (1 - parts.dark) * (1 - Math.exp(-dt / 110));   // heading here (quick: it happens mid-move)
+            } else if (Math.round(target) !== si) {
+              parts.dark *= Math.exp(-dt / 250);                            // left: back to the sun
+            }
+            parts.glint.value = glint;
+            parts.darkU.value = parts.dark;
+            const Lv = parts.L.value;
+            if (parts.dark < 0.002) { if (!parts.lightIsSun) { Lv.copy(LIGHT); parts.lightIsSun = true; } }
+            else {
+              parts.lightIsSun = false;
+              // the silhouette light: mostly behind the planet as seen from its stop, leaning to
+              // the side the sun will come from (so the sweep crosses the face, not around the back)
+              const V = tmp3.copy(keys[si].pos).sub(parts.group.position);
+              if (V.lengthSq() < 1e-6) V.set(0, 0, 1);
+              V.normalize();
+              const lat = tmp4.copy(LIGHT).addScaledVector(V, -LIGHT.dot(V));
+              if (lat.lengthSq() < 0.01) lat.set(1, 0, 0).applyQuaternion(camera.quaternion);
+              lat.normalize();
+              const L0 = parts.L0.copy(V).multiplyScalar(-0.86).addScaledVector(lat, 0.51).normalize();
+              // turn from the sun toward L0 by "dark" along the great circle (slerp)
+              const c = Math.max(-1, Math.min(1, LIGHT.dot(L0))), a = Math.acos(c), sa = Math.sin(a);
+              const d = parts.dark;
+              if (sa < 0.01) Lv.copy(LIGHT).lerp(L0, d);
+              else Lv.copy(LIGHT).multiplyScalar(Math.sin((1 - d) * a) / sa).addScaledVector(L0, Math.sin(d * a) / sa);
+              if (Lv.lengthSq() < 1e-6) Lv.copy(LIGHT); else Lv.normalize();
+            }
+            if (parts.halo) parts.halo.material.opacity = 1 - 0.6 * parts.dark;
+          }
           const show = sigs.get(p);
           if (show && parts.group.visible) show(tm);
           const lit = Math.max(0, ((p.litUntil || 0) - now) / 2000);
@@ -7638,7 +8012,7 @@
           if (parts.clouds && !phone()) {
             // the light and the turn of the cloud layer, as seen from the ground
             parts.clouds.getWorldQuaternion(tmpQ).invert();
-            const lc = tmp3.copy(LIGHT).applyQuaternion(tmpQ);
+            const lc = tmp3.copy(parts.L.value).applyQuaternion(tmpQ);
             mu.uCloud.value.set(lc.x, lc.y, lc.z, 1);
             mu.uCloudRot.value = parts.spinner.rotation.y - parts.clouds.rotation.y;
           } else mu.uCloud.value.w = 0;
@@ -7686,7 +8060,9 @@
           const askLit = Math.max(0, ((p.litUntil || 0) - now) / 2000);
           const waveK = (now - (p.waveAt || -1e9)) / 1100;   // a chapter just began: one ring
           const wave = waveK >= 0 && waveK < 1 ? 1 - waveK : 0;
-          const lit = Math.max(askLit, wave);
+          const tapK = (now - (p.tapAt || -1e9)) / 750;       // a tap on the planet: one thin ring
+          const tap = tapK >= 0 && tapK < 1 ? 1 - tapK : 0;
+          const lit = Math.max(askLit, wave, tap);
           const parts = P3.get(p);
           let rip = ripples.get(p), beam = beams.get(p);
           if (beam && askLit <= 0) beam.style.opacity = "0";
@@ -7706,6 +8082,14 @@
           rip.position.copy(parts.group.position);
           rip.quaternion.copy(camera.quaternion);
           rip.children.forEach((m, i) => {
+            if (tap > 0 && wave <= 0 && askLit <= 0) {
+              const ph = Math.min(0.999, tapK);
+              m.visible = i === 0;
+              m.scale.setScalar(parts.R * (1.05 + ph * 0.85));
+              m.material.opacity = (1 - ph) * (1 - ph) * 0.5;
+              return;
+            }
+            m.visible = true;
             const ph = askLit <= 0 ? Math.min(0.999, waveK + i * 0.18) : reduceMotion ? 0.4 : (((now / 1000) + i * 0.5) % 1);
             m.scale.setScalar(parts.R * (1.1 + ph * 1.5));
             m.material.opacity = (1 - ph) * (1 - ph) * (askLit > 0 ? 0.6 * Math.min(1, askLit * 3) : 0.75);
@@ -7976,14 +8360,60 @@
         if (LITE) renderer.render(scene, camera); else composer.render();
       }
 
+      // ---------- Phones: the computer's colors without the computer's passes ----------
+      if (LITE) {
+        // On computers every pixel goes through tone mapping and the screen's color curve at the
+        // very end (OutputPass). Drawing straight to the screen, three.js does that only for its
+        // own materials; our hand-written shaders came out raw: darker and harsher than on a
+        // computer. Give each of them the same two last steps.
+        const patched = new Set();
+        scene.traverse((o) => {
+          for (const m of [].concat(o.material || [])) {
+            if (!m.isShaderMaterial || patched.has(m) || /colorspace_fragment/.test(m.fragmentShader)) continue;
+            patched.add(m);
+            m.fragmentShader = m.fragmentShader.replace(/}\s*$/, "\n  #include <tonemapping_fragment>\n  #include <colorspace_fragment>\n}\n");
+            m.needsUpdate = true;
+          }
+        });
+        // The film pass's quiet part as one see-through sheet drawn last (no in-between picture):
+        // the chapter's tone in the dark parts, a little grain, the soft wash when a chapter begins.
+        // "Screen" blending adds most where the picture underneath is dark, and nothing to bright parts.
+        const veil = new THREE.Mesh(
+          new THREE.PlaneGeometry(2, 2),
+          new THREE.ShaderMaterial({
+            uniforms: { uTint: film.uTint, uFlash: film.uFlash, uTime: film.uTime, uAspect: film.uAspect, uRes: film.uRes },
+            vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+            fragmentShader: /* glsl */ `
+              uniform vec3 uTint; uniform float uFlash, uTime, uAspect; uniform vec2 uRes; varying vec2 vUv;
+              float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+              void main() {
+                vec2 ca = (vUv - 0.5) * vec2(uAspect, 1.0);
+                float r = length(ca);
+                vec3 col = uTint * 1.15 * (0.55 + 0.45 * smoothstep(0.1, 0.8, r));
+                col += vec3(0.75, 0.8, 1.0) * uFlash * (1.0 - smoothstep(0.0, 0.75, r));
+                col += hash(floor(vUv * uRes / 1.5) + fract(uTime * 7.13) * 917.0) * 0.016;
+                gl_FragColor = vec4(col, 1.0);
+              }`,
+            depthTest: false, depthWrite: false, toneMapped: false, transparent: true,
+            blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
+            blendSrc: THREE.OneMinusDstColorFactor, blendDst: THREE.OneFactor,
+          })
+        );
+        veil.frustumCulled = false;
+        veil.renderOrder = 1e6;
+        scene.add(veil);
+      }
+
       // ---------- Start ----------
       renderer.compile(scene, camera);
       if (LITE) renderer.render(scene, camera); else composer.render();
       if (shaderFailed) throw new Error("a shader didn't compile on this GPU");
       html.classList.add("sky3d");
       if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-      window.addEventListener("resize", resize);
+      window.addEventListener("resize", () => { if (window.sky3d) resize(); }); // (not after a switch back to 2D)
       resize();
+      // The phone stops place their planet above their text: measure again once the fonts are in
+      if (TALL && document.fonts) document.fonts.ready.then(() => { if (window.sky3d) { makeKeys(); needsRender = true; } });
       let pullIntro = false, liveStart = 0, looping = false, hasLanded = false;
       // Once we've arrived: a planet link (?p=) flies on to its planet; the octopus says hello once
       function landed() {
@@ -8014,6 +8444,7 @@
         probe, fireball, traceLine, traceDot,
         layout: () => ({ planets: things.map((t) => [t.name, P3.get(t).group.position.toArray().map((v) => +v.toFixed(1)), +P3.get(t).R.toFixed(2)]), cams: keys.map((k, i) => [sections[i].kind, sections[i].t ? sections[i].t.name : "", +k.pos.distanceTo(sections[i].t ? P3.get(sections[i].t).group.position : k.look).toFixed(1)]) }), // (tests)
         burst: (name, dir) => burst(things.find((t) => t.name === name), dir, performance.now()), // (tests)
+        arrive: (name) => { const ap = P3.get(things.find((t) => t.name === name)); ap.dark = ap.sweepFrom = 1; ap.sweepAt = lastSweepAt = performance.now(); }, // (tests: replay the arrival light)
         start() {
           if (mode === "flight" || mode === "live") return;
           window.scrollTo(0, 0);
