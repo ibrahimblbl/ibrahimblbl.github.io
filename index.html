@@ -1949,7 +1949,7 @@
     .outro.active .outro-title { transition-delay: 0.1s; }
     .outro.active .cta { transition-delay: 0.25s; }
     .outro.active .stats { transition-delay: 0.45s; }
-    #journey .outro { padding-bottom: 9vh; }
+    #journey .outro { padding-bottom: calc(3vh + 64px); } /* just above the footer line */
 
     /* Chapter chips can be clicked: they take you to that stop */
     .ch-list li { padding: 0; }
@@ -6784,7 +6784,7 @@
             const dh = d0 * (phone() ? 1 : 1.16), sh = phone() ? 0 : dh * tanH * 0.16; // further back, so the top planets clear the glass bar
             return { pos: new V3(0, dh * 0.1 - sh, dh), look: new V3(0, -1 - sh, 0) };
           }
-          if (s.kind === "outro") return framing(new V3(0, 0, 0), new V3(-0.35, 0.6, 1).normalize(), SPAN_X / 2 + 4, phone() ? 0.9 : 0.58, phone() ? 0.42 : 0.45);
+          if (s.kind === "outro") return framing(new V3(0, 0, 0), new V3(-0.35, 0.6, 1).normalize(), SPAN_X / 2 + 4, phone() ? 0.9 : 0.34, phone() ? 0.42 : 0.53); // computers: small and high, the text gets the lower half
           if (s.kind === "chapter") {
             // The chapter's planets together, seen from a little above
             const C = new V3();
@@ -7893,7 +7893,7 @@
         for (const [t, el] of labels) {
           const parts = P3.get(t);
           const ch = CHAPTERS.find((c) => c.things.includes(t));
-          const amount = Math.max(TALL ? 0 : overview, ch ? chapterOn(ch) : 0); // tall phones: names only on chapter screens (the overview is too tight)
+          const amount = Math.max(TALL ? 0 : Math.max(0, 1 - pSmooth / 0.5), ch ? chapterOn(ch) : 0); // names in the overview only (not at the ending: they'd sit on the text) // tall phones: names only on chapter screens (the overview is too tight)
           labelAmt.set(t, amount);
           const v = tmp.copy(parts.group.position);
           v.addScaledVector(screenDown, t === station ? 3.0 : parts.R * 1.15 + 0.8);
