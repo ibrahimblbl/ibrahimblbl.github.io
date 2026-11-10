@@ -2067,6 +2067,7 @@
     /* ---------- Phones (2026-11-10): a chapter menu, a thumb rail, nothing on top of anything ---------- */
     .brand-caret { display: none; }
     #phone-vignette { display: none; }
+    @media (max-width: 699px) { html.sky3d #rail-bar { display: none !important; } } /* phones: no progress line along the bottom (the thumb rail is enough) */
     #top-links button.home { display: none; }
     @media (max-width: 699px) {
       /* "Opening ▾" opens a small menu: back to start + the chapters */
