@@ -5848,7 +5848,7 @@
           return l;
         });
       }
-      probe.scale.setScalar(phone() ? 2.2 : 2.6);
+      probe.scale.setScalar(phone() ? 1.1 : 1.3);
       probe.visible = false;
       scene.add(probe);
       const probeState = { dur: 0, start: 0, from: new V3(), to: new V3(), spin: new V3(), next: 30000 + Math.random() * 20000 };
@@ -6911,7 +6911,7 @@
             const dh = d0 * (phone() ? 1 : 1.16), sh = phone() ? 0 : dh * tanH * 0.16; // further back, so the top planets clear the glass bar
             return { pos: new V3(0, dh * 0.1 - sh, dh), look: new V3(0, -1 - sh, 0) };
           }
-          if (s.kind === "outro") return framing(new V3(0, 0, 0), new V3(-0.35, 0.6, 1).normalize(), SPAN_X / 2 + 4, phone() ? 0.9 : 0.34, phone() ? 0.42 : 0.53); // computers: small and high, the text gets the lower half
+          if (s.kind === "outro") return framing(new V3(0, 0, 0), new V3(-0.35, 0.6, 1).normalize(), SPAN_X / 2 + 4, phone() ? 0.9 : 0.46, phone() ? 0.42 : 0.5); // computers: small and high, the text gets the lower half
           if (s.kind === "chapter") {
             // The chapter's planets together, seen from a little above
             const C = new V3();
@@ -8350,7 +8350,7 @@
 
         // ----- The custom cursor -----
         if (finePointer) {
-          const k = 1 - Math.exp(-dt / 70);
+          const k = 1 - Math.exp(-dt / 22);
           cur.rx += (cur.x - cur.rx) * k;
           cur.ry += (cur.y - cur.ry) * k;
           cursorDot.style.transform = `translate(${cur.x}px, ${cur.y}px)`;
