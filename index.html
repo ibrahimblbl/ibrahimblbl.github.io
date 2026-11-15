@@ -992,6 +992,11 @@
         width: auto;
         max-height: min(62vh, calc(var(--vh, 100vh) - 120px)); /* --vh = screen height left above the keyboard */
       }
+      /* Keyboard open: the panel sits right on the keyboard, the octopus and its small buttons
+         step aside, and the ready questions wait until the keyboard closes (room to type) */
+      html.kb-open #ask-panel { bottom: calc(var(--kb, 0px) + 8px); max-height: calc(var(--vh, 100vh) - 84px); overflow-y: auto; }
+      html.kb-open #octo-button, html.kb-open #note-quick { opacity: 0; pointer-events: none; }
+      html.kb-open #ask-chips, html.kb-open #note-open, html.kb-open #ask-panel > .ask-note { display: none; }
     }
 
     /* ---------- 3D sky and the scroll journey (only once the 3D sky has loaded) ---------- */
@@ -4580,6 +4585,7 @@
         const kb = Math.max(0, window.innerHeight - visualViewport.height - visualViewport.offsetTop);
         ask.style.setProperty("--kb", kb + "px");
         ask.style.setProperty("--vh", visualViewport.height + "px");
+        document.documentElement.classList.toggle("kb-open", kb > 80 && window.innerWidth < 700);
       };
       visualViewport.addEventListener("resize", onVV);
       visualViewport.addEventListener("scroll", onVV); // iPhone moves the view instead of resizing it
@@ -7087,9 +7093,12 @@
         if (sameW && phone() && (typing || Math.abs(h - lastH) / lastH < 0.3)) {
           // Address bar came or went: the screens stay, but the picture must fit the new
           // height, or the canvas gets stretched and round planets turn into eggs.
-          if (!typing && h !== fitH) {
+          // Grow only: once the canvas is as tall as the screen without the bar, it stays that
+          // tall (the bar just covers its bottom). Rebuilding it at every bar move stuttered.
+          if (!typing && h > fitH) {
             fitH = h;
             renderer.setSize(w, h, false);
+            canvas3d.style.height = h + "px";
             const pr = renderer.getPixelRatio();
             film.uRes.value.set(w * pr, h * pr);
             film.uAspect.value = w / h;
@@ -7101,6 +7110,7 @@
         }
         const keep = lastW ? progress() : 0;
         lastW = w; lastH = h; fitH = h;
+        canvas3d.style.height = phone() ? h + "px" : "";
         const pr = Math.min(window.devicePixelRatio || 1, phone() ? 1.4 : 1.75) * quality.prK;
         renderer.setPixelRatio(pr);
         renderer.setSize(w, h, false);
@@ -7651,9 +7661,23 @@
       const tmp = new V3(), tmp2 = new V3();
       ["scroll", "resize", "pointermove", "keydown", "click"].forEach((ev) => window.addEventListener(ev, () => { needsRender = true; }, { passive: true }));
 
+      // ?fps in the address: a small meter (frames per second, slowest frame, stutters) to measure a real phone
+      const fpsBox = /[?&]fps\b/.test(location.search) ? document.body.appendChild(document.createElement("div")) : null;
+      const fpsM = { t0: 0, n: 0, worst: 0, hitch: 0 };
+      if (fpsBox) fpsBox.style.cssText = "position:fixed;left:8px;top:96px;z-index:99999;padding:6px 9px;border-radius:8px;background:rgba(0,0,0,.75);color:#bef264;font:12px/1.4 'JetBrains Mono',monospace;pointer-events:none;white-space:pre";
+      function fpsTick(now, dt) {
+        if (!fpsM.t0) fpsM.t0 = now;
+        fpsM.n++; fpsM.worst = Math.max(fpsM.worst, dt); if (dt > 50) fpsM.hitch++;
+        if (now - fpsM.t0 >= 1000) {
+          const fps = Math.round(fpsM.n * 1000 / (now - fpsM.t0));
+          fpsBox.textContent = fps + " fps  en yavaş " + Math.round(fpsM.worst) + " ms\ntoplam takılma " + fpsM.hitch + "  çözünürlük " + renderer.getPixelRatio().toFixed(2) + "  adım " + quality.step;
+          fpsM.t0 = now; fpsM.n = 0; fpsM.worst = 0; // (stutters add up, they are not reset)
+        }
+      }
       function frame(now) {
         if (!window.sky3d) return; // switched back to 2D
         requestAnimationFrame(frame);
+        if (fpsBox && last) fpsTick(now, now - last);
         const dt = Math.max(0, Math.min(64, now - (last || now)));
         last = now;
         updateSnap(now);
