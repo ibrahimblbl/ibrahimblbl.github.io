@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
   <!-- Security: the page may only talk to these places. If bad code ever got in, it couldn't send data anywhere else. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://cdn.jsdelivr.net/npm/three@0.170.0/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://ws.audioscrobbler.com https://api.chess.com https://opening-api.maxey00.workers.dev https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Opening</title>
@@ -4585,7 +4585,11 @@
       const vv = visualViewport, askPanel = document.getElementById("ask-panel");
       const onVV = () => {
         const covered = window.innerHeight - vv.height; // how much the keyboard hides
-        const open = covered > 80 && window.innerWidth < 700;
+        // Typing in the panel on a phone = keyboard layout, whatever the numbers say. (Android
+        // Chrome shrinks the whole page above the keyboard, see "interactive-widget" at the top,
+        // and then "covered" is 0 even though the keyboard is up.)
+        const typingHere = askPanel.contains(document.activeElement) && /INPUT|TEXTAREA/.test(document.activeElement.tagName);
+        const open = (covered > 80 || typingHere) && window.innerWidth < 700;
         let kb = Math.max(0, covered - vv.offsetTop);
         document.documentElement.classList.toggle("kb-open", open);
         ask.style.setProperty("--vh", vv.height + "px");
@@ -4598,12 +4602,21 @@
           const visBottom = vv.offsetTop + vv.height - 8;
           if (r.bottom > visBottom + 1) ask.style.setProperty("--kb", kb + (r.bottom - visBottom) + "px");
         }
+        if (kbBox) {
+          const r = askPanel.getBoundingClientRect(), i = document.getElementById("ask-input").getBoundingClientRect();
+          kbBox.textContent = `win ${innerHeight}  vv ${Math.round(vv.height)} @${Math.round(vv.offsetTop)}  kb ${kb}\npanel ${Math.round(r.top)}-${Math.round(r.bottom)}  input ${Math.round(i.bottom)}  open ${open}  y ${Math.round(scrollY)}`;
+        }
       };
+      // ?kb in the address: the numbers above on screen, to see what a real phone reports
+      const kbBox = /[?&]kb\b/.test(location.search) ? document.body.appendChild(document.createElement("div")) : null;
+      if (kbBox) kbBox.style.cssText = "position:fixed;left:8px;top:8px;z-index:99999;padding:6px 9px;border-radius:8px;background:rgba(0,0,0,.8);color:#bef264;font:11px/1.4 monospace;white-space:pre;pointer-events:none";
       // The keyboard slides in over a few hundred ms: measure again while it settles
       const settle = () => { onVV(); [80, 250, 500, 900].forEach((ms) => setTimeout(onVV, ms)); };
       vv.addEventListener("resize", settle);
       vv.addEventListener("scroll", onVV); // the page slid instead of resizing
       ask.addEventListener("focusin", settle);
+      ask.addEventListener("focusout", () => setTimeout(settle, 50)); // keyboard layout ends when typing ends
+      window.addEventListener("resize", settle); // (with the page shrinking above the keyboard, this is the event)
     }
   </script>
   <!-- Where the 3D library comes from (a free public CDN), pinned to one version. "integrity" = a fingerprint
