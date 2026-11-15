@@ -4582,14 +4582,28 @@
 
     // Phones: when the keyboard opens, lift the octopus and the panel above it
     if (window.visualViewport) {
+      const vv = visualViewport, askPanel = document.getElementById("ask-panel");
       const onVV = () => {
-        const kb = Math.max(0, window.innerHeight - visualViewport.height - visualViewport.offsetTop);
+        const covered = window.innerHeight - vv.height; // how much the keyboard hides
+        const open = covered > 80 && window.innerWidth < 700;
+        let kb = Math.max(0, covered - vv.offsetTop);
+        document.documentElement.classList.toggle("kb-open", open);
+        ask.style.setProperty("--vh", vv.height + "px");
         ask.style.setProperty("--kb", kb + "px");
-        ask.style.setProperty("--vh", visualViewport.height + "px");
-        document.documentElement.classList.toggle("kb-open", kb > 80 && window.innerWidth < 700);
+        // Check where the panel really ended up. Phones also slide the page to show the box being
+        // typed in, and while they do, the numbers above can be stale: pull the panel's bottom edge
+        // back into the part of the screen that is still visible.
+        if (open && ask.classList.contains("open")) {
+          const r = askPanel.getBoundingClientRect();
+          const visBottom = vv.offsetTop + vv.height - 8;
+          if (r.bottom > visBottom + 1) ask.style.setProperty("--kb", kb + (r.bottom - visBottom) + "px");
+        }
       };
-      visualViewport.addEventListener("resize", onVV);
-      visualViewport.addEventListener("scroll", onVV); // iPhone moves the view instead of resizing it
+      // The keyboard slides in over a few hundred ms: measure again while it settles
+      const settle = () => { onVV(); [80, 250, 500, 900].forEach((ms) => setTimeout(onVV, ms)); };
+      vv.addEventListener("resize", settle);
+      vv.addEventListener("scroll", onVV); // the page slid instead of resizing
+      ask.addEventListener("focusin", settle);
     }
   </script>
   <!-- Where the 3D library comes from (a free public CDN), pinned to one version. "integrity" = a fingerprint
