@@ -156,7 +156,7 @@
       backdrop-filter: blur(8px);
     }
 
-    #skip:hover { background: rgba(255, 255, 255, 0.12); }
+    @media (hover: hover) { #skip:hover { background: rgba(255, 255, 255, 0.12); } }
     #skip.hidden { display: none; }
 
     /* ---------- On top of the sky ---------- */
@@ -216,7 +216,7 @@
       cursor: pointer;
     }
 
-    #lang button:hover { color: var(--text); }
+    @media (hover: hover) { #lang button:hover { color: var(--text); } }
     #lang button.active { background: rgba(179, 136, 255, 0.3); color: var(--text); }
 
     /* Info card; --accent is set from JS to the clicked planet's color */
@@ -316,7 +316,7 @@
     }
 
     #close { transition: color 0.2s ease, transform 0.3s ease; }
-    #close:hover { color: var(--text); transform: rotate(90deg); }
+    @media (hover: hover) { #close:hover { color: var(--text); transform: rotate(90deg); } }
 
     #card a { color: var(--accent); }
 
@@ -433,7 +433,7 @@
     }
 
     #radio a { color: var(--text); text-decoration: none; }
-    #radio a:hover { color: #5eead4; }
+    @media (hover: hover) { #radio a:hover { color: #5eead4; } }
 
     #radio-close {
       position: absolute;
@@ -604,10 +604,10 @@
       transition: background 0.2s ease, box-shadow 0.2s ease;
     }
 
-    #octo-button:hover .ask-label { background: rgba(40, 32, 70, 0.7); box-shadow: 0 0 30px rgba(255, 143, 171, 0.25); transform: translateY(-2px); }
+    @media (hover: hover) { #octo-button:hover .ask-label { background: rgba(40, 32, 70, 0.7); box-shadow: 0 0 30px rgba(255, 143, 171, 0.25); transform: translateY(-2px); } }
     .ask-label { transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
     #note-quick:active, #octo-button:active .ask-label { transform: scale(0.96); }
-    #octo-button:hover .octo { filter: drop-shadow(0 0 12px rgba(255, 143, 171, 0.5)); }
+    @media (hover: hover) { #octo-button:hover .octo { filter: drop-shadow(0 0 12px rgba(255, 143, 171, 0.5)); } }
 
     /* "Leave me a note", right under "Ask me": opens the panel straight into the note form */
     #note-quick {
@@ -631,8 +631,8 @@
       transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
     }
     #note-quick svg { width: 18px; height: 18px; flex: none; transition: transform 0.3s ease; }
-    #note-quick:hover { background: rgba(90, 30, 66, 0.7); box-shadow: 0 0 30px rgba(255, 143, 171, 0.3); transform: translateY(-2px); }
-    #note-quick:hover svg { transform: translate(3px, -3px) rotate(-8deg); }
+    @media (hover: hover) { #note-quick:hover { background: rgba(90, 30, 66, 0.7); box-shadow: 0 0 30px rgba(255, 143, 171, 0.3); transform: translateY(-2px); } }
+    @media (hover: hover) { #note-quick:hover svg { transform: translate(3px, -3px) rotate(-8deg); } }
 
     .live-dot {
       width: 8px;
@@ -746,7 +746,7 @@
       cursor: pointer;
     }
 
-    #ask-close:hover { color: var(--text); }
+    @media (hover: hover) { #ask-close:hover { color: var(--text); } }
 
     /* The conversation */
     #ask-log {
@@ -789,7 +789,7 @@
       text-align: left;
     }
 
-    .chip:hover { background: rgba(255, 255, 255, 0.12); }
+    @media (hover: hover) { .chip:hover { background: rgba(255, 255, 255, 0.12); } }
 
     #ask-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     /* All questions open: one per line, scrolling if the panel is short */
@@ -856,7 +856,7 @@
       text-underline-offset: 3px;
       cursor: pointer;
     }
-    .note-link:hover { color: #ff8fab; }
+    @media (hover: hover) { .note-link:hover { color: #ff8fab; } }
 
     /* The way in: a clear pink button with a small paper plane */
     #note-open {
@@ -876,8 +876,8 @@
       transition: background 0.2s, box-shadow 0.2s;
     }
     #note-open svg { width: 18px; height: 18px; flex: none; transition: transform 0.3s ease; }
-    #note-open:hover { background: rgba(255, 143, 171, 0.18); box-shadow: 0 0 20px rgba(255, 143, 171, 0.25); }
-    #note-open:hover svg { transform: translate(3px, -3px) rotate(-8deg); } /* the plane lifts off a little */
+    @media (hover: hover) { #note-open:hover { background: rgba(255, 143, 171, 0.18); box-shadow: 0 0 20px rgba(255, 143, 171, 0.25); } }
+    @media (hover: hover) { #note-open:hover svg { transform: translate(3px, -3px) rotate(-8deg); } /* the plane lifts off a little */ }
 
     /* Note mode: the chat steps aside, the note form takes its place */
     #ask-panel.note-mode #ask-log,
@@ -954,6 +954,8 @@
 
     /* Phones: let the page scroll down, and give the radio almost the whole screen */
     @media (max-width: 699px) {
+      /* iPhone zooms the whole page into any box under 16px when you tap it */
+      #ask-input, #note-name, #note-msg { font-size: 16px; }
       html, body {
         height: auto;
         overflow-x: hidden;
@@ -1001,6 +1003,14 @@
     /* Each screen still fills the window, but the next one starts after 62% of it: about 6
        wheel clicks from stop to stop instead of 9 (screens overlap; only the active one shows) */
     #journey section:not(:last-child) { margin-bottom: -38vh; }
+    /* Phones: 100vh is the height with the address bar HIDDEN, so while the bar shows, the
+       bottom of each screen (and its hint) sits under the octopus. svh = the smaller height. */
+    @supports (height: 100svh) {
+      @media (max-width: 699px) {
+        #journey section { height: 100svh; }
+        #journey section:not(:last-child) { margin-bottom: -38svh; }
+      }
+    }
     /* Ways around the journey: dots on the right, "Back to start" bottom right, the logo */
     #stop-nav, #home-btn { display: none; }
     html.sky3d #stop-nav {
@@ -1032,7 +1042,7 @@
       background: rgba(255, 255, 255, 0.35);
       transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
     }
-    #stop-nav button:hover::before { background: var(--c); transform: scale(1.4); }
+    @media (hover: hover) { #stop-nav button:hover::before { background: var(--c); transform: scale(1.4); } }
     #stop-nav button.on::before { background: var(--c); transform: scale(1.7); box-shadow: 0 0 12px var(--c); }
     /* The planet's name slides out next to its dot on hover */
     #stop-nav button::after {
@@ -1053,7 +1063,7 @@
       pointer-events: none;
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
-    #stop-nav button:hover::after, #stop-nav button:focus-visible::after { opacity: 1; transform: translate(0, -50%); }
+    @media (hover: hover) { #stop-nav button:hover::after, #stop-nav button:focus-visible::after { opacity: 1; transform: translate(0, -50%); } }
     /* The rail: a thin line through the dots that fills in the current planet's color */
     #stop-nav .rail, #stop-nav .rail-fill {
       position: absolute;
@@ -1075,8 +1085,8 @@
     }
     /* The current stop or chapter always shows its name (quietly), not only on hover */
     #stop-nav button.on.stop::after, #stop-nav button.on.chapter::after { opacity: 0.85; transform: translate(0, -50%); }
-    #stop-nav button.on.stop:hover::after, #stop-nav button.on.chapter:hover::after { opacity: 1; }
-    #stop-nav:hover button.on:not(:hover)::after { opacity: 0; }
+    @media (hover: hover) { #stop-nav button.on.stop:hover::after, #stop-nav button.on.chapter:hover::after { opacity: 1; } }
+    @media (hover: hover) { #stop-nav:hover button.on:not(:hover)::after { opacity: 0; } }
     /* Phones: a thin progress line along the top instead of dots */
     #rail-bar { display: none; }
     @media (max-width: 699px) {
@@ -1126,7 +1136,7 @@
     }
     #home-btn::before { content: "\2191  "; }
     html.journeying #home-btn { opacity: 1; transform: none; pointer-events: auto; }
-    #home-btn:hover { background: rgba(40, 32, 70, 0.75); transform: translateY(-2px); }
+    @media (hover: hover) { #home-btn:hover { background: rgba(40, 32, 70, 0.75); transform: translateY(-2px); } }
     html.panel-open #stop-nav, html.panel-open #home-btn { opacity: 0; pointer-events: none; }
     html.sky3d #brand { pointer-events: auto; cursor: pointer; }
     html.sky3d #hint { display: none; } /* the first screen already says "scroll down" */
@@ -1270,12 +1280,12 @@
       transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
     }
     .stop-more::after { content: "\2192"; transition: transform 0.25s ease; }
-    .stop-more:hover {
+    @media (hover: hover) { .stop-more:hover {
       background: color-mix(in srgb, var(--c) 18%, transparent);
       transform: translateY(-2px);
       box-shadow: 0 12px 34px color-mix(in srgb, var(--c) 28%, transparent);
-    }
-    .stop-more:hover::after { transform: translateX(4px); }
+    } }
+    @media (hover: hover) { .stop-more:hover::after { transform: translateX(4px); } }
     .stop-more:active { transform: scale(0.97); }
 
     /* Coming in: the lines rise one after another, the name letter by letter */
@@ -1443,8 +1453,8 @@
       transition: background 0.25s ease, box-shadow 0.25s ease, translate 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     .cta .cta-note { color: #ffd6e2; background: rgba(60, 22, 48, 0.6); border-color: rgba(255, 143, 171, 0.45); }
-    .cta button:hover { background: rgba(40, 32, 70, 0.75); box-shadow: 0 12px 36px rgba(196, 161, 255, 0.25); }
-    .cta .cta-note:hover { background: rgba(90, 30, 66, 0.75); box-shadow: 0 12px 36px rgba(255, 143, 171, 0.3); }
+    @media (hover: hover) { .cta button:hover { background: rgba(40, 32, 70, 0.75); box-shadow: 0 12px 36px rgba(196, 161, 255, 0.25); } }
+    @media (hover: hover) { .cta .cta-note:hover { background: rgba(90, 30, 66, 0.75); box-shadow: 0 12px 36px rgba(255, 143, 171, 0.3); } }
     .outro-inner > * { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .outro.active .outro-inner > * { opacity: 1; transform: none; }
     .outro.active .outro-title { transition-delay: 0.1s; }
@@ -1452,7 +1462,7 @@
     .outro:not(.active) .cta button { pointer-events: none; }
 
     /* Buttons stay put: on hover they only light up and lift a hair */
-    .cta button:hover { transform: translateY(-2px); }
+    @media (hover: hover) { .cta button:hover { transform: translateY(-2px); } }
     .cta button:active, .stop-more:active { transform: scale(0.97); }
     /* "Drag · 360°" under each stop's button (computers only) */
     .stop-drag {
@@ -1739,7 +1749,7 @@
       cursor: pointer;
       transition: color 0.25s ease, background 0.25s ease;
     }
-    #top-links button:hover, #top-links button.on { color: #ffffff; background: rgba(255, 255, 255, 0.06); }
+    @media (hover: hover) { #top-links button:hover, #top-links button.on { color: #ffffff; background: rgba(255, 255, 255, 0.06); } }
     #top-links button.on { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
     #topbar #lang {
       position: static;
@@ -1768,7 +1778,7 @@
       white-space: nowrap;
       transition: background 0.25s ease, transform 0.25s var(--ease), box-shadow 0.25s ease;
     }
-    #top-ask:hover, .btn-light:hover { background: #ffffff; transform: translateY(-1px); box-shadow: 0 8px 26px rgba(220, 215, 255, 0.18); }
+    @media (hover: hover) { #top-ask:hover, .btn-light:hover { background: #ffffff; transform: translateY(-1px); box-shadow: 0 8px 26px rgba(220, 215, 255, 0.18); } }
     #top-ask:active, .btn-light:active { transform: scale(0.97); }
     #hint { top: 84px; }
     @media (max-width: 899px) { html.sky3d #top-links { display: none; } #topbar #lang { margin-left: auto; } }
@@ -1777,6 +1787,11 @@
       #topbar #brand { font-size: 15px; gap: 7px; }
       .brand-mark { width: 15px; height: 15px; }
       #top-where { display: none; }
+      /* 3D phones: the chapter you're in is written in the bar (the rail label sat on planets);
+         the bar's "Ask the octopus" goes, the octopus itself is always one tap away */
+      html.sky3d #top-where { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; margin-left: 4px; padding-left: 9px; font-size: 9.5px; letter-spacing: 0.1em; }
+      html.sky3d #top-where b { margin-right: 6px; }
+      html.sky3d #top-ask { display: none; }
       #top-ask { padding: 8px 12px; font-size: 12px; }
       #topbar #lang button { padding: 5px 8px; }
       #hint { top: 70px; }
@@ -1924,7 +1939,7 @@
     .stats b { order: 1; }
     .stats li::after { order: 2; }
     .cta .cta-ask { color: #0d0c18 !important; background: #ecebf3 !important; border-color: transparent !important; }
-    .cta .cta-ask:hover { background: #ffffff !important; box-shadow: 0 12px 36px rgba(220, 215, 255, 0.2) !important; }
+    @media (hover: hover) { .cta .cta-ask:hover { background: #ffffff !important; box-shadow: 0 12px 36px rgba(220, 215, 255, 0.2) !important; } }
     .cta .cta-note { background: rgba(255, 255, 255, 0.03); }
     .site-foot {
       position: absolute;
@@ -1943,7 +1958,7 @@
     }
     .outro.active .site-foot { opacity: 1; }
     .site-foot a { pointer-events: auto; color: rgba(232, 232, 244, 0.62); text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.14); transition: color 0.25s ease, border-color 0.25s ease; }
-    .site-foot a:hover { color: #ffffff; border-color: rgba(255, 255, 255, 0.6); }
+    @media (hover: hover) { .site-foot a:hover { color: #ffffff; border-color: rgba(255, 255, 255, 0.6); } }
     .site-foot i { width: 3px; height: 3px; border-radius: 50%; background: rgba(255, 255, 255, 0.25); }
     #journey .outro { position: relative; }
     .outro.active .outro-title { transition-delay: 0.1s; }
@@ -1970,12 +1985,12 @@
     .ch-list li::before { display: none; }
     .ch-list button::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
     .ch-list li { transition: opacity 0.7s ease, transform 1s var(--ease), background 0.25s ease, border-color 0.25s ease; }
-    .ch-list li:hover { background: rgba(40, 34, 70, 0.6); border-color: color-mix(in srgb, var(--c) 50%, transparent); }
+    @media (hover: hover) { .ch-list li:hover { background: rgba(40, 34, 70, 0.6); border-color: color-mix(in srgb, var(--c) 50%, transparent); } }
     .chapter:not(.active) .ch-list button { pointer-events: none; }
 
     /* Main buttons at a stop: white pill */
     .stop-more { color: #0d0c18; background: #ecebf3; border-color: transparent; backdrop-filter: none; }
-    .stop-more:hover { background: #ffffff; box-shadow: 0 12px 34px color-mix(in srgb, var(--c) 22%, transparent); }
+    @media (hover: hover) { .stop-more:hover { background: #ffffff; box-shadow: 0 12px 34px color-mix(in srgb, var(--c) 22%, transparent); } }
 
     /* A faint trail behind the cursor (computers) */
     .trail { position: fixed; left: 0; top: 0; z-index: 49; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: #ffffff; pointer-events: none; opacity: 0; }
@@ -2040,10 +2055,10 @@
       cursor: pointer;
       transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s var(--ease);
     }
-    .outro-qs button:hover { color: #ffffff; background: rgba(255, 255, 255, 0.07); border-color: rgba(196, 161, 255, 0.4); transform: translateY(-1px); }
+    @media (hover: hover) { .outro-qs button:hover { color: #ffffff; background: rgba(255, 255, 255, 0.07); border-color: rgba(196, 161, 255, 0.4); transform: translateY(-1px); } }
     .outro-qs button:active { transform: scale(0.97); }
     .cta .cta-share { background: transparent; border-color: rgba(255, 255, 255, 0.16); color: rgba(232, 232, 244, 0.8); }
-    .cta .cta-share:hover { background: rgba(255, 255, 255, 0.06); box-shadow: none; }
+    @media (hover: hover) { .cta .cta-share:hover { background: rgba(255, 255, 255, 0.06); box-shadow: none; } }
     .outro-safe { margin: 14px 0 0; font-size: 12.5px; color: rgba(232, 232, 244, 0.45); }
     .outro:not(.active) .outro-qs button { pointer-events: none; }
     .outro.active .outro-qs { transition-delay: 0.2s; }
@@ -2134,8 +2149,8 @@
       /* the rail sits high, beside the planet, clear of the text in the lower half */
       html.sky3d #stop-nav { top: 84px; transform: none; }
       /* on a planet's own screen only the chapter you're in keeps its name; while the finger slides, all show */
-      html.journeying #stop-nav:not(.scrubbing) button.chapter:not(.cur)::after { opacity: 0; }
-      #stop-nav button:hover::after { opacity: 0; } /* a tap leaves "hover" stuck on phones */
+      html.journeying #stop-nav:not(.scrubbing) button.chapter::after { opacity: 0; } /* the name is in the top bar now */
+      @media (hover: hover) { #stop-nav button:hover::after { opacity: 0; } /* a tap leaves "hover" stuck on phones */ }
       #stop-nav.scrubbing button.pick::after { opacity: 1; transform: translate(0, -50%); }
       #stop-nav.scrubbing button.pick::before { background: var(--c); transform: scale(2); box-shadow: 0 0 12px var(--c); }
       html.at-outro #stop-nav, html.panel-open #stop-nav, html.menu-open #stop-nav { opacity: 0; pointer-events: none; }
@@ -2162,6 +2177,24 @@
       .stop-drag { margin-top: 14px; font-size: 10px; color: rgba(236, 236, 248, 0.55); }
       /* The hero: title and hint well above the octopus */
       .hero-copy { bottom: 150px; }
+    }
+    /* Short phone screens (small Androids, Instagram's own browser, address bar showing):
+       a smaller text block, so the camera has room to put the planet above it */
+    @media (max-width: 699px) and (max-height: 720px) {
+      #journey .stop { padding-bottom: 104px; }
+      .stop-num { white-space: nowrap; letter-spacing: 0.14em; }
+      .stop h2 { font-size: clamp(38px, 12vw, 56px); margin-bottom: 8px; }
+      .stop-short { font-size: 14.5px; line-height: 1.42; margin-bottom: 12px;
+        display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+      .stop-drag { display: none; }
+      .outro-qs { display: none; }
+      .outro-title { font-size: clamp(28px, 8vw, 36px); }
+    }
+    @media (max-width: 380px) {
+      .stop-num { letter-spacing: 0.1em; font-size: 10.5px; }
+      /* narrow phones: the chapter name in the bar without its numeral, so it fits */
+      html.sky3d #top-where { letter-spacing: 0.06em; padding-left: 8px; }
+      html.sky3d #top-where b { display: none; }
     }
 
     /* ---------- Cinematic round (2026-11-10) ---------- */
@@ -2207,21 +2240,52 @@
     .stop.active .stop-drag { transition-delay: 0.56s; }
 
     /* Buttons never move under the pointer: hover lights them, pressing dims them and draws an inner ring */
-    .stop-more:hover, .cta button:hover, #home-btn:hover, #note-quick:hover, #octo-button:hover .ask-label { transform: none; }
-    html.journeying #home-btn:hover { transform: none; }
-    #top-ask:hover, .btn-light:hover { transform: none; }
+    @media (hover: hover) { .stop-more:hover, .cta button:hover, #home-btn:hover, #note-quick:hover, #octo-button:hover .ask-label { transform: none; } }
+    @media (hover: hover) { html.journeying #home-btn:hover { transform: none; } }
+    @media (hover: hover) { #top-ask:hover, .btn-light:hover { transform: none; } }
     #top-ask:active, .btn-light:active { transform: none; filter: brightness(0.86); box-shadow: inset 0 0 0 1px rgba(13, 12, 24, 0.25); }
     .stop-more, .cta button, #home-btn, #note-quick, .ask-label, #top-ask { transition: background 0.25s ease, box-shadow 0.25s ease, filter 0.12s ease, opacity 0.35s ease; }
-    .stop-more:hover { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 16%, transparent), 0 10px 30px color-mix(in srgb, var(--c) 20%, transparent); }
-    .cta button:hover, #home-btn:hover { box-shadow: 0 0 0 4px rgba(196, 161, 255, 0.1), 0 10px 30px rgba(196, 161, 255, 0.18); }
+    @media (hover: hover) { .stop-more:hover { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 16%, transparent), 0 10px 30px color-mix(in srgb, var(--c) 20%, transparent); } }
+    @media (hover: hover) { .cta button:hover, #home-btn:hover { box-shadow: 0 0 0 4px rgba(196, 161, 255, 0.1), 0 10px 30px rgba(196, 161, 255, 0.18); } }
     .stop-more:active, .cta button:active, #home-btn:active, #note-quick:active, #octo-button:active .ask-label, #top-ask:active {
       transform: none;
       filter: brightness(0.86);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 0 0 3px color-mix(in srgb, var(--c, #c4a1ff) 22%, transparent);
     }
+    /* A phone turned sideways: the journey is built for an upright screen. The octopus floats in
+       and says so in a speech bubble, with a small phone turning upright as the hint. */
+    #turn-note { display: none; }
+    @media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+      #turn-note {
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        position: fixed; inset: 0; z-index: 9999; padding: 24px;
+        background: radial-gradient(ellipse at 50% 55%, rgba(120, 70, 170, 0.18), transparent 60%), #06060f;
+        color: var(--text); font: 500 15px/1.45 "Space Grotesk", system-ui, sans-serif;
+      }
+    }
+    #turn-note .octo { width: 110px; height: 120px; }
+    .tn-bubble {
+      display: flex; align-items: center; gap: 14px; max-width: 330px;
+      margin-bottom: 54px; padding: 13px 18px;
+      color: rgba(232, 232, 244, 0.9);
+      background: rgba(20, 18, 38, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px 16px 16px 4px;
+      animation: tn-in 0.7s var(--ease) both 0.15s;
+    }
+    @keyframes tn-in { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+    /* the little phone: lies on its side, then stands up, over and over */
+    .tn-phone {
+      flex: none; width: 15px; height: 25px; border-radius: 4px;
+      border: 2px solid #ff8fab; box-sizing: border-box; position: relative;
+      animation: tn-turn 2.6s var(--ease) infinite;
+    }
+    .tn-phone::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 3px; height: 3px; margin-left: -1.5px; border-radius: 50%; background: #ff8fab; }
+    @keyframes tn-turn { 0%, 25% { transform: rotate(-90deg); } 55%, 100% { transform: rotate(0deg); } }
   </style>
 </head>
 <body>
+  <div id="turn-note" role="status"><div class="tn-bubble"><span class="tn-phone" aria-hidden="true"></span><span data-tr="Telefonunu dik tut, yolculuk kaldığı yerden devam etsin.">Turn your phone upright and the journey picks up where you left off.</span></div></div>
   <canvas id="sky"></canvas>
   <div id="space"></div>
 
@@ -4501,13 +4565,24 @@
       });
     }
 
+    // Phone turned sideways: the octopus in the "turn it upright" note is a copy of the real one
+    {
+      const src = document.getElementById("octo"), note = document.getElementById("turn-note");
+      if (src && note) {
+        const html = src.outerHTML.replace(/id="octo"/, "").replace(/(id="|url\(#)(octo-[a-z]+)/g, "$1$2-t");
+        note.insertAdjacentHTML("afterbegin", html);
+      }
+    }
+
     // Phones: when the keyboard opens, lift the octopus and the panel above it
     if (window.visualViewport) {
-      visualViewport.addEventListener("resize", () => {
+      const onVV = () => {
         const kb = Math.max(0, window.innerHeight - visualViewport.height - visualViewport.offsetTop);
         ask.style.setProperty("--kb", kb + "px");
         ask.style.setProperty("--vh", visualViewport.height + "px");
-      });
+      };
+      visualViewport.addEventListener("resize", onVV);
+      visualViewport.addEventListener("scroll", onVV); // iPhone moves the view instead of resizing it
     }
   </script>
   <!-- Where the 3D library comes from (a free public CDN), pinned to one version. "integrity" = a fingerprint
@@ -4579,13 +4654,18 @@
     }
 
     async function initSky3d() {
+      // Phones draw straight to the screen (LITE below) and never use the five effect files,
+      // so they don't download them: a faster start on mobile data.
+      const liteLoad = window.innerWidth < 700;
       const [THREE, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }, { ShaderPass }] = await Promise.all([
         import("three"),
-        import("three/addons/postprocessing/EffectComposer.js"),
-        import("three/addons/postprocessing/RenderPass.js"),
-        import("three/addons/postprocessing/UnrealBloomPass.js"),
-        import("three/addons/postprocessing/OutputPass.js"),
-        import("three/addons/postprocessing/ShaderPass.js"),
+        ...(liteLoad ? [{}, {}, {}, {}, {}] : [
+          import("three/addons/postprocessing/EffectComposer.js"),
+          import("three/addons/postprocessing/RenderPass.js"),
+          import("three/addons/postprocessing/UnrealBloomPass.js"),
+          import("three/addons/postprocessing/OutputPass.js"),
+          import("three/addons/postprocessing/ShaderPass.js"),
+        ]),
       ]);
       if (window.sky3dFailed) return; // too slow: the 2D sky already took over
 
@@ -4629,7 +4709,7 @@
       // Phones get a lighter recipe: they draw straight to the screen (see the end of the frame),
       // so none of the passes below exist there: no glow (several full-screen blurs), no safety
       // net, no film pass, and no full-screen in-between pictures sitting unused on the GPU.
-      const LITE = phone();
+      const LITE = liteLoad; // same test as phone(), taken once at load
       let composer = null;
       if (!LITE) {
         // samples: 4 = smooth edges on computers
@@ -6726,7 +6806,12 @@
             await navigator.clipboard.writeText(url);
             sb.textContent = TXJ.copied;
             setTimeout(() => { sb.textContent = TXJ.share; }, 2200);
-          } catch {}
+          } catch (err) {
+            // Cancelled share menu: fine. Anything else (in-app browsers often block both
+            // share and copy): show the address so it can be copied by hand.
+            if (err && err.name === "AbortError") return;
+            sb.textContent = url.replace("https://", "");
+          }
         });
       }
       addSection("outro", outro);
@@ -6989,7 +7074,7 @@
 
       // ---------- Size changes ----------
       let sectionH = window.innerHeight;
-      let lastW = 0, lastH = 0;
+      let lastW = 0, lastH = 0, fitH = 0;
       function resize() {
         const w = window.innerWidth, h = window.innerHeight;
         const typing = /INPUT|TEXTAREA/.test(document.activeElement?.tagName || "");
@@ -6997,9 +7082,25 @@
         // doesn't follow them, so nothing needs redoing. Computers: a window that only got
         // taller or shorter (a tab bar appearing, a resize) does change 100vh, and the screens
         // must be measured again or every click lands a little further from its text.
-        if (lastW && w === lastW && (h === lastH || (phone() && (typing || Math.abs(h - lastH) / lastH < 0.3)))) return;
+        const sameW = lastW && w === lastW;
+        if (sameW && h === lastH) return;
+        if (sameW && phone() && (typing || Math.abs(h - lastH) / lastH < 0.3)) {
+          // Address bar came or went: the screens stay, but the picture must fit the new
+          // height, or the canvas gets stretched and round planets turn into eggs.
+          if (!typing && h !== fitH) {
+            fitH = h;
+            renderer.setSize(w, h, false);
+            const pr = renderer.getPixelRatio();
+            film.uRes.value.set(w * pr, h * pr);
+            film.uAspect.value = w / h;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            needsRender = true;
+          }
+          return;
+        }
         const keep = lastW ? progress() : 0;
-        lastW = w; lastH = h;
+        lastW = w; lastH = h; fitH = h;
         const pr = Math.min(window.devicePixelRatio || 1, phone() ? 1.4 : 1.75) * quality.prK;
         renderer.setPixelRatio(pr);
         renderer.setSize(w, h, false);
@@ -7545,10 +7646,7 @@
           ptr.x = clamp1(e.gamma / 25);
           ptr.y = clamp1((e.beta - 50) / 25);
         }, { passive: true });
-        // iPhones ask first; the first tap is a good moment
-        if (typeof DeviceOrientationEvent.requestPermission === "function") {
-          window.addEventListener("pointerdown", () => DeviceOrientationEvent.requestPermission().catch(() => {}), { once: true });
-        }
+        // iPhones would need a permission dialog for this; not worth a popup on the first tap
       }
       const tmp = new V3(), tmp2 = new V3();
       ["scroll", "resize", "pointermove", "keydown", "click"].forEach((ev) => window.addEventListener(ev, () => { needsRender = true; }, { passive: true }));
@@ -7570,7 +7668,8 @@
         if (phone() && mode === "live" && !needsRender && Math.abs(target - pSmooth) < 0.002 && frameNo % 2) { quality.prevRendered = false; return; } // (the arrival light is slow enough for 30 fps)
         needsRender = false;
         // Measure only back-to-back drawn frames, after the opening (shaders compile then)
-        if (quality.prevRendered && mode === "live" && now - liveStart > 3000 && quality.step < 3 && !document.hidden) {
+        // Phones stop at 65% sharpness: below that the picture turns pixelly
+        if (quality.prevRendered && mode === "live" && now - liveStart > 3000 && quality.step < (LITE ? 2 : 3) && !document.hidden) {
           quality.sum += dt;
           if (++quality.n >= (LITE ? 45 : 90)) {
             if (quality.sum / quality.n > (LITE ? 21 : 24)) {
