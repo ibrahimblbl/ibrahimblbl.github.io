@@ -10,8 +10,10 @@
   <meta name="theme-color" content="#06060f">
   <!-- Link previews (WhatsApp, X, Discord...) -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Opening">
-  <meta property="og:description" content="Every planet is something I learned. A small solar system on my way to AI engineering.">
+  <meta property="og:title" content="Opening · Öğrendiklerimin haritası">
+  <meta property="og:description" content="Her gezegen, yapay zekâ mühendisliği yolunda öğrendiğim bir şeyi anlatıyor. Köşedeki ahtapota soru da sorabilirsin.">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="https://ibrahimblbl.github.io/">
   <meta property="og:image" content="https://ibrahimblbl.github.io/og.jpg">
   <meta property="og:image:width" content="1200">
@@ -1069,7 +1071,8 @@
       pointer-events: none;
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
-    @media (hover: hover) { #stop-nav button:hover::after, #stop-nav button:focus-visible::after { opacity: 1; transform: translate(0, -50%); } }
+    @media (hover: hover) { #stop-nav button:hover::after { opacity: 1; transform: translate(0, -50%); } }
+    #stop-nav button:focus-visible::after { opacity: 1; transform: translate(0, -50%); }
     /* The rail: a thin line through the dots that fills in the current planet's color */
     #stop-nav .rail, #stop-nav .rail-fill {
       position: absolute;
@@ -1755,7 +1758,8 @@
       cursor: pointer;
       transition: color 0.25s ease, background 0.25s ease;
     }
-    @media (hover: hover) { #top-links button:hover, #top-links button.on { color: #ffffff; background: rgba(255, 255, 255, 0.06); } }
+    @media (hover: hover) { #top-links button:hover { color: #ffffff; background: rgba(255, 255, 255, 0.06); } }
+    #top-links button.on { color: #ffffff; background: rgba(255, 255, 255, 0.06); }
     #top-links button.on { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
     #topbar #lang {
       position: static;
@@ -2180,6 +2184,8 @@
       .stop-num { margin-bottom: 8px; font-size: 11.5px; }
       .stop h2 { font-size: clamp(46px, 15vw, 76px); margin-bottom: 12px; }
       .stop-short { max-width: 34ch; font-size: 15.5px; line-height: 1.5; margin-bottom: 18px; }
+      /* the stops whose "for me" line is a result (38 of 40...) show it on phones too, small */
+      .stop-mine.proof { display: block; max-width: 34ch; margin: -6px auto 16px; font-size: 13.5px; line-height: 1.45; }
       .stop-drag { margin-top: 14px; font-size: 10px; color: rgba(236, 236, 248, 0.55); }
       /* The hero: title and hint well above the octopus */
       .hero-copy { bottom: 150px; }
@@ -2193,6 +2199,7 @@
       .stop-short { font-size: 14.5px; line-height: 1.42; margin-bottom: 12px;
         display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
       .stop-drag { display: none; }
+      .stop-mine.proof { display: none; } /* short screens: no room */
       .outro-qs { display: none; }
       .outro-title { font-size: clamp(28px, 8vw, 36px); }
     }
@@ -2261,8 +2268,10 @@
     /* A phone turned sideways: the journey is built for an upright screen. The octopus floats in
        and says so in a speech bubble, with a small phone turning upright as the hint. */
     #turn-note { display: none; }
-    @media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
-      #turn-note {
+    /* (min-aspect-ratio + not .kb-open: a keyboard also makes the page shorter than it is wide,
+       and the note must never cover the box someone is typing in) */
+    @media (orientation: landscape) and (max-height: 500px) and (min-aspect-ratio: 8/5) and (pointer: coarse) {
+      html:not(.kb-open) #turn-note {
         display: flex; align-items: center; justify-content: center; gap: 6px;
         position: fixed; inset: 0; z-index: 9999; padding: 24px;
         background: radial-gradient(ellipse at 50% 55%, rgba(120, 70, 170, 0.18), transparent 60%), #06060f;
@@ -2617,7 +2626,7 @@
       if (i < text.length) {
         i++;
         terminal.innerHTML = colorize(text.slice(0, i)) + '<span class="cursor"></span>';
-        typingTimer = setTimeout(typeNext, 30);
+        typingTimer = setTimeout(typeNext, 18);
       } else {
         setTimeout(finishIntro, 1000);
       }
@@ -4231,7 +4240,7 @@
     // The example questions have ready answers, written from my posts:
     // clicking them never calls Gemini and doesn't use up the daily limit.
     const ASK_PRESETS = [
-      {"q":"What is this site for?","sources":[],"answer":"Opening is my personal site, and every planet on it is something I learned on my way to AI engineering. I started it in October 2026 because I wanted one place to keep what I learn, and to build something of my own that doesn't exist anywhere else. Instead of a plain list, every topic is a planet you can click: Java, Python, MCP, JSON, RAG, Evals, Chunking and Reranking, plus my hobbies, chess and the 76ers. The octopus in the corner is part of it too: you can ask it about anything I've written here. As I learn new things, new planets will show up.","tr":{"q":"Bu sitenin amacı ne?","answer":"Opening benim kişisel sitem; buradaki her gezegen, yapay zekâ mühendisliğine giden yolda öğrendiğim bir şeyi anlatıyor. Siteye Ekim 2026'da başladım, çünkü öğrendiklerimi tek bir yerde toplamak ve başka hiçbir yerde olmayan, bana ait bir şey yapmak istedim. Düz bir liste yerine her konu tıklayabileceğin bir gezegen: Java, Python, MCP, JSON, RAG, Evals, Chunking ve Reranking, bir de hobilerim satranç ve 76ers. Köşedeki ahtapot da işin parçası: burada yazdığım her şeyi ona sorabilirsin. Yeni şeyler öğrendikçe yeni gezegenler de gelecek."}},
+      {"q":"What is this site for?","sources":[],"answer":"Opening is my personal site, and every planet on it is something I learned on my way to AI engineering. I started it in October 2026 because I wanted one place to keep what I learn, and to build something of my own that doesn't exist anywhere else. Instead of a plain list, every topic is a planet you can click: Java, Python, MCP, JSON, RAG, Evals, Chunking and Reranking, plus my hobbies, chess and the 76ers, and a Radio satellite that shows the music I'm listening to. The octopus in the corner is part of it too: you can ask it about anything I've written here. As I learn new things, new planets will show up.","tr":{"q":"Bu sitenin amacı ne?","answer":"Opening benim kişisel sitem; buradaki her gezegen, yapay zekâ mühendisliğine giden yolda öğrendiğim bir şeyi anlatıyor. Siteye Ekim 2026'da başladım, çünkü öğrendiklerimi tek bir yerde toplamak ve başka hiçbir yerde olmayan, bana ait bir şey yapmak istedim. Düz bir liste yerine her konu tıklayabileceğin bir gezegen: Java, Python, MCP, JSON, RAG, Evals, Chunking ve Reranking, bir de hobilerim satranç ve 76ers, yanlarında da o an ne dinlediğimi gösteren Radio uydusu. Köşedeki ahtapot da işin parçası: burada yazdığım her şeyi ona sorabilirsin. Yeni şeyler öğrendikçe yeni gezegenler de gelecek."}},
       {"q":"How did you build this site, and what helped you?","sources":[],"answer":"I built this site together with Claude Code, Anthropic's AI coding assistant. I decided what I wanted, and we wrote the code step by step while it explained every part to me. The site is plain HTML, CSS and JavaScript in a single file, and the planets live in a 3D scene built with the Three.js library. It's hosted for free on GitHub Pages, and a small Cloudflare Worker answers your questions here and fetches the 76ers scores, with Google's Gemini writing the answers. The whole site costs nothing to run: every service it uses is on a free tier.","tr":{"q":"Bu siteyi nasıl yaptın, nelerden yardım aldın?","answer":"Bu siteyi Anthropic'in yapay zekâ kodlama asistanı Claude Code ile birlikte yaptım. Ne istediğime ben karar verdim, kodu da adım adım birlikte yazdık; her parçayı bana tek tek açıkladı. Site tek bir dosyada sade HTML, CSS ve JavaScript'ten oluşuyor; gezegenler de Three.js kütüphanesiyle kurulmuş 3D bir sahnede duruyor. GitHub Pages'te ücretsiz yayında; burada sorduğun soruları ve 76ers skorlarını küçük bir Cloudflare Worker hallediyor, cevapları da Google'ın Gemini modeli yazıyor. Sitenin hiçbir maliyeti yok: kullandığım her servis ücretsiz katmanda."}},
       {"q":"What did you learn building RAG?","sources":["RAG"],"answer":"RAG (Retrieval-Augmented Generation) means the system first finds the right piece of my notes, then a language model writes the answer based on that piece. I started with a simple version: a keyword search over my notes, connected to Claude as a tool. It found the right note for 6 of 8 easy questions (75%), but only 1 of 6 hard questions that used different words than my notes (17%). The big lesson was that keyword search can't tell when two different words mean the same thing. Embeddings fix that by comparing meaning instead of exact words, and this Ask me box is my first RAG that uses them.","tr":{"q":"RAG kurarken ne öğrendin?","answer":"RAG (Retrieval-Augmented Generation), önce notlarımdan doğru parçayı bulup sonra bir dil modeline cevabı o parçaya göre yazdırmak demek. İşe basit bir sürümle başladım: notlarımda anahtar kelimeyle arama yapan ve Claude'a araç olarak bağlanan küçük bir kod. Kolay 8 sorunun 6'sında doğru notu buldu (%75), ama notlarımdakinden farklı kelimeler kullanan 6 zor sorunun sadece 1'inde (%17). En büyük ders şu oldu: anahtar kelime araması, farklı iki kelimenin aynı şeyi anlattığını anlayamıyor. Embedding'ler kelimelere değil anlama baktığı için bunu çözüyor; bu Ask me kutusu da embedding kullanan ilk RAG'im."}},
       {"q":"Why does AI use Python instead of Java?","sources":["Python","Java"],"answer":"Python doesn't actually do the heavy math in AI; it gives the orders. Training a model means billions of multiplications, and those run in fast C, C++ and CUDA code underneath, so Python is the steering wheel and C is the engine. AI was also built by researchers who needed to test ideas quickly, and a quick experiment takes a few lines in Python, while Java first wants a class, types and a main method. Then a snowball started: TensorFlow and PyTorch came out in Python, so new libraries were written for Python, so newcomers learned Python. Java is still valuable for the big systems that serve AI to users.","tr":{"q":"Yapay zekâda neden Java değil de Python kullanılıyor?","answer":"Aslında yapay zekâdaki ağır hesapları Python yapmıyor, o sadece emir veriyor. Bir modeli eğitmek milyarlarca çarpma demek; bunları altta çalışan hızlı C, C++ ve CUDA kodu yapıyor. Yani Python direksiyon, C motor. Üstelik yapay zekâyı, fikirlerini hızlıca denemek isteyen araştırmacılar geliştirdi: Python'da bir deneme birkaç satır sürerken Java önce bir sınıf, tipler ve main metodu istiyor. Sonra kartopu etkisi başladı: TensorFlow ve PyTorch Python'la çıktı, yeni kütüphaneler de Python için yazıldı, yeni başlayanlar da Python öğrendi. Java ise yapay zekâyı kullanıcılara ulaştıran büyük sistemlerde hâlâ çok değerli."}},
@@ -4663,7 +4672,7 @@
       document.getElementById("journey")?.remove();
       document.getElementById("labels3d")?.remove();
       // Everything else only the 3D journey added: its rail, buttons, fake cursor, film bars...
-      for (const sel of ["#stop-nav", "#rail-bar", "#home-btn", "#cursor-dot", "#cursor-ring", ".trail", ".letterbox", "#ask-beams", "#phone-vignette"]) {
+      for (const sel of ["#stop-nav", "#rail-bar", "#home-btn", "#cursor-dot", "#cursor-ring", ".trail", ".letterbox", "#ask-beams", "#phone-vignette", "#journey-spacer"]) {
         document.querySelectorAll(sel).forEach((el) => el.remove());
       }
       // ...and its page states. Above all the custom cursor: it hides the real one, and the fake
@@ -6774,7 +6783,7 @@
           short.className = "stop-short";
           short.textContent = t === station ? "" : t.short || t.about;
           const mine = document.createElement("p");
-          mine.className = "stop-mine";
+          mine.className = "stop-mine" + (["RAG", "Chunking", "Evals", "MCP"].includes(t.name) ? " proof" : "");
           mine.textContent = t.mine || "";
           const more = document.createElement("button");
           more.className = "stop-more";
