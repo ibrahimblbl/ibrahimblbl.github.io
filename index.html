@@ -1004,6 +1004,7 @@
     html.sky3d, html.sky3d body { height: auto; overflow-x: hidden; overflow-y: auto; }
     html.sky3d #sky, html.sky3d #space { display: none; }
     #journey { position: relative; z-index: 1; pointer-events: none; user-select: none; -webkit-user-select: none; } /* dragging the sky must not select the big titles */
+    #journey.glide { position: fixed; top: 0; left: 0; right: 0; will-change: transform; }
     #journey section { height: 100vh; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
     /* Each screen still fills the window, but the next one starts after 62% of it: about 6
        wheel clicks from stop to stop instead of 9 (screens overlap; only the active one shows) */
@@ -5745,7 +5746,9 @@
       blackHole.position.copy(BH_POS);
       blackHole.scale.setScalar(BH_RS * 15.5);
       blackHole.frustumCulled = true; // off screen = not drawn at all (it's the most expensive thing)
-      scene.add(blackHole);
+      // Phones: measured as up to half of a frame's drawing time, for something that is small
+      // there; they skip it so scrolling stays smooth
+      if (!LITE) scene.add(blackHole);
 
       // ---------- A pulsar: a spinning dead star sweeping two beams like a lighthouse ----------
       const pulsar = new THREE.Group();
@@ -6822,6 +6825,12 @@
       }
       addSection("outro", outro);
       document.getElementById("space").after(journey);
+      // Phones: the page scrolls an empty spacer and the text is moved by the script, on the same
+      // frame as the sky. Otherwise the phone scrolls the text itself, the script corrects it one
+      // frame late, and the text shakes while scrolling.
+      const glide = LITE;
+      const spacer = glide ? document.createElement("div") : null;
+      if (glide) { journey.classList.add("glide"); spacer.id = "journey-spacer"; spacer.setAttribute("aria-hidden", "true"); journey.after(spacer); }
 
       // Where each planet lives: its stop
       const secOf = new Map(sections.filter((s) => s.t).map((s) => [s.t, sections.indexOf(s)]));
@@ -7126,6 +7135,7 @@
         farStars.material.uniforms.uPR.value = nearDust.material.uniforms.uPR.value = comet.material.uniforms.uPR.value = dustMat.uniforms.uPR.value = fbMat.uniforms.uPR.value = renderer.getPixelRatio();
         sigPointMats.forEach((m) => { m.uniforms.uPR.value = renderer.getPixelRatio(); });
         sectionH = (sections[1].el.offsetTop - sections[0].el.offsetTop) || h;
+        if (spacer) spacer.style.height = journey.offsetHeight + "px";
         makeKeys();
         if (keep) window.scrollTo(0, keep * sectionH);
         document.getElementById("hint").textContent = phone() ? TX.hintM : TX.hint;
@@ -7753,7 +7763,7 @@
           pendingOpen = null;
           saved2D.openThing(t);
         }
-        const lagPx = Math.round((target - pSmooth) * sectionH * 10) / 10;
+        const lagPx = glide ? -Math.round(pSmooth * sectionH * 10) / 10 : Math.round((target - pSmooth) * sectionH * 10) / 10;
         if (journey.dataset.lag !== String(lagPx)) {
           journey.dataset.lag = String(lagPx);
           journey.style.transform = lagPx ? `translate3d(0, ${lagPx}px, 0)` : "";
@@ -8585,7 +8595,7 @@
         loop();
       }
       window.sky3d = {
-        scene, bloom, blackHole, camera, film, // for measuring in tests
+        scene, bloom, blackHole, camera, film, renderer, // for measuring in tests
         visitNow() { fbState.next = probeState.next = 0; }, // (tests: bring the visitors right away)
         probe, fireball, traceLine, traceDot,
         layout: () => ({ planets: things.map((t) => [t.name, P3.get(t).group.position.toArray().map((v) => +v.toFixed(1)), +P3.get(t).R.toFixed(2)]), cams: keys.map((k, i) => [sections[i].kind, sections[i].t ? sections[i].t.name : "", +k.pos.distanceTo(sections[i].t ? P3.get(sections[i].t).group.position : k.look).toFixed(1)]) }), // (tests)
