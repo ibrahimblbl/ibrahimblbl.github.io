@@ -2533,7 +2533,7 @@
     const DEEP = (() => {
       const want = (new URLSearchParams(location.search).get("p") || "").toLowerCase().replace(/[^a-z0-9]/g, "");
       if (!want) return null;
-      return ["Java", "Python", "JSON", "MCP", "RAG", "Chunking", "Evals", "Reranking", "76", "Chess Log", "Radio"]
+      return ["Java", "Python", "JSON", "MCP", "RAG", "Chunking", "Evals", "Reranking", "LLM", "Agents", "76", "Chess Log", "Radio"]
         .find((n) => n.toLowerCase().replace(/[^a-z0-9]/g, "") === want) || null;
     })();
     const LOCALE = TR ? "tr-TR" : "en-US"; // for dates
@@ -2772,7 +2772,7 @@
         tr: { short: "Açık kitap sınavı gibi: önce kitapta doğru sayfayı bulursun, sonra cevabı ona bakarak yazarsın.",
               about: "Retrieval-Augmented Generation. Yapay zekâ cevap yazmadan önce ilgili belgeleri bulup okuyor. Böylece yeni ya da sana özel bilgilerle de cevap verebiliyor ve daha az uyduruyor. Şirketlerin destek botlarının çoğu böyle çalışıyor.",
               mine: "Sol alttaki ahtapot da bir RAG: sorunu önce yazılarımda arıyor." } },
-      { name: "Evals", x: 0.74, y: 0.22, size: 32, color: "#ffb3c6", dark: "#831843", spin: 0.0004,
+      { name: "Evals", x: 0.71, y: 0.2, size: 32, color: "#ffb3c6", dark: "#831843", spin: 0.0004,
         spots: [{ lat: 0.2, lon: 0.5, size: 0.22, color: "#9d174d" }, { lat: -0.4, lon: 2.5, size: 0.14, color: "#9d174d" }],
         moon: { dist: 2.1, size: 0.24, speed: 0.0008 },
         short: "A report card for AI: test it with questions you already know the answers to, and count how many it gets right.",
@@ -2844,6 +2844,24 @@
         tr: { short: "İşe alım gibi: insan kaynakları yüzlerce CV'den 20'sini hızlıca ayırır, müdür o 20'yi iş ilanıyla yan yana okuyup en iyisini en üste koyar.",
               about: "Aramanın ikinci adımı. Önce embedding'ler anlamca en yakın parçaları hızlıca bulur; sonra reranker denen ikinci bir model, soruyu her parçayla birlikte okuyup onları yeniden sıralar. Daha yavaş ama daha isabetli, bu yüzden sadece ilk adımın getirdiği birkaç adaya uygulanır. Bir de şu var: model, kullanıcılarının dilini bilmeli.",
               mine: "Ahtapota ekleyip denedim: İngilizce bir hatayı düzeltti, ama Türkçe soruları hiç anlamadı. Model Türkçe bilmiyordu, bu yüzden siteye koymadım." } },
+      // LLM: a faceted crystal (no other planet has corners) with a ring of probability bars
+      { name: "LLM", x: 0.8, y: 0.37, tall: [0.95, 0.84], size: 32, color: "#e4dcff", dark: "#2b2550", spin: 0.0003,
+        crystal: true, viewR: 2.1, // the ring of bars reaches ~2x the radius
+        short: "It looks at what you wrote, predicts the next word, adds it, then predicts the one after that. It doesn't find the answer somewhere; it writes it itself, word by word.",
+        about: "Large language model. At every step it gives the possible next words a probability and picks one by rolling dice; that's why the same question can get a different answer. A setting called temperature decides how bold that roll is: low is consistent, high is creative but risky. Nothing inside it checks what's true, so it can make up something it doesn't know in a confident voice; that's called a hallucination. And it only sees what's put in front of it. That space is the context window, and once it fills up, it starts losing track of the beginning.",
+        mine: "The octopus's answers are written by an LLM. I kept the temperature low so it doesn't make things up, and if it can't find a related post, I don't ask it at all.",
+        tr: { short: "Yazdığına bakıp sıradaki kelimeyi tahmin eder, ekler, sonra bir sonrakini tahmin eder. Cevabı bir yerden bulup getirmez, kelime kelime kendisi yazar.",
+              about: "Büyük dil modeli. Her adımda olası kelimelere bir olasılık verir ve aralarından zar atarak birini seçer; aynı soruya bazen farklı cevap vermesinin sebebi bu. Zarın ne kadar cesur atılacağını temperature ayarı belirler: düşükse tutarlı, yüksekse yaratıcı ama riskli. İçinde doğruyu kontrol eden bir parça yok, bu yüzden bilmediği şeyi de emin bir sesle uydurabilir; buna halüsinasyon denir. Bir de sadece önüne konanı görür. Bu alana context window denir ve dolunca baştakileri gözden kaçırmaya başlar.",
+              mine: "Ahtapotun cevaplarını bir LLM yazıyor. Uydurmasın diye temperature'ı düşük tuttum, alakalı bir yazı bulamazsa da ona hiç sormuyorum." } },
+      // Agents: an LLM with tools. A small assistant moon flies out to three tool satellites and back, again and again (the loop)
+      { name: "Agents", x: 0.95, y: 0.3, tall: [1.03, 0.6], size: 30, color: "#34d399", dark: "#064e3b", spin: 0.00035,
+        viewR: 2.4, // the tool satellites sit ~2.3x the radius out
+        short: "Like a boss who can only talk, and an assistant: the boss (the LLM) says what to do, the assistant (the tools) does it and reports back, and the boss says the next step. It goes on like this until the job is done.",
+        about: "An AI agent is an LLM that's been given tools. It can't read a file, run code or search the web by itself; it asks for it to be done, then reads the result. This \"do, look, decide\" round is called the loop. Thanks to it, the agent checks the result instead of guessing, and fixes it if needed. The hard part is context: every result is added to the desk, and once the desk gets crowded, attention slips. That's why a good agent reads only what it needs, keeps notes, and hands big jobs to sub-agents.",
+        mine: "I built this site with an agent called Claude Code: it wrote the code, looked at the screenshot, spotted its mistake and fixed it.",
+        tr: { short: "Sadece konuşabilen bir patron ve asistanı gibi: patron (LLM) ne yapılacağını söyler, asistan (araçlar) yapar ve sonucu anlatır, patron da bir sonraki adımı söyler. İş bitene kadar bu böyle devam eder.",
+              about: "AI agent, yani yapay zekâ ajanı: araç verilmiş bir LLM. Dosya okumak, kod çalıştırmak, internette aramak gibi işleri kendisi yapamaz; yapılmasını ister, sonra sonucu okur. Bu \"yap, bak, karar ver\" turuna döngü (loop) denir. Ajan bu döngü sayesinde tahmin etmek yerine sonucu kontrol eder ve gerekirse düzeltir. İşin zor kısmı context: her sonuç masaya eklenir, masa şişince dikkat dağılır. Bu yüzden iyi bir ajan sadece gerekeni okur, not tutar ve büyük işleri alt ajanlara verir.",
+              mine: "Bu siteyi Claude Code adlı bir ajanla yaptım: kodu yazdı, ekran görüntüsüne baktı, hatasını görüp düzeltti." } },
     ];
 
     for (const p of planets) {
@@ -2865,13 +2883,13 @@
     }
 
     // The radio satellite. Not a planet, but it floats and gets clicked the same way.
-    const station = { name: "Radio", x: 0.9, y: 0.47, tall: [0.97, 0.4], size: 22, color: "#5eead4", grow: 1 };
+    const station = { name: "Radio", x: 0.96, y: 0.55, tall: [0.97, 0.4], size: 22, color: "#5eead4", grow: 1 };
     let nowPlayingLine = ""; // filled in from Last.fm, shown under the satellite
 
     // My path: Java -> Python -> MCP/JSON -> RAG -> Evals, and Chunking is next.
     const links = [
       ["Java", "Python"], ["Python", "MCP"], ["Python", "JSON"],
-      ["MCP", "RAG"], ["RAG", "Evals"], ["RAG", "Chunking"], ["RAG", "Reranking"],
+      ["MCP", "RAG"], ["RAG", "Evals"], ["RAG", "Chunking"], ["RAG", "Reranking"], ["RAG", "LLM"], ["LLM", "Agents"],
     ];
     // Turn names into positions in the planets list once. Using names (not numbers)
     // means adding a planet anywhere in the list can't connect the wrong ones.
@@ -2882,7 +2900,7 @@
     // ---------- Phone layout ----------
     // On phones the sky becomes a path you scroll down. Planets zigzag left and right
     // in the order I learned things. Anything not in this list (a new planet) goes at the end.
-    const mobileOrder = ["Java", "Python", "JSON", "MCP", "RAG", "Chunking", "Reranking", "Evals", "76", "Chess Log", "Radio"];
+    const mobileOrder = ["Java", "Python", "JSON", "MCP", "RAG", "Chunking", "Reranking", "Evals", "LLM", "Agents", "76", "Chess Log", "Radio"];
     const MOBILE_TOP = 170; // px from the top of the page to the first planet
     const MOBILE_GAP = 210; // px between planets
 
@@ -4294,9 +4312,12 @@
     // The example questions have ready answers, written from my posts:
     // clicking them never calls Gemini and doesn't use up the daily limit.
     const ASK_PRESETS = [
-      {"q":"What is this site for?","sources":[],"answer":"Opening is my personal site, and every planet on it is something I learned on my way to AI engineering. I started it in October 2026 because I wanted one place to keep what I learn, and to build something of my own that doesn't exist anywhere else. Instead of a plain list, every topic is a planet you can click: Java, Python, MCP, JSON, RAG, Evals, Chunking and Reranking, plus my hobbies, chess and the 76ers, and a Radio satellite that shows the music I'm listening to. The octopus in the corner is part of it too: you can ask it about anything I've written here. As I learn new things, new planets will show up.","tr":{"q":"Bu sitenin amacı ne?","answer":"Opening benim kişisel sitem; buradaki her gezegen, yapay zekâ mühendisliğine giden yolda öğrendiğim bir şeyi anlatıyor. Siteye Ekim 2026'da başladım, çünkü öğrendiklerimi tek bir yerde toplamak ve başka hiçbir yerde olmayan, bana ait bir şey yapmak istedim. Düz bir liste yerine her konu tıklayabileceğin bir gezegen: Java, Python, MCP, JSON, RAG, Evals, Chunking ve Reranking, bir de hobilerim satranç ve 76ers, yanlarında da o an ne dinlediğimi gösteren Radio uydusu. Köşedeki ahtapot da işin parçası: burada yazdığım her şeyi ona sorabilirsin. Yeni şeyler öğrendikçe yeni gezegenler de gelecek."}},
+      {"q":"What is this site for?","sources":[],"answer":"Opening is my personal site, and every planet on it is something I learned on my way to AI engineering. I started it in October 2026 because I wanted one place to keep what I learn, and to build something of my own that doesn't exist anywhere else. Instead of a plain list, every topic is a planet you can click: Java, Python, MCP, JSON, RAG, Chunking, Reranking, Evals, LLM and Agents, plus my hobbies, chess and the 76ers, and a Radio satellite that shows the music I'm listening to. The octopus in the corner is part of it too: you can ask it about anything I've written here. As I learn new things, new planets will show up.","tr":{"q":"Bu sitenin amacı ne?","answer":"Opening benim kişisel sitem; buradaki her gezegen, yapay zekâ mühendisliğine giden yolda öğrendiğim bir şeyi anlatıyor. Siteye Ekim 2026'da başladım, çünkü öğrendiklerimi tek bir yerde toplamak ve başka hiçbir yerde olmayan, bana ait bir şey yapmak istedim. Düz bir liste yerine her konu tıklayabileceğin bir gezegen: Java, Python, MCP, JSON, RAG, Chunking, Reranking, Evals, LLM ve Agents, bir de hobilerim satranç ve 76ers, yanlarında da o an ne dinlediğimi gösteren Radio uydusu. Köşedeki ahtapot da işin parçası: burada yazdığım her şeyi ona sorabilirsin. Yeni şeyler öğrendikçe yeni gezegenler de gelecek."}},
       {"q":"How did you build this site, and what helped you?","sources":[],"answer":"I built this site together with Claude Code, Anthropic's AI coding assistant. I decided what I wanted, and we wrote the code step by step while it explained every part to me. The site is plain HTML, CSS and JavaScript in a single file, and the planets live in a 3D scene built with the Three.js library. It's hosted for free on GitHub Pages, and a small Cloudflare Worker answers your questions here and fetches the 76ers scores, with Google's Gemini writing the answers. The whole site costs nothing to run: every service it uses is on a free tier.","tr":{"q":"Bu siteyi nasıl yaptın, nelerden yardım aldın?","answer":"Bu siteyi Anthropic'in yapay zekâ kodlama asistanı Claude Code ile birlikte yaptım. Ne istediğime ben karar verdim, kodu da adım adım birlikte yazdık; her parçayı bana tek tek açıkladı. Site tek bir dosyada sade HTML, CSS ve JavaScript'ten oluşuyor; gezegenler de Three.js kütüphanesiyle kurulmuş 3D bir sahnede duruyor. GitHub Pages'te ücretsiz yayında; burada sorduğun soruları ve 76ers skorlarını küçük bir Cloudflare Worker hallediyor, cevapları da Google'ın Gemini modeli yazıyor. Sitenin hiçbir maliyeti yok: kullandığım her servis ücretsiz katmanda."}},
+      {"q":"Why is context so important?","sources":["LLM"],"answer":"Context is everything an AI model can see at once while it answers: your messages, its own replies, hidden instructions and any documents it was given. I picture it as a desk with a size limit. The model has no memory of its own, so the desk is all it knows in that moment: put the right information on it and even an ordinary model answers well, put wrong or too much information on it and even a smart model slips. When the desk gets crowded, the model pays less attention to the middle and can forget what you said early on. That's why the octopus doesn't hand all my posts to the AI, only the few pieces closest to your question.","tr":{"q":"Context neden bu kadar önemli?","answer":"Context, bir yapay zekâ modelinin cevap verirken aynı anda görebildiği her şey: senin mesajların, kendi cevapları, gizli talimatlar ve ona verilen belgeler. Ben bunu boyu sınırlı bir masa gibi düşünüyorum. Modelin kendi hafızası yok, o an bildiği her şey masada duranlardan ibaret: masaya doğru bilgiyi koyarsan sıradan bir model bile iyi cevap verir, yanlış ya da gereğinden fazla bilgi koyarsan en akıllı model bile şaşırır. Masa kalabalıklaşınca model ortadakilere daha az dikkat eder ve sohbetin başında söylediğini unutabilir. Bu yüzden ahtapot bütün yazılarımı yapay zekâya vermiyor, sadece soruna en yakın birkaç parçayı veriyor."}},
       {"q":"What did you learn building RAG?","sources":["RAG"],"answer":"RAG (Retrieval-Augmented Generation) means the system first finds the right piece of my notes, then a language model writes the answer based on that piece. I started with a simple version: a keyword search over my notes, connected to Claude as a tool. It found the right note for 6 of 8 easy questions (75%), but only 1 of 6 hard questions that used different words than my notes (17%). The big lesson was that keyword search can't tell when two different words mean the same thing. Embeddings fix that by comparing meaning instead of exact words, and this Ask me box is my first RAG that uses them.","tr":{"q":"RAG kurarken ne öğrendin?","answer":"RAG (Retrieval-Augmented Generation), önce notlarımdan doğru parçayı bulup sonra bir dil modeline cevabı o parçaya göre yazdırmak demek. İşe basit bir sürümle başladım: notlarımda anahtar kelimeyle arama yapan ve Claude'a araç olarak bağlanan küçük bir kod. Kolay 8 sorunun 6'sında doğru notu buldu (%75), ama notlarımdakinden farklı kelimeler kullanan 6 zor sorunun sadece 1'inde (%17). En büyük ders şu oldu: anahtar kelime araması, farklı iki kelimenin aynı şeyi anlattığını anlayamıyor. Embedding'ler kelimelere değil anlama baktığı için bunu çözüyor; bu Ask me kutusu da embedding kullanan ilk RAG'im."}},
+      {"q":"What is an AI agent?","sources":["Agents"],"answer":"An AI agent is a language model that has been given tools. On its own a model can only write text, but an agent can ask for things to be done, like reading a file, running code or searching the web; the program around it does the work and hands the result back. Then it works in a loop: it does something, looks at the result, and decides whether the job is done or needs fixing. That loop is the big difference: a plain model can only guess, while an agent can check its own work. I built this whole site with an agent called Claude Code. Once it placed a planet right in front of the black hole; it took a screenshot, saw the mistake and moved it.","tr":{"q":"Yapay zekâ ajanı nedir?","answer":"Yapay zekâ ajanı, araç verilmiş bir dil modeli. Model tek başına sadece metin yazabilir; ajan ise dosya okumak, kod çalıştırmak ya da internette aramak gibi işlerin yapılmasını isteyebilir. Bu işleri etrafındaki program yapar ve sonucu ona geri verir. Sonra bir döngü içinde çalışır: bir şey yapar, sonuca bakar, iş bitti mi yoksa düzeltmek mi gerekiyor diye karar verir. Asıl fark bu döngü: sıradan bir model sadece tahmin edebilir, ajan ise kendi işini kontrol edebilir. Bu sitenin tamamını Claude Code adlı bir ajanla yaptım. Bir keresinde bir gezegeni kara deliğin tam önüne koymuştu; ekran görüntüsü alıp hatayı gördü ve yerini değiştirdi."}},
+      {"q":"Why does AI sometimes make things up?","sources":["LLM"],"answer":"When an AI model says something false in a confident voice, it's called a hallucination. It happens because a language model doesn't look facts up: it writes by picking the next word that sounds most likely, and nothing inside it checks whether the sentence is true. After \"the author of this book is\", a name is very likely, so it writes a name, even a made-up one. I guard the octopus against this in two ways: if the search can't find a close enough piece of my posts, the AI is never asked, and when it is asked, it may only answer from those pieces. I also keep a setting called temperature low, at 0.2, so it picks the likely words instead of bold ones.","tr":{"q":"Yapay zekâ neden bazen uyduruyor?","answer":"Bir yapay zekâ modelinin yanlış bir şeyi emin bir sesle söylemesine halüsinasyon deniyor. Bunun sebebi şu: dil modeli bilgiyi bir yerden bakıp bulmuyor, cevabı kulağa en olası gelen sonraki kelimeyi seçerek yazıyor ve içinde cümlenin doğru olup olmadığını kontrol eden bir parça yok. \"Bu kitabın yazarı...\" diye başlayan bir cümleden sonra bir isim gelmesi çok olası, bu yüzden uydurma da olsa bir isim yazıyor. Ahtapotu buna karşı iki şekilde koruyorum: arama yazılarımda yeterince yakın bir parça bulamazsa yapay zekâya hiç sorulmuyor, sorulduğunda da sadece o parçalara dayanarak cevap verebiliyor. Ayrıca temperature denen ayarını 0.2'de, yani düşük tutuyorum. Böylece cesur kelimeler yerine olası olanları seçiyor."}},
       {"q":"Why does AI use Python instead of Java?","sources":["Python","Java"],"answer":"Python doesn't actually do the heavy math in AI; it gives the orders. Training a model means billions of multiplications, and those run in fast C, C++ and CUDA code underneath, so Python is the steering wheel and C is the engine. AI was also built by researchers who needed to test ideas quickly, and a quick experiment takes a few lines in Python, while Java first wants a class, types and a main method. Then a snowball started: TensorFlow and PyTorch came out in Python, so new libraries were written for Python, so newcomers learned Python. Java is still valuable for the big systems that serve AI to users.","tr":{"q":"Yapay zekâda neden Java değil de Python kullanılıyor?","answer":"Aslında yapay zekâdaki ağır hesapları Python yapmıyor, o sadece emir veriyor. Bir modeli eğitmek milyarlarca çarpma demek; bunları altta çalışan hızlı C, C++ ve CUDA kodu yapıyor. Yani Python direksiyon, C motor. Üstelik yapay zekâyı, fikirlerini hızlıca denemek isteyen araştırmacılar geliştirdi: Python'da bir deneme birkaç satır sürerken Java önce bir sınıf, tipler ve main metodu istiyor. Sonra kartopu etkisi başladı: TensorFlow ve PyTorch Python'la çıktı, yeni kütüphaneler de Python için yazıldı, yeni başlayanlar da Python öğrendi. Java ise yapay zekâyı kullanıcılara ulaştıran büyük sistemlerde hâlâ çok değerli."}},
       {"q":"What surprised you about MCP?","sources":["MCP"],"answer":"MCP (Model Context Protocol) is the standard way to plug tools into Claude, a bit like USB for AI tools. I built my own tool that searches my notes and connected it to Claude Code. What surprised me most is that Claude decides by itself when to use the tool, and it doesn't even send the whole question, just a word it picks. The tool's description changes that decision, so writing a good description is as important as writing the code. In my first real test I asked when Denver won its first championship, and Claude called my tool on its own and found the answer, 2023, in my notes.","tr":{"q":"MCP'de seni en çok ne şaşırttı?","answer":"MCP (Model Context Protocol), Claude'a araç bağlamanın standart yolu; yapay zekâ araçlarının USB'si gibi düşünebilirsin. Notlarımda arama yapan kendi aracımı yazıp Claude Code'a bağladım. Beni en çok şaşırtan, aracı ne zaman kullanacağına Claude'un kendisinin karar vermesi oldu. Üstelik sorunun tamamını bile göndermiyor, kendi seçtiği bir kelimeyi gönderiyor. Bu kararı aracın açıklaması değiştiriyor; yani iyi bir açıklama yazmak, kodu yazmak kadar önemli. İlk gerçek denememde Denver'ın ilk şampiyonluğunu ne zaman kazandığını sordum: Claude aracımı kendiliğinden çağırdı ve cevabı (2023) notlarımda buldu."}},
       {"q":"How do you test a search system?","sources":["Evals"],"answer":"I use an eval, which is a fixed exam for the system: a list of questions where I already know which note holds each answer. The search runs on every question, and I count how often it finds the right note. My first keyword search scored 75% on easy questions but only 17% on hard ones, which showed exactly where it was weak. I keep the questions fixed and rerun the exam after every change, so instead of guessing whether something got better, I can measure it. For this Ask me box I used a 40-question eval, 10 of them in Turkish, to pick the similarity threshold.","tr":{"q":"Bir arama sistemini nasıl test ediyorsun?","answer":"Eval kullanıyorum; yani sisteme sabit bir sınav yapıyorum. Her cevabın hangi notta olduğunu önceden bildiğim bir soru listem var. Arama her soru için çalışıyor, ben de doğru notu kaç kez bulduğunu sayıyorum. İlk anahtar kelime aramam kolay sorularda %75, zor sorularda sadece %17 aldı; böylece nerede zayıf olduğu net olarak ortaya çıktı. Sorular hiç değişmiyor ve her değişiklikten sonra sınavı yeniden yapıyorum; böylece bir şeyin daha iyi olup olmadığını tahmin etmek yerine ölçüyorum. Bu Ask me kutusunda benzerlik eşiğini seçmek için 10'u Türkçe, 40 soruluk bir eval kullandım."}},
@@ -5201,6 +5222,40 @@
         }
       `;
 
+      // LLM: a pearl crystal. Every face is flat (its normal comes from the screen-space slope of the
+      // surface), lit by the planet's own light, with a thin-film rainbow that shifts with the angle.
+      const CRYSTAL_FRAG = /* glsl */ `
+        uniform vec3 uC1, uC2, uC3, uC4, uLight, uAtmo;
+        uniform float uTime, uSeed, uGlow, uDark;
+        uniform vec4 uPtr;
+        varying vec3 vObj; varying vec3 vWNormal; varying vec3 vWPos;
+        void main() {
+          vec3 cr = cross(dFdx(vWPos), dFdy(vWPos));
+          float cl = length(cr);
+          vec3 N = cl > 1e-10 ? cr / cl : normalize(vWNormal);   // never normalize zero (NaN -> black screen)
+          vec3 V = normalize(cameraPosition - vWPos);
+          if (dot(N, V) < 0.0) N = -N;
+          float ndl = dot(N, uLight);
+          float day = max(ndl, 0.0);
+          float nv = clamp(dot(N, V), 0.0, 1.0);
+          float fres = (1.0 - nv) * (1.0 - nv) * (1.0 - nv);
+          // thin film: hue slides with the viewing angle and a little with height
+          vec3 film = 0.5 + 0.5 * cos(6.2832 * (vec3(0.0, 0.33, 0.67) + (1.0 - nv) * 1.3 + vObj.y * 0.35 + uSeed * 0.07));
+          vec3 base = mix(uC2, uC3, smoothstep(-0.45, 0.6, ndl));
+          vec3 lit = base * (0.1 + 0.9 * day);
+          lit = mix(lit, lit * (0.55 + 0.9 * film), 0.45);
+          vec3 Rf = reflect(-uLight, N);
+          float spec = pow(max(dot(Rf, V), 0.0), 36.0);
+          lit += mix(uC4, film, 0.5) * spec * 0.9;
+          lit += film * fres * (0.08 + 0.32 * smoothstep(-0.3, 0.5, ndl));
+          lit += uC2 * 0.07;                                       // the night side never goes fully black
+          lit *= 1.0 - 0.55 * uDark;
+          lit += uAtmo * pow(max(dot(N, uPtr.xyz), 0.0), 6.0) * (0.12 + fres * 1.4) * uPtr.w;
+          lit = lit * (1.0 + uGlow * 0.5) + uAtmo * uGlow * 0.18;
+          gl_FragColor = vec4(lit, 1.0);
+        }
+      `;
+
       // The soft halo of air around a planet (a slightly bigger ball, seen from the inside)
       const ATMO_VERT = /* glsl */ `
         varying vec3 vN; varying vec3 vWN; varying vec3 vPos;
@@ -6073,6 +6128,8 @@
         Evals:     { type: 1, c: ["#3d0a20", "#8d1e4f", "#f08bb0", "#ffe3ee"], clouds: true },
         "Chess Log": { type: 1, c: ["#2e0e04", "#7c2d12", "#d9773a", "#ffd9b3"] },
         76:        { type: 2, c: ["#04203f", "#0a4f9c", "#2d8fe0", "#9fd0ff"] },
+        LLM:       { type: 0, c: ["#14122a", "#4d4782", "#bcb6ea", "#f4f1ff"] }, // crystal: own shader (CRYSTAL_FRAG)
+        Agents:    { type: 0, bands: 6, c: ["#021f16", "#0b5b3c", "#1fa971", "#86efac"] },
       };
       const radiusOf = (t) => 0.55 + (t.size / 56) * 2.25;
       const shared = { uTime: { value: 0 }, uLight: { value: LIGHT } };
@@ -6146,6 +6203,9 @@
           }
           parts.core = new THREE.Mesh(new THREE.SphereGeometry(R * 0.5, 32, 24), new THREE.MeshBasicMaterial({ color: new THREE.Color("#2dd4bf").multiplyScalar(1.3) }));
           spinner.add(parts.core);
+        } else if (p.crystal) {
+          mat.fragmentShader = CRYSTAL_FRAG;
+          spinner.add(new THREE.Mesh(new THREE.IcosahedronGeometry(R * 1.04, 1), mat));
         } else {
           spinner.add(new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), mat));
         }
@@ -6554,6 +6614,108 @@
           };
         }
 
+        if (p.name === "LLM") {
+          // How an LLM picks the next word: a ring of bars, one per possible word, height = its chance.
+          // Every round the chances change, and the dice pick one bar (usually a tall one, not always the tallest).
+          const N = LITE ? 48 : 64, CYC = 1900;
+          const geo = new THREE.BoxGeometry(1, 1, 1);
+          geo.translate(0, 0.5, 0);
+          const bars = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }), N);
+          const base = new THREE.Mesh(new THREE.RingGeometry(R * 1.84, R * 1.88, 128, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color("#cbbfff").multiplyScalar(0.22), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+          base.rotation.x = -Math.PI / 2;
+          const ring = new THREE.Group();
+          ring.rotation.set(0.3, 0, -0.16);
+          ring.add(bars, base);
+          g.add(ring);
+          const dummy = new THREE.Object3D(), c = new THREE.Color();
+          const lav = new THREE.Color("#cbbfff"), white = new THREE.Color(1.6, 1.55, 1.7);
+          const hash = (i, n) => { const x = Math.sin(i * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+          const chance = (i, n) => Math.pow(hash(i, n), 4);
+          let from = Array.from({ length: N }, (_, i) => chance(i, -1)), to = from.slice(), winner = 0, cycleNo = -1;
+          update = (tm) => {
+            const n = Math.floor(tm / CYC), k = (tm % CYC) / CYC;
+            if (n !== cycleNo) {
+              cycleNo = n;
+              from = to.slice();
+              to = Array.from({ length: N }, (_, i) => chance(i, n));
+              // roll the dice, weighted by each bar's chance
+              const sum = to.reduce((a, v) => a + v, 0);
+              let r = hash(n, 7.7) * sum;
+              winner = 0;
+              while (winner < N - 1 && (r -= to[winner]) > 0) winner++;
+            }
+            const move = ease01(Math.min(1, k / 0.32));
+            const shine = Math.max(0, Math.min(1, (k - 0.34) / 0.1)) * (1 - Math.max(0, (k - 0.7) / 0.3));
+            for (let i = 0; i < N; i++) {
+              const a = (i / N) * Math.PI * 2 + tm * 0.00007;
+              const v = from[i] + (to[i] - from[i]) * move;
+              const sh = i === winner ? shine : 0;
+              dummy.position.set(Math.cos(a) * R * 1.86, 0, Math.sin(a) * R * 1.86);
+              dummy.rotation.set(0, -a, 0);
+              dummy.scale.set(R * 0.04, R * (0.06 + v * 0.95 + sh * 0.35), R * 0.04);
+              dummy.updateMatrix();
+              bars.setMatrixAt(i, dummy.matrix);
+              c.copy(lav).multiplyScalar(0.38 + v * 0.3);
+              if (sh) c.lerp(white, sh);
+              bars.setColorAt(i, c);
+            }
+            bars.instanceMatrix.needsUpdate = true;
+            bars.instanceColor.needsUpdate = true;
+          };
+        }
+
+        if (p.name === "Agents") {
+          // The loop: a small assistant moon flies out to one of three tool satellites (a box, a diamond,
+          // a can), lights it up while it "uses" it, and comes back to the planet with the result. Then the next one.
+          const TRIP = 2600, ACC = new THREE.Color("#34d399");
+          const toolGeo = [new THREE.BoxGeometry(1, 1, 1), new THREE.OctahedronGeometry(0.78), new THREE.CylinderGeometry(0.5, 0.5, 1.1, 16)];
+          const tools = [new V3(-2.2, 0.6, 0.3), new V3(2.1, 0.95, -0.4), new V3(1.5, -1.25, 0.9)].map((v, i) => {
+            const m = new THREE.Mesh(toolGeo[i], new THREE.MeshStandardMaterial({ color: 0xd9dde6, metalness: 0.5, roughness: 0.3, emissive: ACC.clone(), emissiveIntensity: 0 }));
+            m.scale.setScalar(R * 0.22);
+            const pos = v.multiplyScalar(R);
+            m.position.copy(pos);
+            const gl = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: ACC, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+            gl.scale.setScalar(R * 0.95);
+            gl.position.copy(pos);
+            g.add(m, gl);
+            return { m, gl, pos };
+          });
+          const moon = new THREE.Mesh(new THREE.SphereGeometry(R * 0.1, 20, 14), new THREE.MeshBasicMaterial({ color: new THREE.Color("#eafff6") }));
+          const moonGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: ACC, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+          moonGlow.scale.setScalar(R * 0.75);
+          const TRAIL = 40, trailPos = new Float32Array(TRAIL * 3);
+          const trailGeo = new THREE.BufferGeometry();
+          trailGeo.setAttribute("position", new THREE.BufferAttribute(trailPos, 3));
+          const trail = new THREE.Points(trailGeo, new THREE.PointsMaterial({ size: R * 0.05, color: ACC, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+          trail.frustumCulled = false;
+          g.add(moon, moonGlow, trail);
+          const hist = [], P = new V3(), A = new V3(), Bm = new V3(), UPK = new V3(), DNK = new V3();
+          const home = (a, out) => out.set(Math.cos(a) * R * 1.3, R * 0.15, Math.sin(a) * R * 1.3);
+          const bez = (p0, p1, p2, t, out) => out.copy(p0).multiplyScalar((1 - t) * (1 - t)).addScaledVector(p1, 2 * (1 - t) * t).addScaledVector(p2, t * t);
+          const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+          update = (tm) => {
+            const n = Math.floor(tm / TRIP), k = (tm % TRIP) / TRIP, tool = tools[n % 3];
+            const mid = A.copy(tool.pos).multiplyScalar(0.6).add(UPK.set(0, R * 0.7, R * 0.4));
+            if (k < 0.42) bez(home(n * 2.1 + 1.2, Bm), mid, tool.pos, sm(0, 0.42, k), P);
+            else if (k < 0.58) P.copy(tool.pos).add(UPK.set(0, R * 0.24, 0));
+            else bez(tool.pos, mid.add(DNK.set(0, -R * 0.5, R * 0.3)), home(n * 2.1 + 2.4, Bm), sm(0.58, 1, k), P);
+            moon.position.copy(P);
+            moonGlow.position.copy(P);
+            const at = sm(0.4, 0.46, k) * (1 - sm(0.56, 0.62, k));
+            for (const t of tools) {
+              const on = t === tool ? at : 0;
+              t.m.material.emissiveIntensity = on * 0.9;
+              t.gl.material.opacity = on * 0.8;
+              t.m.rotation.y = tm * 0.0006;
+            }
+            if (hist.length < TRAIL) hist.unshift(new V3()); else hist.unshift(hist.pop());
+            hist[0].copy(P);
+            for (let i = 0; i < hist.length; i++) trailPos.set([hist[i].x, hist[i].y, hist[i].z], i * 3);
+            trailGeo.attributes.position.needsUpdate = true;
+            trailGeo.setDrawRange(0, hist.length);
+          };
+        }
+
         if (p.name === "Evals") {
           // The real result: 40 test questions, 38 passed (mint) and 2 missed (red).
           // A light runs around the ring like a test run checking them one by one.
@@ -6730,11 +6892,11 @@
       const CHAPTERS = TR
         ? [{ n: "I", title: "Temeller", names: ["Java", "Python", "JSON", "MCP"] },
            { n: "II", title: "Yapay zekâda arama", names: ["RAG", "Chunking", "Reranking"] },
-           { n: "III", title: "Modeller ve ölçüm", names: ["Evals"] },
+           { n: "III", title: "Modeller ve ölçüm", names: ["Evals", "LLM", "Agents"] },
            { n: "IV", title: "Kodun dışında", names: ["76", "Chess Log", "Radio"] }]
         : [{ n: "I", title: "Foundations", names: ["Java", "Python", "JSON", "MCP"] },
            { n: "II", title: "Search in AI", names: ["RAG", "Chunking", "Reranking"] },
-           { n: "III", title: "Models and evals", names: ["Evals"] },
+           { n: "III", title: "Models and evals", names: ["Evals", "LLM", "Agents"] },
            { n: "IV", title: "Beyond the code", names: ["76", "Chess Log", "Radio"] }];
       // A planet added later that isn't in any chapter goes into the last one
       for (const t of stops) if (!CHAPTERS.some((c) => c.names.includes(t.name))) CHAPTERS[CHAPTERS.length - 1].names.push(t.name);
