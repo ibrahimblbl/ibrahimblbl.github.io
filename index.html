@@ -1006,6 +1006,44 @@
     html.sky3d, html.sky3d body { height: auto; overflow-x: hidden; overflow-y: auto; }
     html.sky3d #sky, html.sky3d #space { display: none; }
     #journey { position: relative; z-index: 1; pointer-events: none; user-select: none; -webkit-user-select: none; } /* dragging the sky must not select the big titles */
+    /* ?tour: only the sky and, at the end, the title card */
+    html.tour, html.tour body { cursor: none !important; overflow: hidden !important; }
+    html.tour #intro, html.tour #skip, html.tour #topbar, html.tour .ui, html.tour #ask, html.tour #note-quick, html.tour #journey,
+    html.tour #stop-nav, html.tour #home-btn, html.tour #rail-bar, html.tour #hint, html.tour #labels3d, html.tour #cursor-dot,
+    html.tour #cursor-ring, html.tour .trail, html.tour #phone-vignette, html.tour #lang { opacity: 0 !important; pointer-events: none !important; }
+    #tour-end {
+      position: fixed; left: 0; right: 0; bottom: 15%; z-index: 5; text-align: center; pointer-events: none;
+      opacity: 0; transform: translateY(14px); transition: opacity 1.6s ease, transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+      text-shadow: 0 2px 30px rgba(0, 0, 10, 0.9);
+    }
+    #tour-end.on { opacity: 1; transform: none; }
+    #tour-end .t1 { font: 700 clamp(30px, 5.2vw, 64px)/1.05 "Space Grotesk", system-ui, sans-serif; letter-spacing: -0.035em; color: #f4f3fb; }
+    #tour-end .t1 em { display: block; font: italic 400 1.02em/1.05 "Instrument Serif", Georgia, serif; letter-spacing: -0.01em; color: #c9c6dc; }
+    #tour-end .t2 { margin-top: clamp(16px, 2.4vw, 28px); font: 500 clamp(12px, 1.5vw, 17px)/1 "JetBrains Mono", monospace; letter-spacing: 0.22em; color: rgba(236, 235, 243, 0.82); }
+    html.tour body::after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 46%; z-index: 4; pointer-events: none; background: linear-gradient(to top, rgba(2, 2, 10, 0.72), rgba(2, 2, 10, 0.4) 45%, rgba(2, 2, 10, 0)); }
+    /* the text of each shot, in the same style as the big titles of the journey: a white line,
+       then a line that melts to grey with one word in italic serif */
+    #tour-cap {
+      position: fixed; left: 6%; right: 6%; bottom: 11%; z-index: 5; text-align: center; pointer-events: none;
+      font: 700 clamp(34px, 4.7vw, 68px)/1.04 "Space Grotesk", system-ui, sans-serif; letter-spacing: -0.035em;
+    }
+    #tour-cap .solid-line, #tour-cap .fade-line { opacity: 0; transform: translateY(0.35em); transition: opacity 0.6s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    #tour-cap .solid-line { text-shadow: 0 2px 30px rgba(0, 0, 10, 0.9); }
+    #tour-cap.on .solid-line, #tour-cap.on .fade-line { opacity: 1; transform: none; }
+    #tour-cap.on .fade-line { transition-delay: 0.16s; }
+    /* the octopus comes up for its own line */
+    #tour-octo { position: fixed; left: 50%; bottom: calc(11% + clamp(84px, 11.4vw, 164px)); z-index: 5; pointer-events: none; width: 0; height: 0;
+      opacity: 0; transform: translateY(40px) scale(0.86); transition: opacity 0.7s ease, transform 1.1s cubic-bezier(0.2, 0.9, 0.2, 1); }
+    #tour-octo.on { opacity: 1; transform: none; }
+    #tour-octo .octo { position: absolute; left: 0; bottom: 0; width: clamp(120px, 13vw, 190px); height: auto; aspect-ratio: 110 / 120; margin-left: calc(clamp(120px, 13vw, 190px) / -2); filter: drop-shadow(0 0 26px rgba(255, 143, 171, 0.35)); }
+    @media (max-aspect-ratio: 4/5) {
+      #tour-cap { bottom: 15%; font-size: 8.3vw; white-space: nowrap; }
+      #tour-octo { bottom: calc(15% + 22vw); }
+      #tour-octo .octo { width: 36vw; margin-left: -18vw; }
+      #tour-end { bottom: 14%; }
+      #tour-end .t1 { font-size: 11.5vw; }
+      #tour-end .t2 { font-size: 3.3vw; margin-top: 4.4vw; }
+    }
     #journey.glide { position: fixed; top: 0; left: 0; right: 0; will-change: transform; }
     #journey section { height: 100vh; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
     /* Each screen still fills the window, but the next one starts after 62% of it: about 6
@@ -2746,8 +2784,12 @@
       { name: "Chess Log", x: 0.84, y: 0.8, tall: [0.86, 0.72], size: 30, color: "#fdba74", dark: "#7c2d12", spin: 0.00045,
         spots: [{ lat: -0.2, lon: 1, size: 0.15, color: "#7c2d12" }, { lat: 0.4, lon: 3.5, size: 0.12, color: "#7c2d12" }, { lat: 0, lon: 5, size: 0.1, color: "#7c2d12" }],
         moon: { dist: 1.9, size: 0.2, speed: -0.0011 },
+        short: "Like a match notebook: every game I play lands here by itself, and one look tells you if my rating is going up or down.",
         about: "A project for logging my chess games. Built with Lovable, it taught me what I don't want: a copy of something that already exists.",
-        tr: { about: "Satranç maçlarımı kaydetmek için yaptığım bir proje. Lovable ile yaptım ve bana ne istemediğimi öğretti: zaten var olan bir şeyin kopyasını." } },
+        mine: "I like playing chess.",
+        tr: { short: "Bir maç defteri gibi: oynadığım her maç kendiliğinden buraya düşüyor, puanımın çıkıp çıkmadığı tek bakışta görünüyor.",
+              about: "Satranç maçlarımı kaydetmek için yaptığım bir proje. Lovable ile yaptım ve bana ne istemediğimi öğretti: zaten var olan bir şeyin kopyasını.",
+              mine: "Satranç oynamayı seviyorum." } },
       { name: "Java", x: 0.08, y: 0.56, size: 36, color: "#f87171", dark: "#5c1a0b", spin: 0.0003,
         bands: 4,
         spots: [{ lat: -0.3, lon: 2, size: 0.2, color: "#fde68a" }],
@@ -4231,7 +4273,19 @@
       skipIntro = sessionStorage.getItem("skipIntro") === "1";
       sessionStorage.removeItem("skipIntro");
     } catch {}
-    if (reduceMotion || skipIntro) {
+    // ?tour = a 15-second film of the site for sharing: no terminal, no buttons, the camera flies by itself
+    const TOUR = /[?&]tour\b/.test(location.search) && !reduceMotion;
+    if (TOUR) {
+      document.documentElement.classList.add("tour");
+      // hold the opening shot (the horizon and the rising star) for a moment, then fly in
+      let seen = 0;
+      const t0 = performance.now();
+      const wait = setInterval(() => {
+        const now = performance.now();
+        if (!seen && document.documentElement.classList.contains("prologue")) seen = now;
+        if ((seen && now - seen > 1700) || now - t0 > 9000) { clearInterval(wait); finishIntro(); }
+      }, 100);
+    } else if (reduceMotion || skipIntro) {
       finishIntro();
     } else {
       typeNext();
@@ -4699,7 +4753,8 @@
     async function initSky3d() {
       // Phones draw straight to the screen (LITE below) and never use the five effect files,
       // so they don't download them: a faster start on mobile data.
-      const liteLoad = window.innerWidth < 700;
+      const TOUR = document.documentElement.classList.contains("tour"); // ?tour: the film for sharing (see the first script)
+      const liteLoad = window.innerWidth < 700 && !TOUR; // the film is drawn at full quality even in a narrow (upright) window
       const [THREE, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }, { ShaderPass }] = await Promise.all([
         import("three"),
         ...(liteLoad ? [{}, {}, {}, {}, {}] : [
@@ -7160,7 +7215,7 @@
         const keep = lastW ? progress() : 0;
         lastW = w; lastH = h; fitH = h;
         canvas3d.style.height = phone() ? h + "px" : "";
-        const pr = Math.min(window.devicePixelRatio || 1, phone() ? 1.4 : 1.75) * quality.prK;
+        const pr = Math.min(window.devicePixelRatio || 1, TOUR ? 2 : phone() ? 1.4 : 1.75) * quality.prK;
         renderer.setPixelRatio(pr);
         renderer.setSize(w, h, false);
         if (composer) {
@@ -7731,6 +7786,7 @@
         if (!window.sky3d) return; // switched back to 2D
         requestAnimationFrame(frame);
         if (fpsBox && last) fpsTick(now, now - last);
+        if (TOUR) needsRender = true; // the film never skips a frame
         const dt = Math.max(0, Math.min(64, now - (last || now)));
         last = now;
         updateSnap(now);
@@ -7746,7 +7802,7 @@
         needsRender = false;
         // Measure only back-to-back drawn frames, after the opening (shaders compile then)
         // Phones stop at 65% sharpness: below that the picture turns pixelly
-        if (quality.prevRendered && mode === "live" && now - liveStart > 3000 && quality.step < (LITE ? 2 : 3) && !document.hidden) {
+        if (!TOUR && quality.prevRendered && mode === "live" && now - liveStart > 3000 && quality.step < (LITE ? 2 : 3) && !document.hidden) {
           quality.sum += dt;
           if (++quality.n >= (LITE ? 45 : 90)) {
             if (quality.sum / quality.n > (LITE ? 21 : 24)) {
@@ -7971,6 +8027,7 @@
         updateTrace(now, outroK);
         // the ending is the calmest frame: a touch darker
         renderer.toneMappingExposure = 0.82 * (1 - 0.1 * outroK);
+        if (tour.t0) camRoll = tourCamera(now, camPos, camLook);
         camera.position.copy(camPos).add(tmp.set(mouse.x * 0.8 * par, -mouse.y * 0.5 * par, 0).applyQuaternion(camera.quaternion));
         camera.up.set(Math.sin(camRoll), Math.cos(camRoll), 0);
         camera.lookAt(camLook);
@@ -8633,10 +8690,89 @@
       function landed() {
         if (hasLanded) return;
         hasLanded = true;
+        if (TOUR) { tourStart(performance.now()); return; }
         const t = DEEP && things.find((x) => x.name === DEEP);
         if (t && secOf.has(t)) setTimeout(() => goTo(secOf.get(t)), reduceMotion ? 0 : 900);
         else if (typeof octoHello === "function") setTimeout(octoHello, 1800);
       }
+      // ---------- ?tour: the camera flies a planned route by itself (a short film for sharing) ----------
+      // After the opening flight lands: glide past RAG's ring, swing over to Evals with the black
+      // hole behind it, then pull back until the whole system shows and the title card comes up.
+      const tour = { t0: 0, pos: null, look: null, T: 14, cap: null, capOn: -1 };
+      // [white line, [before, italic word(s), after]]; the numbers count themselves, so a new planet updates the film too
+      const TOUR_CAPS = TR
+        ? [["Öğrendiğim her şey için", ["", "bir gezegen", " yaptım."]], [`${stops.length} gezegen,`, ["", `${CHAPTERS.length} bölüm.`, ""]], ["Takıldığın yerde", ["", "ahtapota", " sor."]]]
+        : [["For everything I learned,", ["I made ", "a planet.", ""]], [`${stops.length} planets,`, ["", `${CHAPTERS.length} chapters.`, ""]], ["Stuck somewhere?", ["Ask ", "the octopus.", ""]]];
+      // show caption i (-1 = none); the old lines fade out first, then the new ones come up
+      function tourCap(i) {
+        if (i === tour.capOn) return;
+        tour.capOn = i;
+        if (!tour.cap) {
+          tour.cap = document.createElement("div"); tour.cap.id = "tour-cap"; document.body.append(tour.cap);
+          // a copy of the real octopus (the one in the corner is hidden during the film)
+          const src = document.getElementById("octo");
+          tour.octo = document.createElement("div"); tour.octo.id = "tour-octo";
+          if (src) tour.octo.innerHTML = src.outerHTML.replace(/id="octo"/, "").replace(/(id="|url\(#)(octo-[a-z]+)/g, "$1$2-f");
+          document.body.append(tour.octo);
+        }
+        const c = tour.cap;
+        c.classList.remove("on");
+        tour.octo.classList.toggle("on", i === 2);
+        if (i >= 0) setTimeout(() => {
+          if (tour.capOn !== i) return;
+          c.textContent = "";
+          fadeTitle(c, TOUR_CAPS[i][0], TOUR_CAPS[i][1]);
+          void c.offsetWidth;
+          c.classList.add("on");
+        }, c.firstChild ? 620 : 60);
+      }
+      function tourStart(now) {
+        const wide = !TALL, far = wide ? 1 : 1.7; // an upright picture sees less to the sides: keep further away
+        const part = (n) => P3.get(things.find((t) => t.name === n));
+        const rag = part("RAG"), ev = part("Evals");
+        const home = keys[0], rp = rag.group.position, ep = ev.group.position;
+        const toCam = home.pos.clone().sub(rp).normalize();
+        const right = new V3().crossVectors(UP, toCam).normalize();
+        const up = new V3().crossVectors(toCam, right).normalize();
+        const at = (c, a, b, d) => c.clone().addScaledVector(toCam, a).addScaledVector(right, b).addScaledVector(up, d);
+        const R = rag.R * (rag.group.scale.x || 1), Re = ev.R * (ev.group.scale.x || 1);
+        const away = ep.clone().sub(BH_POS).normalize(); // from the black hole through Evals, toward us
+        // the last shot: a little further back than the first screen, and the system higher in the
+        // picture, so the title card has the lower part to itself
+        const view = home.pos.clone().sub(home.look);
+        const lift = wide ? 0.11 : -0.012;
+        const back = view.clone().multiplyScalar(wide ? 0.2 : -0.26).addScaledVector(up, -view.length() * lift);
+        const endLook = home.look.clone().addScaledVector(up, -view.length() * lift);
+        const P = [
+          home.pos.clone(),
+          at(rp, R * 6.2 * far, -R * 4.4, R * 1.9),          // coming in over the ring from the left
+          at(rp, R * 3.9 * far, R * 3.6, R * 0.7),           // skimming past, low over the ring
+          ep.clone().addScaledVector(away, Re * 7.5 * far).addScaledVector(up, Re * 1.2), // Evals in front of the black hole
+          home.pos.clone().add(back),
+        ];
+        const L = [home.look.clone(), rp.clone(), at(rp, 0, R * 0.5, 0), ep.clone().lerp(BH_POS, 0.1).addScaledVector(up, -Re * (wide ? 2.6 : 3.4)), endLook]; // Evals sits high in the picture: the octopus comes up under it
+        tour.pos = new THREE.CatmullRomCurve3(P, false, "centripetal");
+        tour.look = new THREE.CatmullRomCurve3(L, false, "centripetal");
+        tour.drift = view.clone().normalize();
+        tour.t0 = now;
+        const end = document.createElement("div");
+        end.id = "tour-end";
+        end.innerHTML = TR ? '<div class="t1">Öğrendiklerimin<em>haritası</em></div><div class="t2">ibrahimblbl.github.io</div>'
+                           : '<div class="t1">A map of<em>what I\'ve learned</em></div><div class="t2">ibrahimblbl.github.io</div>';
+        document.body.append(end);
+        tour.end = end;
+      }
+      function tourCamera(now, pos, look) {
+        const t = (now - tour.t0) / 1000, s = Math.min(1, t / tour.T);
+        const u = 0.5 - 0.5 * Math.cos(Math.PI * s); // leaves gently, arrives gently
+        tour.pos.getPoint(u, pos);
+        tour.look.getPoint(u, look);
+        if (t > tour.T) pos.addScaledVector(tour.drift, Math.min(40, (t - tour.T) * 0.55)); // the last shot keeps easing back, very slowly
+        tourCap(s < 0.07 ? 0 : s > 0.2 && s < 0.5 ? 1 : s > 0.57 && s < 0.77 ? 2 : -1);
+        if (s > 0.83) tour.end.classList.add("on");
+        return Math.sin(Math.PI * s) * Math.sin(Math.PI * 2 * s) * 0.05; // a slight bank into each turn
+      }
+
       const loop = () => {
         if (looping) return;
         looping = true;
@@ -8665,6 +8801,7 @@
           if (mode === "prologue") {
             // From the horizon, fly backwards at light speed into the system
             mode = "flight";
+            if (TOUR) { window.__tourGo = performance.now(); setTimeout(() => tourCap(0), 1000); }
             flightStart = performance.now();
             liveStart = flightStart + FLIGHT_MS;
             html.classList.remove("prologue");
