@@ -2772,7 +2772,7 @@
         tr: { short: "Açık kitap sınavı gibi: önce kitapta doğru sayfayı bulursun, sonra cevabı ona bakarak yazarsın.",
               about: "Retrieval-Augmented Generation. Yapay zekâ cevap yazmadan önce ilgili belgeleri bulup okuyor. Böylece yeni ya da sana özel bilgilerle de cevap verebiliyor ve daha az uyduruyor. Şirketlerin destek botlarının çoğu böyle çalışıyor.",
               mine: "Sol alttaki ahtapot da bir RAG: sorunu önce yazılarımda arıyor." } },
-      { name: "Evals", x: 0.71, y: 0.2, size: 32, color: "#ffb3c6", dark: "#831843", spin: 0.0004,
+      { name: "Evals", x: 0.6, y: 0.16, tall: [0.71, 0.2], size: 32, color: "#ffb3c6", dark: "#831843", spin: 0.0004,
         spots: [{ lat: 0.2, lon: 0.5, size: 0.22, color: "#9d174d" }, { lat: -0.4, lon: 2.5, size: 0.14, color: "#9d174d" }],
         moon: { dist: 2.1, size: 0.24, speed: 0.0008 },
         short: "A report card for AI: test it with questions you already know the answers to, and count how many it gets right.",
@@ -2818,7 +2818,7 @@
               about: "Verileri \"ad: değer\" çiftleriyle yazmanın ortak yolu, her programlama dili okuyabiliyor. Telefonundaki hava durumu uygulaması da bilgiyi sunucudan çoğu zaman JSON olarak alıyor. Bu sitedeki 76ers skoru da sana JSON olarak geliyor.",
               mine: "Bir Python sözlüğüne neredeyse tıpatıp benziyor. (Evet, Instagram'da herkes ona Jason diyor.)" } },
       // My team. ball = basketball seams, starRing = the 13 stars from the Sixers logo
-      { name: "76", title: "Philadelphia 76ers", x: 0.45, y: 0.17, tall: [0.86, 0.1], size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
+      { name: "76", title: "Philadelphia 76ers", x: 0.36, y: 0.14, tall: [0.86, 0.1], size: 36, color: "#1d7fd6", dark: "#002B5C", spin: 0.0005,
         ball: true, seam: "#ED174C", starRing: true,
         short: "Philadelphia's professional basketball team in the NBA; everyone just calls them the \"Sixers\". The 76 in the name comes from 1776, the year the US declared its independence.",
         about: "The Sixers' most loved legend is Allen Iverson: he was the 2001 MVP and famous for his crossover. I love fast players who score a lot, just like him, and that's why Maxey is my favorite.",
@@ -3999,8 +3999,12 @@
       closeAsk();
     }
 
+    // Still typing in Ask me = this "click" is the tap that put the cursor in the box. On a phone the
+    // panel jumps to keyboard layout between finger down and up, the browser then aims the click at
+    // the empty sky where the box used to be, and it must not close the panel (the keyboard stays up).
+    const typingInAsk = () => ask.contains(document.activeElement) && /INPUT|TEXTAREA/.test(document.activeElement.tagName);
     document.addEventListener("click", (e) => {
-      if (onUI(e)) return;
+      if (onUI(e) || typingInAsk()) return;
       const p = planetAt(e.clientX, e.clientY);
       if (p) openThing(p);
       else closeAll();
@@ -6110,7 +6114,7 @@
       // A tall phone screen gets the same system stood upright: left-to-right becomes top-to-bottom
       // (the planets themselves stay upright; only where they sit changes)
       const TALL = phone() && window.innerHeight / window.innerWidth > 1.2;
-      const SPAN_X = TALL ? 24 : 64, SPAN_Y = TALL ? 60 : 36;
+      const SPAN_X = TALL ? 32 : 64, SPAN_Y = TALL ? 60 : 36;
       // tall phones: a planet can have its own spot (tall: [x, y]) so rings and names don't overlap
       const spot = (t) => (TALL && t.tall) || [t.x, t.y];
       const place = (x, y) => TALL ? [(y - 0.5) * SPAN_X, (0.5 - x) * SPAN_Y] : [(x - 0.5) * SPAN_X, -(y - 0.5) * SPAN_Y];
@@ -7259,9 +7263,12 @@
           const pos = look.clone().add(new V3(0, dist * tilt, dist * Math.sqrt(1 - tilt * tilt)));
           return { pos, look };
         };
-        const dTall = Math.max((SPAN_Y / 2 + 4) / tanH, (SPAN_X / 2 + 5) / (tanH * aspect));
+        // Short phone screens (iPhone Safari with its bars): the title block below keeps its size in
+        // pixels, so the system gets less of the screen; step back a little so it still fits above it
+        const shortK = () => { const h = window.innerHeight, fr = Math.max(0.3, (h - 380) / h); return Math.min(1.6, Math.max(1, 0.6 / fr)); };
+        const dTall = Math.max((SPAN_Y / 2 + 4) / tanH, (12 + 5) / (tanH * aspect)); // (12 = the old half width: spreading the planets wider must not pull the camera back)
         keys = sections.map((s) => {
-          if (s.kind === "hero" && TALL) return turned(dTall * 1.8, 0.33, 0.14);       // the system between the glass bar and the title
+          if (s.kind === "hero" && TALL) return turned(dTall * 1.62 * shortK(), Math.max(0.33, 250 / window.innerHeight), 0.14);       // the system between the glass bar and the title
           if (s.kind === "outro" && TALL) return turned(dTall * 3.1, 0.54, 0.3);        // small and high: a constellation above the text
           if (s.kind === "hero") {
             // the system sits a little higher and further, so the title underneath stays clear
@@ -7476,7 +7483,7 @@
       document.addEventListener("click", (e) => {
         if (!window.sky3d) return; // switched back to the 2D sky: its own click handling takes over
         if (orbit.moved >= 5) { e.stopPropagation(); orbit.moved = 0; return; } // that was a drag, not a click
-        if (e.target.closest("#card, #radio, #intro, #ask, #topbar, button, a")) return;
+        if (e.target.closest("#card, #radio, #intro, #ask, #topbar, button, a") || typingInAsk()) return;
         const t = window.planetAt(e.clientX, e.clientY);
         if (!t) {
           // Empty space: close what's open (the old handler does that); if nothing is open
