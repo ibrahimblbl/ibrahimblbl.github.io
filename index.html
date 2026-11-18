@@ -2225,8 +2225,8 @@
       /* the stops whose "for me" line is a result (38 of 40...) show it on phones too, small */
       .stop-mine.proof { display: block; max-width: 34ch; margin: -6px auto 16px; font-size: 13.5px; line-height: 1.45; }
       .stop-drag { margin-top: 14px; font-size: 10px; color: rgba(236, 236, 248, 0.55); }
-      /* The hero: title and hint well above the octopus */
-      .hero-copy { bottom: 150px; }
+      /* The hero: title and hint above the octopus (not higher: the planets need the room) */
+      .hero-copy { bottom: 128px; }
     }
     /* Short phone screens (small Androids, Instagram's own browser, address bar showing):
        a smaller text block, so the camera has room to put the planet above it */
@@ -7265,7 +7265,7 @@
         };
         // Short phone screens (iPhone Safari with its bars): the title block below keeps its size in
         // pixels, so the system gets less of the screen; step back a little so it still fits above it
-        const shortK = () => { const h = window.innerHeight, fr = Math.max(0.3, (h - 380) / h); return Math.min(1.6, Math.max(1, 0.6 / fr)); };
+        const shortK = () => { const h = window.innerHeight, fr = Math.max(0.3, (h - 400) / h); return Math.min(1.6, Math.max(1, 0.6 / fr)); };
         const dTall = Math.max((SPAN_Y / 2 + 4) / tanH, (12 + 5) / (tanH * aspect)); // (12 = the old half width: spreading the planets wider must not pull the camera back)
         keys = sections.map((s) => {
           if (s.kind === "hero" && TALL) return turned(dTall * 1.62 * shortK(), Math.max(0.33, 250 / window.innerHeight), 0.14);       // the system between the glass bar and the title
