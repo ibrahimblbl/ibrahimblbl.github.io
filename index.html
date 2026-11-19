@@ -2753,7 +2753,7 @@
     //   moon       = a small moon on an orbit
     // "about" is draft text; later it comes from my "What I Learned" posts.
     const planets = [
-      { name: "Python", x: 0.2, y: 0.3, size: 38, color: "#ffd166", dark: "#8a4b08", spin: 0.00035,
+      { name: "Python", x: 0.2, y: 0.3, tall: [0.3, 0.3], size: 38, color: "#ffd166", dark: "#8a4b08", spin: 0.00035,
         bands: 6,
         spots: [{ lat: 0.3, lon: 0, size: 0.18, color: "#c2410c" }],
         short: "The plainest language in programming: the code reads almost like an English sentence.",
@@ -2790,7 +2790,7 @@
         tr: { short: "Bir maç defteri gibi: oynadığım her maç kendiliğinden buraya düşüyor, puanımın çıkıp çıkmadığı tek bakışta görünüyor.",
               about: "Satranç maçlarımı kaydetmek için yaptığım bir proje. Lovable ile yaptım ve bana ne istemediğimi öğretti: zaten var olan bir şeyin kopyasını.",
               mine: "Satranç oynamayı seviyorum." } },
-      { name: "Java", x: 0.08, y: 0.56, size: 36, color: "#f87171", dark: "#5c1a0b", spin: 0.0003,
+      { name: "Java", x: 0.08, y: 0.56, tall: [0.19, 0.53], size: 36, color: "#f87171", dark: "#5c1a0b", spin: 0.0003,
         bands: 4,
         spots: [{ lat: -0.3, lon: 2, size: 0.2, color: "#fde68a" }],
         moon: { dist: 2, size: 0.22, speed: 0.0009 },
@@ -2800,7 +2800,7 @@
         tr: { short: "Sıkı bir öğretmen gibi: her şeyi baştan açıkça yazdırır, ama sağlam alışkanlıklar kazandırır.",
               about: "1995'te çıktı ve hâlâ en çok kullanılan dillerden biri. Bankaların sistemleri, büyük şirketlerin sunucuları ve birçok Android uygulaması Java'yla yazılıyor. Minecraft'ın ilk sürümü de Java'yla yazıldı.",
               mine: "İlk programlama dilim. Değişkeni, döngüyü, sınıfı onunla öğrendim." } },
-      { name: "MCP", x: 0.35, y: 0.55, size: 32, color: "#bef264", dark: "#1a3d0a", spin: 0.00035,
+      { name: "MCP", x: 0.35, y: 0.55, tall: [0.41, 0.52], size: 32, color: "#bef264", dark: "#1a3d0a", spin: 0.00035,
         spots: [{ lat: 0.25, lon: 1, size: 0.2, color: "#365314" }, { lat: -0.35, lon: 4, size: 0.15, color: "#ecfccb" }],
         moon: { dist: 2, size: 0.2, speed: -0.0009 },
         short: "Like a power socket for AI: one standard shape, and every tool plugs in the same way.",
@@ -2809,7 +2809,7 @@
         tr: { short: "Yapay zekâ için bir priz gibi: şekli standart, her araç aynı yoldan takılıyor.",
               about: "Model Context Protocol. Anthropic 2024'te açık bir standart olarak yayınladı. Bir yapay zekânın dosyalara, takvime ya da bir veritabanına bağlanmasını sağlıyor, her araç için ayrı bağlantı yazmak gerekmiyor.",
               mine: "Kendi arama aracımı yazıp Claude'a bağladım. Aracı ne zaman kullanacağına Claude kendisi karar veriyor." } },
-      { name: "JSON", x: 0.22, y: 0.74, size: 26, color: "#60a5fa", dark: "#172554", spin: 0.0004,
+      { name: "JSON", x: 0.22, y: 0.74, tall: [0.3, 0.74], size: 26, color: "#60a5fa", dark: "#172554", spin: 0.0004,
         bands: 3,
         short: "Like a neat form that programs send each other: every piece of info has its name next to it.",
         about: "The shared way to write data as name: value pairs, so every programming language can read it. The weather app on your phone usually gets its data from the server as JSON. The 76ers score on this site reaches you as JSON too.",
@@ -7268,7 +7268,7 @@
         const shortK = () => { const h = window.innerHeight, fr = Math.max(0.3, (h - 400) / h); return Math.min(1.6, Math.max(1, 0.6 / fr)); };
         const dTall = Math.max((SPAN_Y / 2 + 4) / tanH, (12 + 5) / (tanH * aspect)); // (12 = the old half width: spreading the planets wider must not pull the camera back)
         keys = sections.map((s) => {
-          if (s.kind === "hero" && TALL) return turned(dTall * 1.62 * shortK(), Math.max(0.33, 250 / window.innerHeight), 0.14);       // the system between the glass bar and the title
+          if (s.kind === "hero" && TALL) return turned(dTall * 1.4 * shortK(), Math.max(0.37, 275 / window.innerHeight), 0.14);       // the system between the glass bar and the title
           if (s.kind === "outro" && TALL) return turned(dTall * 3.1, 0.54, 0.3);        // small and high: a constellation above the text
           if (s.kind === "hero") {
             // the system sits a little higher and further, so the title underneath stays clear
