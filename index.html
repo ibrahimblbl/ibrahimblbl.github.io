@@ -4674,6 +4674,31 @@
       }
     }
 
+    // Phones: tapping a button in the panel (Send, the note's send...) while typing. The finger
+    // going down takes the focus away from the box, the keyboard starts to close and the panel slides
+    // down, so when the finger comes up the browser aims the click at the sky: the panel closed and
+    // nothing was sent. A touch stays with the element it started on (pointer capture), so the button
+    // we touched hears the finger come up: press it right there, and drop the misaimed click after it.
+    {
+      let downBtn = null, downX = 0, downY = 0, swallowUntil = 0;
+      ask.addEventListener("pointerdown", (e) => {
+        const b = e.target.closest("button");
+        downBtn = e.pointerType === "touch" && typingInAsk() && b && ask.contains(b) ? b : null;
+        downX = e.clientX; downY = e.clientY;
+      });
+      ask.addEventListener("pointerup", (e) => {
+        const b = downBtn;
+        downBtn = null;
+        if (!b || Math.hypot(e.clientX - downX, e.clientY - downY) > 14) return; // a slide is not a tap
+        b.click();                              // Send (or whichever button it was), once
+        swallowUntil = performance.now() + 700; // ...and the browser's own late click is ignored
+      });
+      ask.addEventListener("pointercancel", () => { downBtn = null; });
+      document.addEventListener("click", (e) => {
+        if (performance.now() < swallowUntil) { swallowUntil = 0; e.stopPropagation(); e.preventDefault(); }
+      }, true);
+    }
+
     // Phones: when the keyboard opens, lift the octopus and the panel above it
     if (window.visualViewport) {
       const vv = visualViewport, askPanel = document.getElementById("ask-panel");
