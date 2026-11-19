@@ -315,6 +315,7 @@
       color: var(--muted);
       font-size: 22px;
       cursor: pointer;
+      z-index: 3; /* the title's rise animation lifts it into its own layer; keep the × above it, or the title catches the click */
     }
 
     #close { transition: color 0.2s ease, transform 0.3s ease; }
@@ -710,9 +711,14 @@
       left: 0;
       bottom: 136px;
       width: min(380px, calc(100vw - 48px));
-      /* octopus 24px + panel 136px above it = 160px, plus 20px air at the top */
-      max-height: min(660px, calc(100vh - 180px));
-      max-height: min(660px, calc(100dvh - 180px)); /* dvh = real height as the address bar moves; old browsers skip this line */
+      /* octopus 24px + panel 136px above it = 160px, plus the glass top bar (~70px) and some air:
+         on a 1366x768 laptop the panel used to slide under the bar and hide its close button */
+      max-height: min(660px, calc(100vh - 250px));
+      max-height: min(660px, calc(100dvh - 250px)); /* dvh = real height as the address bar moves; old browsers skip this line */
+      overflow-y: auto; /* a long answer on a short screen scrolls inside the panel instead of spilling out */
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -2386,7 +2392,7 @@
       </div>
       <div id="ask-chips"></div>
       <form id="ask-form">
-        <input id="ask-input" maxlength="200" autocomplete="off" placeholder="Ask about what I've learned" aria-label="Your question" data-tr-placeholder="Öğrendiklerimle ilgili bir şey sor" data-tr-label="Sorun">
+        <input id="ask-input" maxlength="200" autocomplete="off" placeholder="Ask about what I've learned" aria-label="Your question" data-tr-placeholder="Öğrendiklerimle ilgili bir şey sor" data-tr-label="Sorunu yaz">
         <button id="ask-send" type="submit" aria-label="Send" data-tr-label="Gönder"></button>
       </form>
       <p id="ask-left" hidden></p>
@@ -2759,7 +2765,7 @@
         short: "The plainest language in programming: the code reads almost like an English sentence.",
         about: "Released in 1991, today it's the common language of AI. Big libraries like TensorFlow and PyTorch are used from Python, and researchers can test an idea in a few lines. The heavy math runs underneath in fast C code.",
         mine: "The language I'm trying to learn for AI, after Java.",
-        tr: { short: "Programlamanın en sade dili: kodu neredeyse İngilizce bir cümle gibi okunuyor.",
+        tr: { short: "Programlamanın en sade dili: kodu neredeyse İngilizce bir cümle gibi okuyorsun.",
               about: "1991'de çıktı, bugün yapay zekânın ortak dili. TensorFlow ve PyTorch gibi büyük kütüphaneler Python'la kullanılıyor, araştırmacılar fikirlerini birkaç satırla deneyebiliyor. Ağır hesapları ise altta çalışan hızlı C kodu yapıyor.",
               mine: "Java'dan sonra yapay zekâ için öğrenmeye çalıştığım dil." } },
       { name: "RAG", x: 0.56, y: 0.45, size: 56, color: "#c4a1ff", dark: "#2e1065", spin: 0.00025,
@@ -2829,10 +2835,10 @@
       // split = the planet cuts itself into 4 pieces now and then (that's what chunking is)
       { name: "Chunking", x: 0.73, y: 0.62, tall: [0.76, 0.5], size: 30, color: "#2dd4bf", dark: "#134e4a", spin: 0.0004,
         bands: 4, split: true,
-        short: "Like sorting a wardrobe into drawers: throw everything into one drawer and you can't find your socks. Put one sock in one drawer and its pair in another, and the pair is lost.",
+        short: "Like sorting a wardrobe into drawers: if everything is in one drawer, you can't find what you're looking for. With tidy drawers, you open the right one and find it right away.",
         about: "Splitting a long text into small pieces (chunks) before searching. Each piece is turned into numbers (an embedding) and stored; when a question comes in, the closest pieces are found and handed to the AI. Common ways: a fixed size (say, every 300 words), by heading or paragraph, or with pieces that overlap a little, so a sentence on the border between two pieces isn't cut in half.",
         mine: "Kept as 9 big pieces, my posts got 36 of 40 questions right. Split by heading into 77 pieces, they got 38.",
-        tr: { short: "Dolabı çekmecelere ayırmak gibi: her şeyi tek çekmeceye atarsan çorabı bulamazsın. Çorabın bir tekini bir çekmeceye, öbür tekini başka çekmeceye koyarsan da çift kaybolur.",
+        tr: { short: "Dolabı çekmecelere ayırmak gibi: her şey tek çekmecedeyse aradığını bulamazsın. Çekmeceler düzenliyse doğru olanı açar, hemen bulursun.",
               about: "Uzun bir metni aramadan önce küçük parçalara (chunk) bölmek. Her parça ayrı ayrı sayılara (embedding) çevrilip saklanıyor. Soru gelince en yakın parçalar bulunup yapay zekâya veriliyor. Yaygın yöntemler şunlar: sabit boyda bölmek (ör. her 300 kelimede bir), başlığa ya da paragrafa göre bölmek, ya da parçaları birbirine biraz bindirerek bölmek (overlap). Bindirme, iki parçanın sınırına denk gelen cümlenin yarıda kalmasını önlüyor.",
               mine: "Yazılarımı bölmeden 9 büyük parça yapınca ahtapot 40 sorudan 36'sını bildi. Başlıklara bölüp 77 parça yapınca 38'ini bildi." } },
       // Reranking: a second, more careful read of the search results
@@ -3909,7 +3915,7 @@
 
     // Listen on the whole page (the canvas ignores clicks so phones can scroll),
     // but skip clicks that land on the card, the radio panel, buttons or links.
-    const onUI = (e) => e.target.closest("#card, #radio, #intro, #ask, button, a");
+    const onUI = (e) => e.target.closest("#card, #radio, #intro, #ask, #topbar, #stop-nav, button, a"); // (the glass bar and the dot rail are page UI too, not sky)
 
     document.addEventListener("mousemove", (e) => {
       if (!reduceMotion) {
@@ -7483,7 +7489,7 @@
       document.addEventListener("click", (e) => {
         if (!window.sky3d) return; // switched back to the 2D sky: its own click handling takes over
         if (orbit.moved >= 5) { e.stopPropagation(); orbit.moved = 0; return; } // that was a drag, not a click
-        if (e.target.closest("#card, #radio, #intro, #ask, #topbar, button, a") || typingInAsk()) return;
+        if (e.target.closest("#card, #radio, #intro, #ask, #topbar, #stop-nav, button, a") || typingInAsk()) return;
         const t = window.planetAt(e.clientX, e.clientY);
         if (!t) {
           // Empty space: close what's open (the old handler does that); if nothing is open
@@ -7642,6 +7648,9 @@
         window.addEventListener("pointermove", (e) => {
           if (e.pointerType !== "mouse" || !window.sky3d) return;
           cur.x = e.clientX; cur.y = e.clientY;
+          // The dot follows the mouse right here, not in the 3D frame: on a slow computer a late
+          // frame used to make the pointer itself lag (the ring still trails softly in the frame)
+          cursorDot.style.transform = `translate(${cur.x}px, ${cur.y}px)`;
           if (!cur.shown) { cur.rx = cur.x; cur.ry = cur.y; cur.shown = true; html.classList.add("cursor-on"); }
           const overButton = e.target.closest("button, a, input, textarea, label, #brand");
           cursorRing.classList.toggle("over-ui", !!overButton);
@@ -7908,6 +7917,7 @@
       // ---------- Every frame ----------
       const labelAmt = new Map(); // how visible each planet's name label is right now
       const labelSize = new Map();
+      let labelRange = null; // (reused each frame to measure the chapter heading text on phones)
       let needsRender = true;
       let lastTone = "";
       const vignetteEl = document.getElementById("phone-vignette");
@@ -8715,6 +8725,7 @@
         // ----- Labels: in the overview, and for a chapter's planets on its title screen -----
         const w = window.innerWidth, h = window.innerHeight;
         const placed = [];
+        labelRange = labelRange || document.createRange();
         screenDown.set(0, -1, 0).applyQuaternion(camera.quaternion);
         for (const [t, el] of labels) {
           const parts = P3.get(t);
@@ -8742,11 +8753,21 @@
         // Nearer (and hovered) names win; one that would sit on top of a winner fades back
         placed.sort((a, b) => (b.t === hovered) - (a.t === hovered) || a.depth - b.depth);
         const kept = [];
+        // Phones: the chapter screen's own heading counts as taken too (on a 360x640 screen
+        // "Chunking" sat right on "CHAPTER II"); a name there steps aside
+        if (TALL) {
+          for (const el of document.querySelectorAll(".chapter.active .ch-kicker, .chapter.active h2")) {
+            labelRange.selectNodeContents(el); // the text itself, not the full-width line box
+            const b = labelRange.getBoundingClientRect();
+            if (b.height) kept.push({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom, hard: true });
+          }
+        }
         for (const L of placed) {
           let op = L.op;
           if (L.show && op > 0.05) {
             const r = { x0: L.x - L.size.w / 2 - 4, x1: L.x + L.size.w / 2 + 4, y0: L.y - 2, y1: L.y + L.size.h + 2 };
-            if (kept.some((k) => r.x0 < k.x1 && r.x1 > k.x0 && r.y0 < k.y1 && r.y1 > k.y0)) op *= 0.18;
+            const hit = kept.find((k) => r.x0 < k.x1 && r.x1 > k.x0 && r.y0 < k.y1 && r.y1 > k.y0);
+            if (hit) op *= hit.hard ? 0 : 0.18; // on the heading: gone (its name is in the chips below anyway)
             else kept.push(r);
           }
           const ops = String(Math.round(op * 100) / 100);
@@ -8843,8 +8864,13 @@
       {
         const hidden = [];
         scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
-        renderer.compile(scene, camera);
+        // compileAsync: the graphics card translates the shaders in the background while the
+        // terminal is still typing. (The old compile() only started them; the first frame that used
+        // one then waited for it, which froze the fly-in for seconds on weaker or Windows machines.)
+        const ready = renderer.compileAsync(scene, camera);
         hidden.forEach((o) => { o.visible = false; });
+        // Wait until they're done, but never more than 12 s (after that it works as before)
+        await Promise.race([ready, new Promise((r) => setTimeout(r, 12000))]);
       }
       if (LITE) renderer.render(scene, camera); else composer.render();
       if (shaderFailed) throw new Error("a shader didn't compile on this GPU");
