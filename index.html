@@ -5448,7 +5448,9 @@
       // background, so this detailed sky costs nothing per frame.
       const skyScene = new THREE.Scene();
       skyScene.add(sky);
-      const cubeRT = new THREE.WebGLCubeRenderTarget(phone() ? 512 : 1024, { type: floatOK ? THREE.HalfFloatType : THREE.UnsignedByteType });
+      // Without float targets (seen on iPhones) a plain 8-bit picture keeps too few dark steps:
+      // the dim sky turns blotchy. Storing it as sRGB spends those steps where the eye sees them.
+      const cubeRT = new THREE.WebGLCubeRenderTarget(phone() ? 512 : 1024, floatOK ? { type: THREE.HalfFloatType } : { type: THREE.UnsignedByteType, colorSpace: THREE.SRGBColorSpace });
       new THREE.CubeCamera(1, 3000, cubeRT).update(renderer, skyScene);
       scene.background = cubeRT.texture;
       scene.backgroundIntensity = 0;
@@ -5965,12 +5967,18 @@
       // ---------- Filling the space around the system ----------
       // Soft clouds of gas at different distances. When the camera turns or flies they slide
       // past each other at different speeds, which is what makes space feel deep, not flat.
+      // Phones paint the clouds once into the sky, so a random draw could put a big teal or pink
+      // cloud right behind the map on one visit and none on the next. A fixed seed keeps the
+      // phone sky the same every time; computers keep the random clouds (they drift as sprites).
+      const SKY_SEED = 3;
+      let seed = SKY_SEED;
+      const rnd = LITE ? () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; } : Math.random;
       const cloudPaint = (g, w) => {
         for (let i = 0; i < 70; i++) {
-          const a = Math.random() * Math.PI * 2, r = Math.pow(Math.random(), 0.7) * w * 0.32;
-          const x = w / 2 + Math.cos(a) * r, y = w / 2 + Math.sin(a) * r * 0.75, rad = 18 + Math.random() * 46;
+          const a = rnd() * Math.PI * 2, r = Math.pow(rnd(), 0.7) * w * 0.32;
+          const x = w / 2 + Math.cos(a) * r, y = w / 2 + Math.sin(a) * r * 0.75, rad = 18 + rnd() * 46;
           const blob = g.createRadialGradient(x, y, 0, x, y, rad);
-          blob.addColorStop(0, `rgba(255,255,255,${0.05 + Math.random() * 0.06})`);
+          blob.addColorStop(0, `rgba(255,255,255,${0.05 + rnd() * 0.06})`);
           blob.addColorStop(1, "rgba(255,255,255,0)");
           g.fillStyle = blob;
           g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
@@ -5981,15 +5989,16 @@
       const nebulaClouds = [];
       // (phones: the same 18 clouds, but painted once into the background picture below,
       // so they color the sky like on computers and cost nothing per frame)
+      // Computers: no colored clouds at all (the owner wanted a dark sky there, no purple/pink/blue wash)
       const cloudScene = LITE ? new THREE.Scene() : scene;
-      for (let i = 0; i < 18; i++) {
-        const u = Math.random() * 1.4 - 0.7, a = Math.random() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
-        const r = 260 + Math.random() * 360;
-        const m = new THREE.SpriteMaterial({ map: cloudTex[i % 3], color: cloudColors[i % cloudColors.length], transparent: true, opacity: 0.07 + Math.random() * 0.08, blending: THREE.AdditiveBlending, depthWrite: false, rotation: Math.random() * Math.PI });
+      for (let i = 0; i < (LITE ? 18 : 0); i++) {
+        const u = rnd() * 1.4 - 0.7, a = rnd() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
+        const r = 260 + rnd() * 360;
+        const m = new THREE.SpriteMaterial({ map: cloudTex[i % 3], color: cloudColors[i % cloudColors.length], transparent: true, opacity: 0.07 + rnd() * 0.08, blending: THREE.AdditiveBlending, depthWrite: false, rotation: rnd() * Math.PI });
         const c = new THREE.Sprite(m);
         c.position.set(Math.cos(a) * sq * r, u * r * 0.6, Math.sin(a) * sq * r);
-        const size = 160 + Math.random() * 260;
-        c.scale.set(size, size * (0.5 + Math.random() * 0.4), 1);
+        const size = 160 + rnd() * 260;
+        c.scale.set(size, size * (0.5 + rnd() * 0.4), 1);
         c.userData.base = m.opacity;
         cloudScene.add(c);
         nebulaClouds.push(c);
